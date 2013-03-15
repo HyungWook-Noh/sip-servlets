@@ -1274,7 +1274,7 @@ public class SipStandardService extends StandardService implements CatalinaSipSe
 				gracefulStopFuture.cancel(false);
 			}
 			try {
-				stop();
+				getServer().stop();
 			} catch (LifecycleException e) {
 				logger.error("The server couldn't be stopped", e);
 			}
@@ -1292,7 +1292,7 @@ public class SipStandardService extends StandardService implements CatalinaSipSe
 							public void run() { 
 								gracefulStopFuture.cancel(false);
 								try {
-									stop();
+									getServer().stop();
 								} catch (LifecycleException e) {
 									logger.error("The server couldn't be stopped", e);
 								}

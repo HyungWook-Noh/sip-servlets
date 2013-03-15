@@ -95,7 +95,9 @@ import javax.sip.message.Response;
 
 import org.apache.log4j.Logger;
 import org.mobicents.ext.javax.sip.dns.DNSServerLocator;
+import org.mobicents.ha.javax.sip.ClusteredSipStack;
 import org.mobicents.ha.javax.sip.LoadBalancerHeartBeatingListener;
+import org.mobicents.ha.javax.sip.LoadBalancerHeartBeatingService;
 import org.mobicents.ha.javax.sip.SipLoadBalancer;
 import org.mobicents.javax.servlet.CongestionControlEvent;
 import org.mobicents.javax.servlet.CongestionControlPolicy;

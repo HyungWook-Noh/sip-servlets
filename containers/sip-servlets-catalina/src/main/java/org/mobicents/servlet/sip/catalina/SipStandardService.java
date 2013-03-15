@@ -53,6 +53,7 @@ import javax.sip.header.UserAgentHeader;
 import org.apache.catalina.Engine;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardService;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.log4j.Logger;
@@ -1265,11 +1266,8 @@ public class SipStandardService extends StandardService implements CatalinaSipSe
 			if(gracefulStopFuture != null) {
 				gracefulStopFuture.cancel(false);
 			}
-			try {
-				stop();
-			} catch (LifecycleException e) {
-				logger.error("The server couldn't be stopped", e);
-			}
+			stopServer();
+			
 		} else {
 			sipApplicationDispatcher.setGracefulShutdown(true);
 			Iterator<SipContext> sipContexts = sipApplicationDispatcher.findSipApplications();
@@ -1283,15 +1281,29 @@ public class SipStandardService extends StandardService implements CatalinaSipSe
 						new Runnable() {
 							public void run() { 
 								gracefulStopFuture.cancel(false);
-								try {
-									stop();
-								} catch (LifecycleException e) {
-									logger.error("The server couldn't be stopped", e);
-								}
+								stopServer();
 							}
 						}
 	                , timeToWait, TimeUnit.MILLISECONDS);
 			}
+		}
+	}
+
+	protected void stopServer() {
+		if(!connectorsStartedExternally) {
+			try {
+				((StandardServer)getServer()).stop();
+			} catch (LifecycleException e) {
+				logger.error("The server couldn't be stopped", e);
+			}
+		} else {
+			// JBoss Case
+			 try {
+				ObjectName jbossServerObjectName = new ObjectName("jboss.system:type=Server");
+				mserver.invoke(jbossServerObjectName, "shutdown", new Object[]{}, new String[]{});
+			} catch (Exception e) {
+				logger.error("The server couldn't be stopped", e);
+			} 
 		}
 	}
 }
