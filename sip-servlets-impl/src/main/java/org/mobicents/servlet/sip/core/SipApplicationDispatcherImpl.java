@@ -1886,6 +1886,15 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, S
 		}
 	}
 	
+	public Map<String, List<? extends SipApplicationRouterInfo>> getApplicationRouterConfiguration() {
+		if(this.sipApplicationRouter instanceof ManageableApplicationRouter) {
+			ManageableApplicationRouter router = (ManageableApplicationRouter) this.sipApplicationRouter;
+			return router.getConfiguration();
+		} else {
+			throw new RuntimeException("This application router is not manageable");
+		}
+	}
+	
 	public void updateApplicationRouterConfiguration(Object configuration) {
 		if(this.sipApplicationRouter instanceof ManageableApplicationRouter) {
 			ManageableApplicationRouter router = (ManageableApplicationRouter) this.sipApplicationRouter;

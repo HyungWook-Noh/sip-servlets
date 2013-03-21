@@ -237,6 +237,7 @@ public interface SipApplicationDispatcher extends SipListenerExt {
 	
 	String getVersion();
 	
+	public Map<String, List<? extends SipApplicationRouterInfo>> getApplicationRouterConfiguration();
 	public Object retrieveApplicationRouterConfiguration();
 	public void updateApplicationRouterConfiguration(Object configuration);
 	public Serializable retrieveApplicationRouterConfigurationString();
