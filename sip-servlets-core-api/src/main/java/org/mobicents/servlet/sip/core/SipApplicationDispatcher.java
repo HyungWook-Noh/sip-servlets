@@ -188,6 +188,7 @@ public interface SipApplicationDispatcher extends SipListenerExt {
 	CongestionControlPolicy getCongestionControlPolicy();
 	String getCongestionControlPolicyByName();
 	void setCongestionControlPolicy(CongestionControlPolicy congestionControlPolicy);
+	String getCongestionControlPolicyByName();
 	void setCongestionControlPolicyByName(String congestionControlPolicy);
 	
 	int getNumberOfMessagesInQueue();
