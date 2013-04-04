@@ -18,6 +18,7 @@
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-SS_for_JBoss-Failover_Support.xml"/>
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-SS_for_JBoss-Passivation_Support.xml"/>
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-SS_Load_Balancer.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-SS_GracefulShutdown.xml"/>
 </chapter>
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-chapter-Enterprise-Monitoring-Operations-Management.xml"/>
 
