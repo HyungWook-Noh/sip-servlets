@@ -1,3 +1,32 @@
 <web-app>
-	<display-name>Mobicents JAIN SLEE Management</display-name> 
+	<display-name>Mobicents SIP Servlets Management Console</display-name>
+	<!-- A security constraint that restricts access to the HTML JMX console
+   to users with the role JBossAdmin. Edit the roles to what you want and
+   uncomment the WEB-INF/jboss-web.xml/security-domain element to enable
+   secured access to the HTML JMX console. -->
+   <!--
+   Security Issue CVE-2010-0738 - https://access.redhat.com/knowledge/solutions/30744
+   -->
+   <security-constraint>
+     <web-resource-collection>
+       <web-resource-name>HtmlAdaptor</web-resource-name>
+       <description>An example security config that only allows users with the
+         role JBossAdmin to access the HTML JMX console web application
+       </description>
+       <url-pattern>/*</url-pattern>
+     </web-resource-collection>
+     <auth-constraint>
+       <role-name>JBossAdmin</role-name>
+     </auth-constraint>
+   </security-constraint>
+
+   <login-config>
+      <auth-method>BASIC</auth-method>
+      <!-- uses the same credentials as the JMX Console -->
+      <realm-name>JBoss JMX Console</realm-name>
+   </login-config>
+
+   <security-role>
+      <role-name>JBossAdmin</role-name>
+   </security-role> 
 </web-app>
