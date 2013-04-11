@@ -1,0 +1,29 @@
+=====================================================================================
+
+This is the README file for the SIP Servlet v1.1 Technology Compatibility Kit (TCK)
+
+=====================================================================================
+
+==========
+ Licenses
+==========
+
+See the LICENSE file in this directory for license terms for the SIP Servlet v1.1 TCK.
+
+The SIP Servlet v1.1 TCK includes SipUnit developed by http://www.cafesip.org. SipUnit is licensed under the terms and conditions of the Apache License. Please read the license agreement by clicking here. SipUnit is extended based on 0.0.6b for SIP Servlet v1.1 TCK.
+
+
+===============
+ Documentation
+===============
+
+The user's guide is provided at docs/SIP Servlet v1.1 TCK User Guide.pdf, and contains information about the contents of the SIP Servlet v1.1 TCK distribution.
+The ReleaseNotes file contains version specific information about this release. 
+
+
+==========
+ Download
+==========
+
+The SIP Servlet v1.1 TCK distribution is available at the following URL: http://jcp.org/en/jsr/detail?id=289.
+

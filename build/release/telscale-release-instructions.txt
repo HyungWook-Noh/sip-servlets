@@ -1,0 +1,38 @@
+Doing a Release : 
+
+Release the components below if there was modifications since the previous release
+
+For all releases below make sure to do :
+git checkout ts1
+git clean -df
+git status (make sure there is nothing to commit and clean)
+
+and After each release, don't forget to do git checkout ts1ga and mvn clean install as the release:prepare don't build the project
+
+Release JSIP first :
+cd m2/jain-sip-ri
+mvn release:prepare --batch-mode -DdevelopmentVersion=6.1.1-TelScale-SNAPSHOT -DreleaseVersion=6.1.0.GA-TelScale -Dtag=ts1ga
+
+Release Mobicents 2 with the new JSIP
+mvn release:prepare -P maven-release --batch-mode -DdevelopmentVersion=6.1.1-TelScale-SNAPSHOT -DreleaseVersion=6.1.0.GA-TelScale -Dtag=ts1ga
+
+Release Sip Balancer
+mvn release:prepare -P maven-release --batch-mode -DdevelopmentVersion=6.1.1-TelScale-SNAPSHOT -DreleaseVersion=6.1.0.GA-TelScale -Dtag=ts1ga -Dmaven.test.skip=true
+
+Release Mobicents Cluster
+mvn release:prepare -P maven-release --batch-mode -DdevelopmentVersion=6.1.1-TelScale-SNAPSHOT -DreleaseVersion=6.1.0.GA-TelScale -Dtag=ts1ga -Dmaven.test.skip=true
+
+Release Mobicents JAIN SIP Ext
+mvn release:prepare -P maven-release --batch-mode -DdevelopmentVersion=6.1.1-TelScale-SNAPSHOT -DreleaseVersion=6.1.0.GA-TelScale -Dtag=ts1ga -Dmaven.test.skip=true
+
+Release Mobicents JAIN SIP HA
+mvn release:prepare -P maven-release --batch-mode -DdevelopmentVersion=6.1.1-TelScale-SNAPSHOT -DreleaseVersion=6.1.0.GA-TelScale -Dtag=ts1ga -Dmaven.test.skip=true
+
+Release Mobicents SGLC (still using SVN tag for first release)
+Release Mobicents SNMP (still using SVN tag for first release)
+
+Release SIP Servlets
+mvn release:prepare -P tomcat,tomcat-7,jboss-5,as7,release --batch-mode -DdevelopmentVersion=6.1.1-TelScale-SNAPSHOT -DreleaseVersion=6.1.0.GA-TelScale -Dtag=ts1ga -Dmaven.test.skip=true
+
+
+

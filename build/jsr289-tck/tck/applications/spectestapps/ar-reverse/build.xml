@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="ar_reverse" default="usage" basedir=".">
+  <property name="root.dir" value="../../../"/>
+  <property name="app.name" value="ar_reverse"/>
+  <property name="app.src" value="${basedir}/src/"/>
+  <property name="app.lib" value="${basedir}/WEB-INF/lib"/>
+  <property name="app.sipxml" value="${basedir}/WEB-INF/sip.xml"/>
+  <property name="app.target" value="${basedir}/target"/>
+  <!--below properties are used by serverside-tasks.xml-->
+  <property name="app.target.class" value="${app.target}/WEB-INF/classes"/>
+  <property name="jsr289.root.dir" value="../../../../"/>
+  <import file="${root.dir}/serverside-tasks.xml"/>
+
+  <!-- Usage -->
+  <target name="usage">
+    <echo message="Usage: ant target [options]"/>
+      <echo message=""/>
+      <echo message="Targets &amp; options"/>
+      <echo message="  build-all   : builds application."/>
+      <echo message="  clean-all   : removes class files and sar package."/>
+  </target>
+
+  <target name="build-all" depends="pre-compile, compile, package-sar"/>
+
+  <target name="pre-compile">
+    <delete dir="${app.target}"/>
+    <mkdir dir="${app.target}"/>
+    <mkdir dir="${app.target}/WEB-INF"/>
+    <mkdir dir="${app.target}/WEB-INF/lib"/>
+    <mkdir dir="${app.target.class}"/>
+  </target>
+
+  <target name="compile" depends="build-base">
+    <javac srcdir="${app.src}"
+      destdir="${app.target.class}"
+      includes="com/bea/sipservlet/tck/apps/spec/ar/reverse/**"
+      classpathref="classpath"
+      verbose="true"
+      debug="true">
+      <compilerarg value="-Xlint:unchecked"/>
+    </javac>
+  </target>
+
+  <target name="package-sar">
+    <copy todir="${app.target}/WEB-INF/lib">
+      <fileset dir="${app.lib}">
+        <include name="*.jar" />
+      </fileset>
+    </copy>
+    <copy file="${app.sipxml}" tofile="${app.target}/WEB-INF/sip.xml" overwrite="true"/>
+    <jar jarfile="${basedir}/${app.name}.sar" basedir="${app.target}"/>
+  </target>
+
+  <target name="clean-all" >
+    <delete includeemptydirs="true" failonerror="false">
+        <fileset dir="${app.target}"/>
+    </delete>
+    <delete file="${basedir}/${app.name}.sar" failonerror="false"/>
+  </target>
+
+</project>
+

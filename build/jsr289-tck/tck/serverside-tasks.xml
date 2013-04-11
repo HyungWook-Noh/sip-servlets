@@ -1,0 +1,30 @@
+<project name="serverside-tasks" basedir=".">
+
+	<!--property name="api.build" value="${api.dir}/build"/-->
+	<!--property name="api.lib" value="${api.dir}/lib"/-->
+	<property name="tck.lib" value="${jsr289.root.dir}/tck/lib"/>
+	<property name="ant.extra.jar" value ="${jsr289.root.dir}/tck/lib/ant-contrib-1.0b3.jar"/>
+	
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath location="${ant.extra.jar}" />
+    </taskdef>
+
+	<path id="classpath">
+		<pathelement location="${tck.lib}/sipservlet-1_1-api.jar"/>
+		<pathelement location="${tck.lib}/servlet-2_5-api.jar"/>
+		<pathelement location="${tck.lib}/javax.annotation_1.0.jar"/>
+        <pathelement location="${jsr289.root.dir}/sipunit/lib/log4j-1.2.8.jar"/>
+		<pathelement path="${app.target.class}"/>
+	</path>	
+	<target name="build-base">
+		<echo message="build base classes ......"/>
+		<javac srcdir="${jsr289.root.dir}/tck/src" 
+			includes="com/bea/sipservlet/tck/apps/**,
+			          com/bea/sipservlet/tck/common/**,
+			          com/bea/sipservlet/tck/utils/**"
+			destdir="${app.target.class}"  
+			classpathref="classpath" 
+			debug="true">
+		</javac>
+	</target>
+</project>

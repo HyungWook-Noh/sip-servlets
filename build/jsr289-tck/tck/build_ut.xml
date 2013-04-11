@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="tck-for-ut" basedir=".">	
+  <import file="build.xml"/>
+	<target name="init">
+		<property environment="env" />
+		<property name="ant.home" value="${env.ANT_HOME}"/>
+		<echo message="ANT_HOME=${ant.home}"/>
+	</target>
+</project>	

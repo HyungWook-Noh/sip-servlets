@@ -1,0 +1,40 @@
+=======================================
+
+Release Notes for the SIP Servlet v1.1 TCK
+
+
+Release date: 23 Apr 2008
+
+=======================================
+
+
+=================
+Introduction
+=================
+
+This is the SIP Servlet Technology Compatibility Kit (TCK) 1.1, 
+for testing compliance to the SIP Servlet v1.1 specification.
+
+========================
+System Requirements
+========================
+
+The SIP Servlet v1.1 TCK requires Java(TM) Standard Edition 5.0 or later.
+
+=====================
+Release Contents
+=====================
+
+See the README file and the docs/SIP Servlet v1.1 TCK User Guide.pdf document for release contents.
+
+==============================
+Installation Instructions
+==============================
+
+See the docs/SIP Servlet v1.1 TCK User Guide.pdf document for installation instructions.
+
+===============
+Change Log
+===============
+
+DATE, and	DESCRIPTION OF CHANGE AND FILES/AREAS AFFECTED 

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <description>JSR289 TCK Applications</description>
+  <display-name>JSR289 TCK Applications</display-name>
+  <module>
+    <web>
+      <web-uri>apitestapp.sar</web-uri>
+      <context-root>apitestapp</context-root>
+    </web>
+  </module>
+  
+  <module>
+    <web>
+      <web-uri>ar_continue.sar</web-uri>
+      <context-root>ar_continue</context-root>
+    </web>
+  </module>
+  
+  <module>
+    <web>
+      <web-uri>ar_internalroutemodifier.sar</web-uri>
+      <context-root>ar_internalroutemodifier</context-root>
+    </web>
+  </module>
+  
+  <module>
+    <web>
+      <web-uri>ar_reverse.sar</web-uri>
+      <context-root>ar_reverse</context-root>
+    </web>
+  </module>
+    
+  <module>
+    <web>
+      <web-uri>ar_suburiregion.sar</web-uri>
+      <context-root>ar_suburiregion</context-root>
+    </web>
+  </module>
+  
+  <module>
+    <web>
+      <web-uri>ar_success.sar</web-uri>
+      <context-root>ar_success</context-root>
+    </web>
+  </module>
+  
+  <module>
+    <web>
+      <web-uri>b2bua.sar</web-uri>
+      <context-root>b2bua</context-root>
+    </web>
+  </module>
+  
+  <module>
+    <web>
+      <web-uri>proxy.sar</web-uri>
+      <context-root>proxy</context-root>
+    </web>
+  </module>
+  
+  <module>
+    <web>
+      <web-uri>uac.sar</web-uri>
+      <context-root>uac</context-root>
+    </web>
+  </module>
+  
+  <module>
+    <web>
+      <web-uri>uas.sar</web-uri>
+      <context-root>uas</context-root>
+    </web>
+  </module>  
+ </application>
