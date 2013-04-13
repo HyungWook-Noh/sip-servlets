@@ -5,9 +5,11 @@
 	<property name="base.path" location="${ant.file.mobicents.sipservlets.release}/.." />
 	<property name="docs.stage.dir" location="${ant.file.mobicents.sipservlets.release}/../documentation" />
 	
-	<property name="mss.version" value="6.1.1" />
-	<property name="mss.release.version" value="${mss.version}.GA" />
-	<property name="mss.management.version" value="${mss.version}.GA-TelScale" />
+	<property name="mss.version" value="6.1.3" />
+	<property name="tag.name" value="ts112ga" />
+	<property name="mss.release.version" value="${mss.version}-SNAPSHOT" />
+	<property name="mss.management.version" value="${mss.version}-TelScale-SNAPSHOT" />
+	<property name="mss.snmp.version" value="6.1.2.GA-TelScale" />
 	<property name="mss.release.configurations" value="all,default" />
 	<property name="mss.release.configurations.jboss5" value="all,default" />
 	<property name="mss.release.configurations.jboss5.excluded" value="minimal,standard,web" />
@@ -27,6 +29,7 @@
 	
 	<property name="eap-5.x.version" value="5.1.2" />
 	<property name="eap-5.version" value="5.1" />
+	<property name="eap-5.download.url" value="https://dl.dropbox.com/s/7d75mfdm251e5dx/jboss-eap-5.1.2.zip?dl=1" />
 
 	<property name="mms.version" value="2.1.0.BETA3" />
 	<property name="mms.download.url" value="http://downloads.sourceforge.net/project/mobicents/Mobicents%20Media%20Server/${mms.version}/mms-server.zip" />
@@ -69,8 +72,8 @@
 	<property name="embjopr.war" value="admin-console.war" />
 	<property name="embjopr.home" value="${release.path}/${embjopr.war}" />
 	<property name="embjopr.home.contents" value="${release.path}/embedded-jopr.war-contents" />
-	<property name="mss.jopr-plugin-5.version" value="1.6.0.FINAL"/>
-	<property name="mss.jopr-plugin-5.url" value="http://repository.jboss.org/nexus/content/groups/public/org/mobicents/servlet/sip/jopr-mobicents-sip-servlets-as-5-plugin/${mss.jopr-plugin-5.version}/jopr-mobicents-sip-servlets-as-5-plugin-${mss.jopr-plugin-5.version}.jar"/>
+	<!--property name="mss.jopr-plugin-5.version" value="1.6.0.FINAL"/>
+	<property name="mss.jopr-plugin-5.url" value="http://deployer:t31sc@1;3@telestax.artifactoryonline.com/telestax/snapshots/org/mobicents/servlet/sip/jopr-mobicents-sip-servlets-as-5-plugin/${mss.jopr-plugin-5.version}/jopr-mobicents-sip-servlets-as-5-plugin-${mss.management.version}.jar"/-->
 	<property name="jopr-jmx-plugin-5.url" value="http://repository.jboss.org/nexus/content/groups/public/org/rhq/rhq-jmx-plugin/1.2.0.GA/rhq-jmx-plugin-1.2.0.GA.jar"/>
 	
 	<condition property="mvn.executable" value="${sys.M2_HOME}\bin\mvn.bat" else="mvn">
@@ -86,7 +89,7 @@
 	<!-- Release target -->
 	
 	<!--target name="release" depends="clean,build-documentation,release-EAP-5.x,release-tomcat,release-jboss-5-jdk6,make-src-zip" /-->
-	<target name="release" depends="clean,build-documentation,release-tomcat7,release-tomcat,release-jboss-5-jdk6,make-src-zip" />
+	<target name="release" depends="clean,build-documentation,build-jain-sip-docs,release-EAP-5.x,release-jboss-5-jdk6,release-tomcat7,release-tomcat,make-src-zip" />
 	
 	<!-- Tomcat version -->
 	
@@ -114,9 +117,16 @@
 		<antcall target="deploy-mgmnt">
 			<param name="management.deploy.folder" value="${tomcat.home}/webapps" />
 		</antcall>
+
+		<antcall target="build-mobicents-sip-load-balancer">
+			<param name="mss.home" value="${tomcat.home}"/>
+		</antcall>
 		
 		<mkdir dir="${tomcat.home}/docs" />
 		<antcall target="copy-documentation">
+			<param name="mss.home" value="${tomcat.home}"/>
+		</antcall>
+		<antcall target="copy-jain-sip-docs">
 			<param name="mss.home" value="${tomcat.home}"/>
 		</antcall>
 		<antcall target="make-final-zip-tomcat" />
@@ -147,9 +157,16 @@
 			<antcall target="deploy-mgmnt">
 				<param name="management.deploy.folder" value="${tomcat7.home}/webapps" />
 			</antcall>
+
+			<antcall target="build-mobicents-sip-load-balancer">
+				<param name="mss.home" value="${tomcat7.home}"/>
+			</antcall>
 			
 			<mkdir dir="${tomcat7.home}/docs" />
 			<antcall target="copy-documentation">
+				<param name="mss.home" value="${tomcat7.home}"/>
+			</antcall>
+			<antcall target="copy-jain-sip-docs">
 				<param name="mss.home" value="${tomcat7.home}"/>
 			</antcall>
 			<antcall target="make-final-zip-tomcat7" />
@@ -162,7 +179,12 @@
 				<ant dir="${base.path}" antfile="build-telscale.xml" target="release-jboss-5-node">
 					<property name="mss.home" value="${jboss-5-jdk6.home}"/>
 					<property name="jboss.config" value="@{jboss.config}"/>
-				</ant>				
+					<property name="distro" value="jboss-distro"/>
+				</ant>	
+				<antcall target="deploy-mss-jopr-plugin-5">			
+					<param name="mss.home" value="${jboss-5-jdk6.home}"/>
+					<param name="jboss.config" value="@{jboss.config}"/>
+				</antcall>
 			</sequential>
 		</for>
 		<!--ant dir="${base.path}" antfile="build-telscale.xml" target="build-mobicents-diameter-jboss-5">
@@ -193,6 +215,9 @@
 		<antcall target="copy-documentation">
 			<param name="mss.home" value="${jboss-5-jdk6.home}"/>
 		</antcall>
+		<antcall target="copy-jain-sip-docs">
+			<param name="mss.home" value="${jboss-5-jdk6.home}"/>
+		</antcall>
 		<!-- include Click to Call example -->
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-examples/click-to-call">
 			<arg line="clean install -P set-git-hash" />
@@ -214,7 +239,13 @@
 				<ant dir="${base.path}" antfile="build-telscale.xml" target="release-jboss-5-node">
 					<property name="mss.home" value="${eap-5.home}/jboss-as"/>
 					<property name="jboss.config" value="@{jboss.config}"/>
-				</ant>				
+					<property name="distro" value="eap-distro"/>
+				</ant>	
+				<copy file="${base.path}/eap-metadata-deployer-jboss-beans.xml" overwrite="true" tofile="${mss.home}/server/${jboss.config}/deployers/metadata-deployer-jboss-beans.xml" />
+				<antcall target="deploy-mss-eap-jopr-plugin-5">
+					<param name="mss.home" value="${eap-5.home}/jboss-as"/>
+					<param name="jboss.config" value="@{jboss.config}"/>
+				</antcall>
 			</sequential>
 		</for>
 		<!--ant dir="${base.path}" antfile="build-telscale.xml" target="build-mobicents-diameter-jboss-5">
@@ -243,6 +274,9 @@
 			<param name="mss.home" value="${eap-5.home}/jboss-as"/>
 		</antcall>
 		<antcall target="copy-documentation">
+			<param name="mss.home" value="${eap-5.home}/jboss-as"/>
+		</antcall>
+		<antcall target="copy-jain-sip-docs">
 			<param name="mss.home" value="${eap-5.home}/jboss-as"/>
 		</antcall>
 		<!-- include Click to Call example -->
@@ -283,8 +317,9 @@
 		<copy file="${base.path}/web-console-context.xml" overwrite="true" tofile="${mss.home}/server/${jboss.config}/deploy/management/console-mgr.sar/web-console.war/WEB-INF/context.xml" />
 		<copy file="${base.path}/ROOT-web.xml" overwrite="true" tofile="${mss.home}/server/${jboss.config}/deploy/ROOT.war/WEB-INF/web.xml" />
 		<copy file="${base.path}/ROOT-jboss-web.xml" overwrite="true" tofile="${mss.home}/server/${jboss.config}/deploy/ROOT.war/WEB-INF/jboss-web.xml" />
-		<copy file="${base.path}/jmx-console-users.properties" overwrite="true" tofile="${mss.home}/server/${jboss.config}/conf/jmx-console-users.properties" />
-		
+		<copy file="${base.path}/jmx-console-users.properties" overwrite="true" tofile="${mss.home}/server/${jboss.config}/conf/props/jmx-console-users.properties" />
+		<!-- End https://bitbucket.org/telestax/telscale-sip-servlets/issue/1/security-exploit-on-jboss-510-ga-community -->
+	
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../..">
 			<arg line="clean buildnumber:create install -P set-git-hash,jboss-5-distro -DJBOSS_HOME=${mss.home} -Dnode=${jboss.config}" />
 		</exec>		
@@ -298,17 +333,12 @@
 		<antcall target="build-mobicents-snmp">
 			<param name="mss.home" value="${mss.home}"/>
 			<param name="node" value="${jboss.config}"/>
+			<param name="distro" value="${distro}"/>
 		</antcall>
 				
 		<antcall target="deploy-mgmnt" >
 			<param name="management.deploy.folder" value="${mss.home}/server/${jboss.config}/deploy" />
-		</antcall>
-		
-		<!-- commented out due to recurring wrong rhq files on hudson -->		
-		<!--exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../jopr-plugin-as-5">
-			<arg line="clean install -DJBOSS_HOME=${mss.home} -Dnode=${jboss.config}" />
-		</exec-->
-		<antcall target="deploy-mss-jopr-plugin-5"/>
+		</antcall>				
 		
 		<condition property="ha.capable">
 			<or>
@@ -329,10 +359,12 @@
 		<copy overwrite="true" file="${base.path}/../../sip-servlets-impl/docs/jboss5/failover-server-jboss-5.xml" tofile="${mss.home}/server/${jboss.config}/deploy/jbossweb.sar/server.xml" />
 		<copy overwrite="true" file="${base.path}/context-jboss-5.xml" tofile="${mss.home}/server/${jboss.config}/deploy/jbossweb.sar/context.xml" />
 		<copy overwrite="true" file="${base.path}/jboss-beans.xml" tofile="${mss.home}/server/${jboss.config}/deploy/jbossweb.sar/META-INF/jboss-beans.xml" />
-		<copy overwrite="true" file="${base.path}/metadata-deployer-jboss-beans.xml" tofile="${mss.home}/server/${jboss.config}/deployers/metadata-deployer-jboss-beans.xml" />
+		<!--copy overwrite="true" file="${base.path}/metadata-deployer-jboss-beans.xml" tofile="${mss.home}/server/${jboss.config}/deployers/metadata-deployer-jboss-beans.xml" /-->
 		<copy overwrite="true" file="${base.path}/jboss-cache-manager-jboss-beans.xml" tofile="${mss.home}/server/${jboss.config}/deploy/cluster/jboss-cache-manager.sar/META-INF/jboss-cache-manager-jboss-beans.xml" />
 		<copy overwrite="true" file="${base.path}/failover-war-deployers-jboss-beans.xml" tofile="${mss.home}/server/${jboss.config}/deployers/jbossweb.deployer/META-INF/war-deployers-jboss-beans.xml" />
-		
+		<copy file="${base.path}/invoker-web.xml" overwrite="true" tofile="${mss.home}/server/${jboss.config}/deploy/httpha-invoker.sar/invoker.war/WEB-INF/web.xml" />	
+		<delete verbose="true" dir="${mss.home}/server/${jboss.config}/deploy/http-invoker.sar"/>
+
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-examples/click2call-distributable">
 			<arg line="clean install -P set-git-hash" />
 		</exec>
@@ -340,7 +372,8 @@
 		<copy tofile="${mss.home}/server/${jboss.config}/deploy/click2call-distributable.war">
 			<fileset dir="${base.path}/../../sip-servlets-examples/click2call-distributable/target/" includes="click2call-distributable-*.war" />
 		</copy>
-				
+			
+		<copy overwrite="true" file="${base.path}/../../sip-servlets-examples/click2call-distributable/click2call-distributable-dar.properties" tofile="${mss.home}/server/${jboss.config}/conf/dars/mobicents-dar.properties"/>	
 	</target>
 	
 	<!-- MSS Management Console -->
@@ -350,14 +383,34 @@
 		<exec failonerror="true" executable="${mvn.executable}" dir="${management.home}">
 			<arg line="clean install -P set-git-hash" />
 		</exec>
-		<copy file="${management.home}/target/sip-servlets-management-${mss.management.version}.war" tofile="${management.deploy.folder}/sip-servlets-management.war"/>
+		<copy file="${management.home}/target/sip-servlets-management.war" tofile="${management.deploy.folder}/sip-servlets-management.war"/>
+		<exec executable="wget" dir="${management.deploy.folder}">
+			<arg value="-O" />
+			<arg value="jolokia.war"/>
+			<arg value="http://labs.consol.de/maven/repository/org/jolokia/jolokia-war/1.1.0/jolokia-war-1.1.0.war"/>
+		</exec>
 	</target>
 	
 	<target name="deploy-mss-jopr-plugin-5">
 		<echo message="MSS_HOME=${mss.home}"/>
+		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../management/jopr-plugin-as-5">
+			<arg line="clean install -P set-git-hash" />
+		</exec>
 		<move verbose="true" failonerror="false" file="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin-2.3.0.EmbJopr.1.2.0-1.jar" tofile="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin-2.3.0.EmbJopr.1.2.0-1.jar.bak" />
-		<get dest="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-mobicents-sip-servlets-as-5-plugin-${mss.jopr-plugin-5.version}.jar" src="${mss.jopr-plugin-5.url}"/>		
+		<move verbose="true" failonerror="false" file="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin.jar" tofile="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin.jar.bak" />
+		<copy overwrite="true" file="${base.path}/../../management/jopr-plugin-as-5/target/jopr-mobicents-sip-servlets-as-5-plugin-${mss.management.version}.jar" tofile="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-mobicents-sip-servlets-as-5-plugin-${mss.management.version}.jar" />
 		<get dest="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/rhq-jmx-plugin-1.2.0.GA.jar" src="${jopr-jmx-plugin-5.url}"/>
+	</target>
+
+	<target name="deploy-mss-eap-jopr-plugin-5">
+		<echo message="MSS_HOME=${mss.home}"/>
+		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../management/eap-plugin-as-5">
+			<arg line="clean install -P set-git-hash" />
+		</exec>		
+		<move verbose="true" failonerror="false" file="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin-2.3.0.EmbJopr.1.2.0-1.jar" tofile="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin-2.3.0.EmbJopr.1.2.0-1.jar.bak" />
+		<move verbose="true" failonerror="false" file="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin.jar" tofile="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin.jar.bak" />
+		<copy overwrite="true" file="${base.path}/../../management/eap-plugin-as-5/target/jopr-mobicents-sip-servlets-as-5-plugin-${mss.management.version}.jar" tofile="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-mobicents-sip-servlets-as-5-plugin-${mss.management.version}.jar" />
+		<!--get dest="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/rhq-jmx-plugin-1.2.0.GA.jar" src="${jopr-jmx-plugin-5.url}"/-->
 	</target>
 	
 	<!-- Get dependencies -->
@@ -388,6 +441,97 @@
 	
 	<!-- Build dependencies-->
 	
+	<target name="build-jain-sip-docs">
+		<echo>Building JAIN SIP Docs</echo>
+
+		<exec executable="git">
+		    <arg value="clone" />		    
+		    <arg value="https://code.google.com/p/jain-sip.docs" />
+		    <arg value="${basedir}/target/dependencies/jain-sip.docs" />
+		</exec>
+
+		<exec executable="git" dir="${basedir}/target/dependencies/jain-sip.docs">		
+		    <arg value="checkout" />
+		    <arg value="${tag.name}" />
+		</exec>
+
+		<exec executable="git">
+		    <arg value="clone" />		    
+		    <arg value="https://code.google.com/p/jain-sip" />
+		    <arg value="${basedir}/target/dependencies/jain-sip" />
+		</exec>
+
+		<exec executable="git" dir="${basedir}/target/dependencies/jain-sip">		
+		    <arg value="checkout" />
+		    <arg value="${tag.name}" />
+		</exec>
+
+		<exec executable="git">
+		    <arg value="clone" />		    
+		    <arg value="https://code.google.com/p/jain-sip.ext" />
+		    <arg value="${basedir}/target/dependencies/jain-sip.ext" />
+		</exec>
+
+		<exec executable="git" dir="${basedir}/target/dependencies/jain-sip.ext">		
+		    <arg value="checkout" />
+		    <arg value="${tag.name}" />
+		</exec>
+
+		<exec executable="git">
+		    <arg value="clone" />		    
+		    <arg value="https://code.google.com/p/jain-sip.ha" />
+		    <arg value="${basedir}/target/dependencies/jain-sip.ha" />
+		</exec>
+
+		<exec executable="git" dir="${basedir}/target/dependencies/jain-sip.ha">		
+		    <arg value="checkout" />
+		    <arg value="${tag.name}" />
+		</exec>
+
+		<ant dir="${basedir}/target/dependencies/jain-sip" antfile="${basedir}/target/dependencies/jain-sip/build.xml" target="javadoc"/>		
+
+		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/jain-sip.docs">
+			<arg line="clean install -P set-git-hash,maven-release,telscale -Dmaven.test.skip=true" />
+		</exec>
+
+		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/jain-sip.ext">
+			<arg line="package javadoc:javadoc" />
+		</exec>
+
+		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/jain-sip.ha">
+			<arg line="package javadoc:javadoc" />
+		</exec>
+	</target>
+
+	<target name="copy-jain-sip-docs">
+		<echo>Copying JAIN SIP Docs</echo>
+
+		<mkdir dir="${mss.home}/docs/jain-sip"/>
+		<copy overwrite="true" todir="${mss.home}/docs/jain-sip">
+			<fileset dir="${basedir}/target/dependencies/jain-sip.docs/jdocbook-telscale/target/docbook/publish/en-US/" />
+		</copy>
+		
+		<mkdir dir="${mss.home}/docs/jain-sip-apidocs"/>
+		<copy overwrite="true" todir="${mss.home}/docs/jain-sip-apidocs">
+			<fileset dir="${basedir}/target/dependencies/jain-sip/javadoc/" />
+		</copy>
+
+		<mkdir dir="${mss.home}/docs/jain-sip-ext-apidocs"/>
+		<copy overwrite="true" todir="${mss.home}/docs/jain-sip-ext-apidocs">
+			<fileset dir="${basedir}/target/dependencies/jain-sip.ext/target/site/apidocs" />
+		</copy>
+
+		<mkdir dir="${mss.home}/docs/jain-sip-ha-apidocs"/>
+		<mkdir dir="${mss.home}/docs/jain-sip-ha-apidocs/core"/>
+		<mkdir dir="${mss.home}/docs/jain-sip-ha-apidocs/jboss-5"/>
+		<copy overwrite="true" todir="${mss.home}/docs/jain-sip-ha-apidocs/core">
+			<fileset dir="${basedir}/target/dependencies/jain-sip.ha/core/target/site/apidocs" />
+		</copy>
+		<copy overwrite="true" todir="${mss.home}/docs/jain-sip-ha-apidocs/jboss-5">
+			<fileset dir="${basedir}/target/dependencies/jain-sip.ha/jboss-5/target/site/apidocs" />
+		</copy>
+	</target>
+
 	<target name="build-mobicents-sip-load-balancer" depends="get-deps">
 		<echo>Building SIP Load Balancer</echo>
 
@@ -399,10 +543,10 @@
 		    <arg value="${basedir}/target/dependencies/sip-balancer" />
 		</exec>
 
-		<exec executable="git" dir="${basedir}/target/dependencies/sip-balancer">		
+		<!--exec executable="git" dir="${basedir}/target/dependencies/sip-balancer">		
 		    <arg value="checkout" />
-		    <arg value="ts111ga" />
-		</exec>
+		    <arg value="${tag.name}" />
+		</exec-->
 
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/sip-balancer/jar">
 			<arg line="clean install -P set-git-hash -Dmaven.test.skip=true" />
@@ -425,6 +569,7 @@
 		<echo>Building Simple Global Logging Configuration</echo>
 		<echo message="jboss.home= ${mss.home}"/>
 		<echo message="node= ${node}"/>
+		<echo message="distro= ${distro}"/>
 		<copy overwrite="true" verbose="true" todir="${base.path}/target/dependencies/sglc/sar/target/mobicents-sglc/log4j-templates">
 		    <fileset dir="${base.path}/sglc-templates">
 		      <include name="**/*.xml.*"/>
@@ -442,9 +587,14 @@
 		<exec executable="git">
 		    <arg value="clone" />
 		    <arg value="-b" />
-		    <arg value="snmp-5.1.0" />
+		    <arg value="ts1" />
 		    <arg value="https://code.google.com/p/commscale.snmp-adaptor" />
 		    <arg value="${basedir}/target/dependencies/snmp-adaptor" />
+		</exec>
+
+		<exec executable="git" dir="${basedir}/target/dependencies/snmp-adaptor">		
+		    <arg value="checkout" />
+		    <arg value="${tag.name}" />
 		</exec>
 
 		<echo message="jboss.home= ${mss.home}"/>
@@ -494,13 +644,13 @@
 		</exec>			
 		<echo>Building SNMP Deployer</echo>
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/snmp-adaptor/deployer">
-			<arg line="clean install -P jboss-distro -Dmaven.test.skip=true -DJBOSS_HOME=${mss.home} -Dnode=${node}" />
+			<arg line="clean install -P ${distro} -Dmaven.test.skip=true -DJBOSS_HOME=${mss.home} -Dnode=${node}" />
 		</exec>	
 		<copy overwrite="true" file="${base.path}/management/snmp/jboss-service.xml" tofile="${mss.home}/server/${jboss.config}/deploy/snmp-adaptor.sar/META-INF/jboss-service.xml" />
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/snmp-adaptor/mibgen">
-			<arg line="clean install -P jboss-distro -Dmaven.test.skip=true -DJBOSS_HOME=${mss.home} -Dnode=${node}" />
+			<arg line="clean install -P ${distro} -Dmaven.test.skip=true -DJBOSS_HOME=${mss.home} -Dnode=${node}" />
 		</exec>	
-		<copy overwrite="true" file="${base.path}/target/dependencies/snmp-adaptor/mibgen/generator/target/mibgen-generator-1.0-executable.jar" tofile="${mss.home}/client/mibgen-generator-1.0-executable.jar" />
+		<copy overwrite="true" file="${base.path}/target/dependencies/snmp-adaptor/mibgen/generator/target/mibgen-generator-${mss.snmp.version}-executable.jar" tofile="${mss.home}/client/mibgen-generator-${mss.snmp.version}-executable.jar" />
 	</target>
 	
 	<!-- Download dependencies from SourceForge -->
@@ -529,7 +679,18 @@
 		<copy overwrite="true" todir="${mss.home}/docs/mobicents-sip-servlets">
 			<fileset dir="${base.path}/../../docs/jdocbook-telscale/target/docbook/publish/en-US/" />
 		</copy>
-		
+		<mkdir dir="${mss.home}/docs/mobicents-sip-servlets/jsr-289-api"/>
+		<copy overwrite="true" todir="${mss.home}/docs/mobicents-sip-servlets/jsr-289-api">
+			<fileset dir="../../../telscale-sip-servlets/jsr289-apidocs/" />
+		</copy>
+		<mkdir dir="${mss.home}/docs/mobicents-sip-servlets/jsr-289-api-extensions"/>
+		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-client">
+			<arg line="javadoc:javadoc" />
+		</exec>
+		<copy overwrite="true" todir="${mss.home}/docs/mobicents-sip-servlets/jsr-289-api-extensions">
+			<fileset dir="${base.path}/../../sip-servlets-client/target/site/apidocs/" />
+		</copy>
+
 		<!--delete dir="${docs.stage.dir}" /-->
 	</target>
 	
@@ -598,14 +759,14 @@
 		<delete file="${jboss-5-jdk6.home}/server/default/deploy/media-jsr309-servlet.war"/-->
 		<delete file="${jboss-5-jdk6.home}/docs/licenses/GPL-LICENSE.TXT"/>
 		<fixcrlf srcdir="${jboss-5-jdk6.home}/bin" includes="*.sh" eol="lf" eof="remove" />		
-		<zip destfile="${base.path}/TelScale-SIP-Servlets-${mss.release.version}-jboss-${jboss-5.version}-${time.stamp}.zip" filesonly="false">
-			<zipfileset dir="${jboss-5-jdk6.home}/bin" filemode="755" prefix="TelScale-SIP-Servlets-${mss.release.version}-jboss-${jboss-5.version}/bin">
+		<zip destfile="${base.path}/TelScale-SIP-Servlets-${mss.release.version}-jboss-as-${jboss-5.version}-${time.stamp}.zip" filesonly="false">
+			<zipfileset dir="${jboss-5-jdk6.home}/bin" filemode="755" prefix="TelScale-SIP-Servlets-${mss.release.version}-jboss-as-${jboss-5.version}/bin">
 				<include name="*.sh" />
 			</zipfileset>			
-			<zipfileset dir="${jboss-5-jdk6.home}/bin" prefix="TelScale-SIP-Servlets-${mss.release.version}-jboss-${jboss-5.version}/bin">
+			<zipfileset dir="${jboss-5-jdk6.home}/bin" prefix="TelScale-SIP-Servlets-${mss.release.version}-jboss-as-${jboss-5.version}/bin">
 				<exclude name="*.sh" />
 			</zipfileset>			
-			<zipfileset dir="${jboss-5-jdk6.home}" prefix="TelScale-SIP-Servlets-${mss.release.version}-jboss-${jboss-5.version}" excludes="**/bin/** **/server/*/data/** **/server/*/log/** **/server/*/tmp/** **/server/*/work/** **/server/tmp/**"/>
+			<zipfileset dir="${jboss-5-jdk6.home}" prefix="TelScale-SIP-Servlets-${mss.release.version}-jboss-as-${jboss-5.version}" excludes="**/bin/** **/server/*/data/** **/server/*/log/** **/server/*/tmp/** **/server/*/work/** **/server/tmp/**"/>
 		</zip>
 	</target>
 
@@ -684,7 +845,7 @@
 	
 	<available file="${mms.zip.path}" property="got.mms" />
 	<target name="get-mms" unless="got.mms">
-		<echo>Downloading Mobicents Media Server</echo>
+		<echo>Downloading JBoss AS 5</echo>
 		<get dest="${mms.zip.path}" src="${mms.download.url}"/>
 	</target>
 	
@@ -708,7 +869,13 @@
 		<delete dir="${jboss-5-jdk6.home}/server/standard" includeemptydirs="true" failonerror="false" verbose="false"/>
 	</target>
 
-	<target name="extract-EAP-5.x">
+	<available file="${eap-5.distro.zip.path}" property="got.eap-5" />
+	<target name="get-eap-5" unless="got.eap-5">
+		<echo>Downloading EAP 5</echo>
+		<get dest="${eap-5.distro.zip.path}" src="${eap-5.download.url}"/>
+	</target>
+
+	<target name="extract-EAP-5.x" depends="get-eap-5">
 		<delete dir="${eap-5.home}" failonerror="true" />
 		<unzip src="${eap-5.distro.zip.path}" dest="${eap-5.home.temp}"/>
 		<move todir="${eap-5.home}">
@@ -721,11 +888,11 @@
 		<delete dir="${eap-5.home}/jboss-as/server/web" includeemptydirs="true" failonerror="false" verbose="false"/>
 		<delete dir="${eap-5.home}/jboss-as/server/standard" includeemptydirs="true" failonerror="false" verbose="false"/>
 		<delete dir="${eap-5.home}/jboss-as/server/all" includeemptydirs="true" failonerror="false" verbose="false"/>
-		<!-- unsigning EAP -->
+		<!-- unsigning EAP >
 		<exec executable="bash">
 		    <arg value="-c"/>
 		    <arg value="find ${eap-5.home} -name '*.jar' -print0 | xargs -0 -I JAR zip -d JAR META-INF/JBOSSCOD.*"/>
-		</exec>
+		</exec-->
 	</target>
 	
 	<target name="extract-mms" depends="get-mms">

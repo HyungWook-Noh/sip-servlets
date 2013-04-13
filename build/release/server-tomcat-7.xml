@@ -50,7 +50,7 @@
        Documentation at /docs/config/service.html
    -->
   <Service name="Sip-Servlets" 
-		sipPathName="org.mobicents.ext"  
+		sipPathName="org.mobicents.ha.balancing.only"  
   		className="org.mobicents.servlet.sip.startup.SipStandardService" 
   		sipApplicationDispatcherClassName="org.mobicents.servlet.sip.core.SipApplicationDispatcherImpl"  		
 		concurrencyControlMode="None" 
@@ -101,7 +101,7 @@
 	protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
 	signalingTransport="udp"/>
 	
-    <!-- Define the default TCP SIP Connector -->
+	<!-- Define the default TCP SIP Connector -->
     <Connector port="5080" 
 	     ipAddress = "127.0.0.1"
 	     protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
@@ -112,12 +112,6 @@
 	     ipAddress = "127.0.0.1"
 	     protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
 	     signalingTransport="tls"/>
-
-    <!-- Define the default WebSocket SIP Connector -->
-    <Connector port="5082" 
-	     ipAddress = "127.0.0.1"
-	     protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
-	     signalingTransport="ws"/>
 
     <!-- An Engine represents the entry point (within Catalina) that processes
          every request.  The Engine implementation for Tomcat stand alone

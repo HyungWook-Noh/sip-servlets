@@ -71,8 +71,8 @@
                                     <connectionUrl>${sip.balancer.connectionURL}</connectionUrl>
                                     <username>${checkout.username}</username>
                                     <password>${checkout.password}</password>
-				    <!--scmVersion>sip-balancer-1.5.0.FINAL</scmVersion>
-				    <scmVersionType>tag</scmVersionType-->
+				    <scmVersion>sip-balancer-1.5.0.FINAL</scmVersion>
+				    <scmVersionType>tag</scmVersionType>
                                 </configuration>
                             </execution>
                              <!--execution>

@@ -5,7 +5,7 @@
 	<property name="base.path" location="${ant.file.mobicents.sipservlets.release}/.." />
 	<property name="docs.stage.dir" location="${ant.file.mobicents.sipservlets.release}/../documentation" />
 	
-	<property name="mss.release.version" value="2.1.0-SNAPSHOT" />
+	<property name="mss.release.version" value="1.8.0-SNAPSHOT" />
 	<property name="mss.release.configurations" value="all,default" />
 	<property name="mss.release.configurations.jboss5" value="all,default" />
 	<property name="mss.release.configurations.jboss5.excluded" value="minimal,standard,web" />
@@ -17,12 +17,12 @@
 	<property name="jboss-5-jdk6.download.url" value="http://downloads.sourceforge.net/project/jboss/JBoss/JBoss-${jboss-5.version}/jboss-${jboss-5.version}-jdk6.zip" />
 	
 	<property name="tomcat.version" value="6.0.35" />
-	<property name="tomcat7.version" value="7.0.33" />
+	<property name="tomcat7.version" value="7.0.27" />
 	<property name="tomcat.download.url" value="http://archive.apache.org/dist/tomcat/tomcat-6/v${tomcat.version}/bin/apache-tomcat-${tomcat.version}.zip" />
 	<property name="tomcat7.download.url" value="http://archive.apache.org/dist/tomcat/tomcat-7/v${tomcat7.version}/bin/apache-tomcat-${tomcat7.version}.zip" />
 	
-	<property name="mms.version" value="3.0.0.CR1" />
-	<property name="mms.download.url" value="https://mediaserver.googlecode.com/files/${mms.version}.zip" />
+	<property name="mms.version" value="2.1.0.BETA3" />
+	<property name="mms.download.url" value="http://downloads.sourceforge.net/project/mobicents/Mobicents%20Media%20Server/${mms.version}/mms-server.zip" />
 	<property name="mms.zip.path" value="${base.path}/mobicents-media-server.zip" />
 	
 	<property name="embjopr.version" value="1.2.0.CR-JBAS4" />
@@ -70,12 +70,11 @@
 	
 	<!-- Release target -->
 	
-	<!--target name="release" depends="clean,build-documentation,release-tomcat7,release-tomcat,release-jboss-5-jdk6,make-src-zip" /-->
-	<target name="release" depends="clean,build-documentation,release-tomcat7,make-src-zip" />
+	<target name="release" depends="clean,build-documentation,release-tomcat7,release-tomcat,release-jboss-5-jdk6,make-src-zip" />
 	
 	<!-- Tomcat version -->
 	
-	<!--target name="release-tomcat" depends="extract-tomcat">
+	<target name="release-tomcat" depends="extract-tomcat">
 		<copy file="TOMCAT-SIP-SERVLETS-README.txt" todir="${tomcat.home}" />
 		
 		<mkdir dir="${tomcat.home}/conf/dars"/>
@@ -105,13 +104,13 @@
 			<param name="mss.home" value="${tomcat.home}"/>
 		</antcall>
 		<antcall target="make-final-zip-tomcat" />
-	</target-->
+	</target>
 	
 	<target name="release-tomcat7" depends="extract-tomcat7">
 			<copy file="TOMCAT-SIP-SERVLETS-README.txt" todir="${tomcat7.home}" />
 			
 			<mkdir dir="${tomcat7.home}/conf/dars"/>
-			<copy file="${base.path}/../../sip-servlets-examples/websocket-b2bua/websocket-dar.properties" tofile="${tomcat7.home}/conf/dars/mobicents-dar.properties" />
+			<copy file="${base.path}/dars/click2call-async-dar.properties" tofile="${tomcat7.home}/conf/dars/mobicents-dar.properties" />
 			
 			<copy file="${base.path}/server-tomcat-7.xml" tofile="${tomcat7.home}/conf/server.xml" overwrite="yes"/>
 			<copy file="${base.path}/mss-sip-stack.properties" tofile="${tomcat7.home}/conf/mss-sip-stack.properties" />
@@ -128,23 +127,11 @@
 			<copy tofile="${tomcat7.home}/webapps/Click2CallAsync.war">
 				<fileset dir="${base.path}/../../sip-servlets-examples/click-to-call-servlet3/target/" includes="Click2CallAsync.war" />
 			</copy>
-
-			<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-examples/websocket-b2bua">
-				<arg line="clean install -P set-git-hash" />
-			</exec>
-			
-			<copy tofile="${tomcat7.home}/webapps/websockets-sip-servlet.war">
-				<fileset dir="${base.path}/../../sip-servlets-examples/websocket-b2bua/target/" includes="websockets-sip-servlet-*.war" />
-			</copy>
 			
 			<antcall target="deploy-mgmnt">
 				<param name="management.deploy.folder" value="${tomcat7.home}/webapps" />
 			</antcall>
 			
-			<!--antcall target="build-mobicents-sip-load-balancer">
-				<param name="mss.home" value="${tomcat7.home}"/>
-			</antcall-->
-
 			<mkdir dir="${tomcat7.home}/docs" />
 			<antcall target="copy-documentation">
 				<param name="mss.home" value="${tomcat7.home}"/>
@@ -153,7 +140,7 @@
 		</target>
 	
 	<!-- JBoss 5 jdk6 version -->
-	<!--target name="release-jboss-5-jdk6" depends="extract-jboss-5-jdk6">
+	<target name="release-jboss-5-jdk6" depends="extract-jboss-5-jdk6">
 		<for delimiter="," param="jboss.config" list="${mss.release.configurations.jboss5}">
 			<sequential>
 				<ant dir="${base.path}" antfile="build.xml" target="release-jboss-5-node">
@@ -172,11 +159,11 @@
 		<copy tofile="${jboss-5-jdk6.home}/server/default/deploy/diameter-event-charging.war">
 			<fileset dir="${base.path}/../../sip-servlets-examples/diameter-event-charging/target/" includes="diameter-event-charging-*.war" />
 		</copy>
-		
+		<!-- include MMS 2.X -->
 		<antcall target="extract-mms">
 			<param name="mss.home" value="${jboss-5-jdk6.home}"/>
 		</antcall>
-		
+		<!-- include JSR309 media example -->
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-examples/media-jsr309-servlet">
 			<arg line="clean install -P set-git-hash" />
 		</exec>
@@ -190,7 +177,7 @@
 		<antcall target="copy-documentation">
 			<param name="mss.home" value="${jboss-5-jdk6.home}"/>
 		</antcall>
-		
+		<!-- include Click to Call example -->
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-examples/click-to-call">
 			<arg line="clean install -P set-git-hash" />
 		</exec>
@@ -225,19 +212,20 @@
 			<param name="node" value="${jboss.config}"/>
 		</antcall>
 		
-		<antcall target="build-mobicents-snmp">
+		<!-- only for telscale -->
+		<!--antcall target="build-mobicents-snmp">
 			<param name="mss.home" value="${mss.home}"/>
 			<param name="node" value="${jboss.config}"/>
-		</antcall>
+		</antcall-->
 				
 		<antcall target="deploy-mgmnt" >
 			<param name="management.deploy.folder" value="${mss.home}/server/${jboss.config}/deploy" />
 		</antcall>
 		
-		<commented out due to recurring wrong rhq files on hudson>		
-		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../jopr-plugin-as-5">
+		<!-- commented out due to recurring wrong rhq files on hudson -->		
+		<!--exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../jopr-plugin-as-5">
 			<arg line="clean install -DJBOSS_HOME=${mss.home} -Dnode=${jboss.config}" />
-		</exec>
+		</exec-->
 		<antcall target="deploy-mss-jopr-plugin-5"/>
 		
 		<condition property="ha.capable">
@@ -270,9 +258,8 @@
 		<copy tofile="${mss.home}/server/all/deploy/click2call-distributable.war">
 			<fileset dir="${base.path}/../../sip-servlets-examples/click2call-distributable/target/" includes="click2call-distributable-*.war" />
 		</copy>
-	
-		<copy overwrite="true" file="${base.path}/../../sip-servlets-examples/click2call-distributable/click2call-distributable-dar.properties" tofile="${mss.home}/server/${jboss.config}/conf/dars/mobicents-dar.properties"/>			
-	</target-->
+				
+	</target>
 	
 	<!-- MSS Management Console -->
 	
@@ -282,11 +269,6 @@
 			<arg line="clean install -P set-git-hash" />
 		</exec>
 		<copy file="${management.home}/target/sip-servlets-management.war" tofile="${management.deploy.folder}/sip-servlets-management.war"/>
-		<exec executable="wget" dir="${management.deploy.folder}">
-			<arg value="-O" />
-			<arg value="jolokia.war"/>
-			<arg value="http://labs.consol.de/maven/repository/org/jolokia/jolokia-war/1.1.0/jolokia-war-1.1.0.war"/>
-		</exec>
 	</target>
 	
 	<target name="deploy-mss-jopr-plugin-5">
@@ -436,7 +418,7 @@
 		
 		<copy todir="${release.path}/src/mobicents/servers/sip-servlets" includeEmptyDirs="false">
 			<fileset dir="${base.path}/../.."
-				includes="**/pom.xml **/sip-servlets-annotations/** **/docs/** **/sip-servlets-application-router/** **/sip-servlets-bootstrap/** **/containers/** **/sip-servlets-client/** **/sip-servlets-core-api/** **/sip-servlets-examples/** **/sip-servlets-impl/** **/sip-servlets-jruby/** **/management/** **/sip-servlets-spec/**"
+				includes="**/pom.xml **/sip-servlets-annotations/** **/sip-servlets-application-router/** **/sip-servlets-bootstrap/** **/sip-servlets-catalina/** **/sip-servlets-catalina-7/** **/sip-servlets-client/** **/sip-servlets-core-api/** **/sip-servlets-examples/** **/sip-servlets-impl/** **/sip-servlets-jboss5/** **/sip-servlets-jboss5-deployer/** **/sip-servlets-jboss5-ha-server-cache/** **/sip-servlets-jboss5-metadata/** **/sip-servlets-jruby/** **/sip-servlets-management/** **/sip-servlets-spec/** **/sip-servlets-tomcat-jboss4/** **/tomcat7/**"
 				excludes="**/mobicents-skin/** **/sip-servlets-bootstrap/src/site/** **/sip-servlets-impl/null/** **/www/**" />
 		</copy>
 		
@@ -540,7 +522,7 @@
 	
 	<available file="${mms.zip.path}" property="got.mms" />
 	<target name="get-mms" unless="got.mms">
-		<echo>Downloading Mobicents Media Server ${mms-version}</echo>
+		<echo>Downloading JBoss AS 5</echo>
 		<get dest="${mms.zip.path}" src="${mms.download.url}"/>
 	</target>
 	

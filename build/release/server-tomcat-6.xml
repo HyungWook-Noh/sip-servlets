@@ -51,7 +51,7 @@
        Documentation at /docs/config/service.html
    -->
   <Service name="Sip-Servlets" 
-		sipPathName="org.mobicents.ext"  
+		sipPathName="org.mobicents.ha.balancing.only"  
   		className="org.mobicents.servlet.sip.startup.SipStandardService" 
   		sipApplicationDispatcherClassName="org.mobicents.servlet.sip.core.SipApplicationDispatcherImpl"  				
 		congestionControlCheckingInterval="-1"
