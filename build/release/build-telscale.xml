@@ -445,15 +445,17 @@
 		<echo>Building JAIN SIP Docs</echo>
 
 		<exec executable="git">
-		    <arg value="clone" />		    
+		    <arg value="clone" />
+		    <arg value="-b" />
+		    <arg value="ts1" />		    
 		    <arg value="https://code.google.com/p/jain-sip.docs" />
 		    <arg value="${basedir}/target/dependencies/jain-sip.docs" />
 		</exec>
 
-		<exec executable="git" dir="${basedir}/target/dependencies/jain-sip.docs">		
+		<!--exec executable="git" dir="${basedir}/target/dependencies/jain-sip.docs">		
 		    <arg value="checkout" />
 		    <arg value="${tag.name}" />
-		</exec>
+		</exec-->
 
 		<exec executable="git">
 		    <arg value="clone" />		    
