@@ -457,7 +457,7 @@
 
 		<exec executable="git">
 		    <arg value="clone" />		    
-		    <arg value="https://code.google.com/p/jain-sip" />
+		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jsip.git" />
 		    <arg value="${basedir}/target/dependencies/jain-sip" />
 		</exec>
 
@@ -468,7 +468,7 @@
 
 		<exec executable="git">
 		    <arg value="clone" />		    
-		    <arg value="https://code.google.com/p/jain-sip.ext" />
+		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jsip-ext.git" />
 		    <arg value="${basedir}/target/dependencies/jain-sip.ext" />
 		</exec>
 
@@ -479,7 +479,7 @@
 
 		<exec executable="git">
 		    <arg value="clone" />		    
-		    <arg value="https://code.google.com/p/jain-sip.ha" />
+		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jsip-ha.git" />
 		    <arg value="${basedir}/target/dependencies/jain-sip.ha" />
 		</exec>
 
@@ -539,7 +539,7 @@
 		    <arg value="clone" />
 		    <arg value="-b" />
 		    <arg value="ts1" />
-		    <arg value="https://code.google.com/p/commscale.load-balancer" />
+		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-load-balancer.git" />
 		    <arg value="${basedir}/target/dependencies/sip-balancer" />
 		</exec>
 
@@ -587,8 +587,8 @@
 		<exec executable="git">
 		    <arg value="clone" />
 		    <arg value="-b" />
-		    <arg value="ts1" />
-		    <arg value="https://code.google.com/p/commscale.snmp-adaptor" />
+		    <arg value="ts1-old" />
+		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-snmp-adaptor.git" />
 		    <arg value="${basedir}/target/dependencies/snmp-adaptor" />
 		</exec>
 
