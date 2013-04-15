@@ -73,10 +73,10 @@
 	</licenses>
 	
 	<scm>
-		<connection>scm:git:https://code.google.com/p/sipservlets/</connection>
-		<developerConnection>scm:git:https://code.google.com/p/sipservlets/</developerConnection>
-		<url>https://code.google.com/p/sipservlets/</url>
-	</scm>
+                <connection>scm:git:git@bitbucket.org:telestax/telscale-sip-servlets.git</connection>
+                <developerConnection>scm:git:git@bitbucket.org:telestax/telscale-sip-servlets.git</developerConnection>
+                <url>https://bitbucket.org/telestax/telscale-sip-servlets</url>
+        </scm>
 
 	<modules>		
 		<module>sip-servlets-spec</module>

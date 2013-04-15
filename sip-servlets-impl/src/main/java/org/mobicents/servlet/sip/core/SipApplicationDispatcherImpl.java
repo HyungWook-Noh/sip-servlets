@@ -95,9 +95,7 @@ import javax.sip.message.Response;
 
 import org.apache.log4j.Logger;
 import org.mobicents.ext.javax.sip.dns.DNSServerLocator;
-import org.mobicents.ha.javax.sip.ClusteredSipStack;
 import org.mobicents.ha.javax.sip.LoadBalancerHeartBeatingListener;
-import org.mobicents.ha.javax.sip.LoadBalancerHeartBeatingService;
 import org.mobicents.ha.javax.sip.SipLoadBalancer;
 import org.mobicents.javax.servlet.CongestionControlEvent;
 import org.mobicents.javax.servlet.CongestionControlPolicy;
@@ -128,6 +126,9 @@ import org.mobicents.servlet.sip.message.TransactionApplicationData;
 import org.mobicents.servlet.sip.proxy.ProxyBranchImpl;
 import org.mobicents.servlet.sip.proxy.ProxyImpl;
 import org.mobicents.servlet.sip.router.ManageableApplicationRouter;
+
+import com.telscale.licensing.LicenseEnforcer;
+import com.telscale.licensing.LicenseEnforcerImpl;
 
 /**
  * Implementation of the SipApplicationDispatcher interface.
@@ -408,6 +409,8 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, S
 		if(logger.isDebugEnabled()) {
 			logger.debug("SipApplicationDispatcher Started");
 		}	
+		LicenseEnforcer enforcer = new LicenseEnforcerImpl();
+	    enforcer.validateLicense(true);
 	}	
 	
 	/*

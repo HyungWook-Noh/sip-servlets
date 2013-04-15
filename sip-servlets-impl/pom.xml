@@ -140,6 +140,13 @@
 			<artifactId>javolution</artifactId>
 			<version>${javolution.version}</version>			
 		</dependency>	
+		<!-- licensing dependencies -->
+		<dependency>
+			<groupId>com.telscale.licensing</groupId>
+			<artifactId>lce-core</artifactId>
+			<version>1.0.1.Final</version>
+			<classifier>jar-with-dependencies</classifier>
+		</dependency>	
 	</dependencies>
 
 	<build>
@@ -227,7 +234,7 @@
 									<goal> copy-dependencies </goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core</includeArtifactIds>
 									<outputDirectory>${CATALINA_HOME}/lib</outputDirectory>
 								</configuration>
 							</execution>
@@ -281,7 +288,7 @@
 									<goal> copy-dependencies </goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,concurrent,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,concurrent,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core</includeArtifactIds>
 									<outputDirectory>${env.CATALINA_HOME}/lib</outputDirectory>
 								</configuration>
 							</execution>
@@ -332,7 +339,7 @@
 									<goal> copy-dependencies </goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core</includeArtifactIds>
 									<outputDirectory>${CATALINA_HOME}/lib</outputDirectory>
 								</configuration>
 							</execution>
@@ -383,7 +390,7 @@
 									<goal> copy-dependencies </goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,concurrent,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,concurrent,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core</includeArtifactIds>
 									<outputDirectory>${env.CATALINA_HOME}/lib</outputDirectory>
 								</configuration>
 							</execution>
@@ -430,7 +437,7 @@
 									<goal>copy-dependencies</goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core</includeArtifactIds>
 									<outputDirectory>${env.JBOSS_HOME}/server/${node}/deploy/jboss-web.deployer</outputDirectory>
 								</configuration>
 							</execution>
@@ -476,7 +483,7 @@
 									<goal> copy-dependencies </goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core</includeArtifactIds>
 									<outputDirectory>${JBOSS_HOME}/server/${node}/deploy/jboss-web.deployer/</outputDirectory>
 								</configuration>
 							</execution>
@@ -524,7 +531,7 @@
 									<goal>copy-dependencies</goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core</includeArtifactIds>
 									<outputDirectory>${env.JBOSS_HOME}/server/${node}/deploy/jbossweb.sar</outputDirectory>
 								</configuration>
 							</execution>
@@ -571,7 +578,7 @@
 									<goal>copy-dependencies</goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core</includeArtifactIds>
 									<outputDirectory>${JBOSS_HOME}/server/${node}/deploy/jbossweb.sar</outputDirectory>
 								</configuration>
 							</execution>

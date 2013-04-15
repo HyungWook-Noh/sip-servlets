@@ -21,5 +21,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/sip-servlets-core-api"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/mobicents-jain-sip-ha-core"/>
 	<classpathentry kind="var" path="M2_REPO/commons-codec/commons-codec/1.5/commons-codec-1.5.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/telscale/licensing/lce-core/1.0.0.Final/lce-core-1.0.0.Final-jar-with-dependencies.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
