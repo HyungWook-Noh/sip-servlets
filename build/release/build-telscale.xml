@@ -95,7 +95,8 @@
 	
 	<target name="release-tomcat" depends="extract-tomcat">
 		<copy file="TOMCAT-SIP-SERVLETS-README.txt" todir="${tomcat.home}" />
-		
+		<copy file="${base.path}/telestax-license.xml" tofile="${tomcat.home}/conf/telestax-license.xml" />
+
 		<mkdir dir="${tomcat.home}/conf/dars"/>
 		<copy file="${base.path}/dars/click2call-dar.properties" tofile="${tomcat.home}/conf/dars/mobicents-dar.properties" />
 		
@@ -134,7 +135,8 @@
 	
 	<target name="release-tomcat7" depends="extract-tomcat7">
 			<copy file="TOMCAT-SIP-SERVLETS-README.txt" todir="${tomcat7.home}" />
-			
+			<copy file="${base.path}/telestax-license.xml" tofile="${tomcat7.home}/conf/telestax-license.xml" />
+
 			<mkdir dir="${tomcat7.home}/conf/dars"/>
 			<copy file="${base.path}/dars/click2call-async-dar.properties" tofile="${tomcat7.home}/conf/dars/mobicents-dar.properties" />
 			
@@ -295,6 +297,7 @@
 	
 	<target name="release-jboss-5-node">
 		<echo message="MSS_HOME= ${mss.home}"/>
+		<copy file="${base.path}/telestax-license.xml" tofile="${mss.home}/server/${jboss.config}/conf/telestax-license.xml" />
 		<mkdir dir="${mss.home}/server/${jboss.config}/conf/dars" />
 		<copy file="${base.path}/dars/click2call-dar.properties" overwrite="true" tofile="${mss.home}/server/${jboss.config}/conf/dars/mobicents-dar.properties" />
 		<copy file="${base.path}/mss-sip-stack-jboss-5.properties" overwrite="true" tofile="${mss.home}/server/${jboss.config}/conf/mss-sip-stack.properties" />
