@@ -568,6 +568,8 @@
 		</copy>		
 		<copy file="${base.path}/target/dependencies/sip-balancer/jar/src/test/resources/lb-configuration.properties"
 			tofile="${mss.home}/sip-balancer/lb-configuration.properties" />
+		<copy file="${base.path}/target/dependencies/sip-balancer/jar/src/test/resources/lb-log4j.xml"
+			tofile="${mss.home}/sip-balancer/lb-log4j.xml" />
 	</target>
 	
 	<target name="build-mobicents-sglc" depends="get-deps">
