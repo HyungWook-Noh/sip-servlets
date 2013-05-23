@@ -38,6 +38,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -99,6 +100,7 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 	protected static final String INVALIDATION_POLICY = "ip";	
 	protected static final String CREATION_TIME = "ct";
 	protected static final String SIP_APPLICATION_SESSION_TIMEOUT = "sast";
+	protected static final String EXPIRATION_TIME = "et";
 	
 	protected static final boolean ACTIVITY_CHECK = 
 	      Globals.STRICT_SERVLET_COMPLIANCE
@@ -732,6 +734,21 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 			}
 			sipApplicationSessionTimeout = sasTimeout;
 		}
+		
+		//Fix for bitbucket issue 5: https://bitbucket.org/telestax/telscale-sip-servlets/issue/5/when-sipapplicationsession-is-activated-to
+		Long sasExpirationTime = (Long) md.getMetaData().get(EXPIRATION_TIME);
+		if(sasExpirationTime != null && sasExpirationTime > System.currentTimeMillis() && expirationTimerTask == null){
+			expirationTime = sasExpirationTime;
+			if(logger.isDebugEnabled()) {
+				logger.debug("Setting expirationTime to "+ expirationTime + " on sip application session " + key);
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTimeInMillis(expirationTime);
+				logger.debug("sip application session "+ key +" will expires at " + new SimpleDateFormat().format(calendar.getTime()));
+			}
+			expirationTimerTask = sipContext.getSipApplicationSessionTimerService().createSipApplicationSessionTimerTask(this);
+			expirationTimerTask = sipContext.getSipApplicationSessionTimerService().schedule(expirationTimerTask, expirationTime, TimeUnit.MILLISECONDS);
+		} 
+		
 		setLastAccessedTime(ts);
 		this.timestamp.set(ts);
 		
@@ -1461,6 +1478,7 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 		int expires = super.setExpires(deltaMinutes);
 		sessionMetadataDirty();
 		metadata.getMetaData().put(SIP_APPLICATION_SESSION_TIMEOUT, sipApplicationSessionTimeout);
+		metadata.getMetaData().put(EXPIRATION_TIME, expirationTime);
 		return expires;
 	}
 	
