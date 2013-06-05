@@ -94,6 +94,7 @@
 		<mobicents.balancer.version>6.1.3-TelScale-SNAPSHOT</mobicents.balancer.version>
 		<mobicents.jain.sip.ha.version>6.1.3-TelScale-SNAPSHOT</mobicents.jain.sip.ha.version>
 		<mobicents.jain.sip.ext.version>6.1.3-TelScale-SNAPSHOT</mobicents.jain.sip.ext.version>		
+		<mobicents.commons.version>6.1.3-TelScale-SNAPSHOT</mobicents.commons.version>	
 	</properties>
 	
 	<dependencies>
