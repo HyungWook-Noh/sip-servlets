@@ -144,7 +144,7 @@
 		<dependency>
 			<groupId>com.telscale.licensing</groupId>
 			<artifactId>lce-core</artifactId>
-			<version>1.0.1.Final</version>
+			<version>1.0.3.Final</version>
 			<classifier>jar-with-dependencies</classifier>
 		</dependency>	
 	</dependencies>
