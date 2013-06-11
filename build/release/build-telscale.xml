@@ -8,7 +8,7 @@
 	<property name="mss.version" value="6.1.3.GA" />
 	<property name="tag.name" value="ts113ga" />
 	<property name="mss.release.version" value="${mss.version}" />
-	<property name="mss.management.version" value="${mss.version}-TelScale-SNAPSHOT" />
+	<property name="mss.management.version" value="6.1.3-TelScale-SNAPSHOT" />
 	<property name="mss.snmp.version" value="6.1.2.GA-TelScale" />
 	<property name="snmp.tag.name" value="ts112ga" />
 	<property name="mss.release.configurations" value="all,default" />
@@ -695,7 +695,7 @@
 		</copy>
 		<mkdir dir="${mss.home}/docs/mobicents-sip-servlets/jsr-289-api"/>
 		<copy overwrite="true" todir="${mss.home}/docs/mobicents-sip-servlets/jsr-289-api">
-			<fileset dir="../../../sip-servlets/build/jsr289-apidocs/" />
+			<fileset dir="../jsr289-apidocs/" />
 		</copy>
 		<mkdir dir="${mss.home}/docs/mobicents-sip-servlets/jsr-289-api-extensions"/>
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-client">
