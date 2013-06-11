@@ -5,11 +5,12 @@
 	<property name="base.path" location="${ant.file.mobicents.sipservlets.release}/.." />
 	<property name="docs.stage.dir" location="${ant.file.mobicents.sipservlets.release}/../documentation" />
 	
-	<property name="mss.version" value="6.1.3" />
-	<property name="tag.name" value="ts112ga" />
-	<property name="mss.release.version" value="${mss.version}-SNAPSHOT" />
+	<property name="mss.version" value="6.1.3.GA" />
+	<property name="tag.name" value="ts113ga" />
+	<property name="mss.release.version" value="${mss.version}" />
 	<property name="mss.management.version" value="${mss.version}-TelScale-SNAPSHOT" />
 	<property name="mss.snmp.version" value="6.1.2.GA-TelScale" />
+	<property name="snmp.tag.name" value="ts112ga" />
 	<property name="mss.release.configurations" value="all,default" />
 	<property name="mss.release.configurations.jboss5" value="all,default" />
 	<property name="mss.release.configurations.jboss5.excluded" value="minimal,standard,web" />
@@ -89,7 +90,7 @@
 	<!-- Release target -->
 	
 	<!--target name="release" depends="clean,build-documentation,release-EAP-5.x,release-tomcat,release-jboss-5-jdk6,make-src-zip" /-->
-	<target name="release" depends="clean,build-documentation,build-jain-sip-docs,release-EAP-5.x,release-jboss-5-jdk6,release-tomcat7,release-tomcat,make-src-zip" />
+	<target name="release" depends="clean,build-documentation,build-jain-sip-docs,release-jboss-5-jdk6,release-EAP-5.x,release-tomcat7,release-tomcat,make-src-zip" />
 	
 	<!-- Tomcat version -->
 	
@@ -450,7 +451,7 @@
 		<exec executable="git">
 		    <arg value="clone" />
 		    <arg value="-b" />
-		    <arg value="ts1" />		    
+		    <arg value="ts1-doc" />		    
 		    <arg value="https://code.google.com/p/jain-sip.docs" />
 		    <arg value="${basedir}/target/dependencies/jain-sip.docs" />
 		</exec>
@@ -496,15 +497,15 @@
 		<ant dir="${basedir}/target/dependencies/jain-sip" antfile="${basedir}/target/dependencies/jain-sip/build.xml" target="javadoc"/>		
 
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/jain-sip.docs">
-			<arg line="clean install -P set-git-hash,maven-release,telscale -Dmaven.test.skip=true" />
+			<arg line="clean install -P set-git-hash,maven-release,telscale -Dmaven.test.skip=true -Dproject.build.sourceEncoding=UTF-8" />
 		</exec>
 
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/jain-sip.ext">
-			<arg line="package javadoc:javadoc" />
+			<arg line="package javadoc:javadoc -Dmaven.test.skip=true -Dproject.build.sourceEncoding=UTF-8" />
 		</exec>
 
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/jain-sip.ha">
-			<arg line="package javadoc:javadoc" />
+			<arg line="package javadoc:javadoc -Dmaven.test.skip=true -Dproject.build.sourceEncoding=UTF-8" />
 		</exec>
 	</target>
 
@@ -603,7 +604,7 @@
 
 		<exec executable="git" dir="${basedir}/target/dependencies/snmp-adaptor">		
 		    <arg value="checkout" />
-		    <arg value="${tag.name}" />
+		    <arg value="${snmp.tag.name}" />
 		</exec>
 
 		<echo message="jboss.home= ${mss.home}"/>
@@ -648,6 +649,10 @@
 			<arg value="-Dpackaging=jar"/>
 		</exec>
 
+		<echo message="node= ${node}"/>
+		<echo message="mss.home= ${mss.home}"/>
+		<echo message="distro= ${distro}"/>
+
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/snmp-adaptor/adaptor">
 			<arg line="clean install -Dmaven.test.skip=true -Djboss.home=${mss.home} -Dnode=${node}" />
 		</exec>			
@@ -680,7 +685,7 @@
 		<echo>Building documentation</echo>
 
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../docs">
-			<arg line="clean install -P telscale" />
+			<arg line="clean install -P telscale -Dproject.build.sourceEncoding=UTF-8" />
 		</exec>
 	</target>
 	
