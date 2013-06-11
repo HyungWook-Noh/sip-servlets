@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip.examples</groupId>
 		<artifactId>shopping-demo-parent-jsr309</artifactId>
-		<version>6.1.3.GA-TelScale</version>
+		<version>6.1.4-TelScale-SNAPSHOT</version>
 	</parent>
 	<artifactId>shopping-demo-business-jsr309</artifactId>
 	<packaging>jar</packaging>
