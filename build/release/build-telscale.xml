@@ -5,10 +5,10 @@
 	<property name="base.path" location="${ant.file.mobicents.sipservlets.release}/.." />
 	<property name="docs.stage.dir" location="${ant.file.mobicents.sipservlets.release}/../documentation" />
 	
-	<property name="mss.version" value="6.1.3.GA" />
+	<property name="mss.version" value="6.1.4" />
 	<property name="tag.name" value="ts113ga" />
-	<property name="mss.release.version" value="${mss.version}" />
-	<property name="mss.management.version" value="${mss.version}-TelScale" />
+	<property name="mss.release.version" value="${mss.version}-TelScale-SNAPHOT" />
+	<property name="mss.management.version" value="${mss.version}-TelScale-SNAPSHOT" />
 	<property name="mss.snmp.version" value="6.1.2.GA-TelScale" />
 	<property name="snmp.tag.name" value="ts112ga" />
 	<property name="mss.release.configurations" value="all,default" />
@@ -96,7 +96,7 @@
 	
 	<target name="release-tomcat" depends="extract-tomcat">
 		<copy file="TOMCAT-SIP-SERVLETS-README.txt" todir="${tomcat.home}" />
-		<copy file="${base.path}/telestax-license.xml" tofile="${tomcat.home}/conf/telestax-license.xml" />
+		<copy file="${base.path}/telestax-license.xml" tofile="${tomcat.home}/bin/telestax-license.xml" />
 
 		<mkdir dir="${tomcat.home}/conf/dars"/>
 		<copy file="${base.path}/dars/click2call-dar.properties" tofile="${tomcat.home}/conf/dars/mobicents-dar.properties" />
@@ -136,7 +136,7 @@
 	
 	<target name="release-tomcat7" depends="extract-tomcat7">
 			<copy file="TOMCAT-SIP-SERVLETS-README.txt" todir="${tomcat7.home}" />
-			<copy file="${base.path}/telestax-license.xml" tofile="${tomcat7.home}/conf/telestax-license.xml" />
+			<copy file="${base.path}/telestax-license.xml" tofile="${tomcat7.home}/bin/telestax-license.xml" />
 
 			<mkdir dir="${tomcat7.home}/conf/dars"/>
 			<copy file="${base.path}/dars/click2call-async-dar.properties" tofile="${tomcat7.home}/conf/dars/mobicents-dar.properties" />
@@ -413,7 +413,7 @@
 		</exec>		
 		<move verbose="true" failonerror="false" file="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin-2.3.0.EmbJopr.1.2.0-1.jar" tofile="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin-2.3.0.EmbJopr.1.2.0-1.jar.bak" />
 		<move verbose="true" failonerror="false" file="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin.jar" tofile="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin.jar.bak" />
-		<copy overwrite="true" file="${base.path}/../../management/eap-plugin-as-5/target/jopr-mobicents-sip-servlets-as-5-plugin-${mss.management.version}.jar" tofile="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-mobicents-sip-servlets-as-5-plugin-${mss.management.version}.jar" />
+		<copy overwrite="true" file="${base.path}/../../management/eap-plugin-as-5/target/jopr-mobicents-sip-servlets-eap-5-plugin-${mss.management.version}.jar" tofile="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-mobicents-sip-servlets-as-5-plugin-${mss.management.version}.jar" />
 		<!--get dest="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/rhq-jmx-plugin-1.2.0.GA.jar" src="${jopr-jmx-plugin-5.url}"/-->
 	</target>
 	
