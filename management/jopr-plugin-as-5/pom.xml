@@ -5,11 +5,11 @@
 	<parent>
         	<artifactId>mobicents-parent</artifactId>
         	<groupId>org.mobicents</groupId>
-        	<version>6.1.3-TelScale-SNAPSHOT</version>
+        	<version>6.1.3.GA-TelScale</version>
    	 </parent>
 	<groupId>org.mobicents.servlet.sip.management</groupId>
 	<artifactId>jopr-mobicents-sip-servlets-as-5-plugin</artifactId>
-	<version>6.1.3-TelScale-SNAPSHOT</version>
+	<version>6.1.4-TelScale-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Jopr Mobicents Sip Servlets Plugin For JBoss 5</name>
