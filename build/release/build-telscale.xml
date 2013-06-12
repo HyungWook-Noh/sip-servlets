@@ -695,7 +695,7 @@
 		</copy>
 		<mkdir dir="${mss.home}/docs/mobicents-sip-servlets/jsr-289-api"/>
 		<copy overwrite="true" todir="${mss.home}/docs/mobicents-sip-servlets/jsr-289-api">
-			<fileset dir="../jsr289-apidocs/" />
+			<fileset dir="../../../sip-servlets/build/jsr289-apidocs/" />
 		</copy>
 		<mkdir dir="${mss.home}/docs/mobicents-sip-servlets/jsr-289-api-extensions"/>
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-client">
