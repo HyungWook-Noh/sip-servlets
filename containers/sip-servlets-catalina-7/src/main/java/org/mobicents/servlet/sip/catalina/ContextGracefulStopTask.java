@@ -33,22 +33,24 @@ import org.mobicents.servlet.sip.core.SipContext;
  */
 public class ContextGracefulStopTask implements Runnable {
 	private static final Logger logger = Logger.getLogger(ContextGracefulStopTask.class);		
-	
+	public Boolean isDone = false;
 	Context sipContext;
-	
-	public ContextGracefulStopTask(Context context) {
+	long timeToWait;
+
+	public ContextGracefulStopTask(Context context, long timeToWait) {
 		sipContext = context;
+		this.timeToWait = timeToWait;
 	}
-	
-	public void run() {
+
+	public void run() {		
 		int numberOfActiveSipApplicationSessions = ((SipContext)sipContext).getSipManager().getActiveSipApplicationSessions();
 		int numberOfActiveHttpSessions = sipContext.getManager().getActiveSessions();
 		if(logger.isTraceEnabled()) {
 			logger.trace("ContextGracefulStopTask running for context " + sipContext.getName() + ", number of Sip Application Sessions still active " + numberOfActiveSipApplicationSessions + " number of HTTP Sessions still active " + numberOfActiveHttpSessions);
 		}
-		if(numberOfActiveSipApplicationSessions <= 0 &&  numberOfActiveHttpSessions <= 0) {
+		if((numberOfActiveSipApplicationSessions <= 0 &&  numberOfActiveHttpSessions <= 0) || timeToWait > 0) {
 			try {
-				((StandardContext)sipContext).stop();
+				((StandardContext)sipContext).stop();					
 			} catch (LifecycleException e) {
 				logger.error("Couldn't gracefully stop context " + sipContext.getName(), e);
 			}

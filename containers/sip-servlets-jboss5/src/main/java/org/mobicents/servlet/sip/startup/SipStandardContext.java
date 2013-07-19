@@ -1,6 +1,6 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
+ * JBoss, Home of Professional Open Source
+ * Copyright 2011, Red Hat, Inc. and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -23,20 +23,19 @@
 package org.mobicents.servlet.sip.startup;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import javax.naming.NamingException;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -48,7 +47,6 @@ import javax.servlet.sip.SipServletListener;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.TimerService;
 
-import org.apache.AnnotationProcessor;
 import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Globals;
@@ -61,14 +59,7 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.log4j.Logger;
-import org.jboss.web.tomcat.service.session.distributedcache.spi.BatchingManager;
-import org.jboss.web.tomcat.service.session.distributedcache.spi.OutgoingDistributableSessionData;
-import org.jboss.web.tomcat.service.session.distributedcache.spi.sip.DistributedCacheConvergedSipManager;
-import org.jboss.web.tomcat.service.session.sip.ClusteredSipApplicationSession;
-import org.jboss.web.tomcat.service.session.sip.ClusteredSipManager;
-import org.jboss.web.tomcat.service.session.sip.ClusteredSipSession;
-import org.jboss.web.tomcat.service.session.sip.ConvergedSessionReplicationContext;
-import org.jboss.web.tomcat.service.session.sip.SnapshotSipManager;
+import org.apache.tomcat.InstanceManager;
 import org.mobicents.servlet.sip.SipConnector;
 import org.mobicents.servlet.sip.annotation.ConcurrencyControlMode;
 import org.mobicents.servlet.sip.catalina.CatalinaSipContext;
@@ -80,6 +71,7 @@ import org.mobicents.servlet.sip.catalina.SipDeploymentException;
 import org.mobicents.servlet.sip.catalina.SipSecurityConstraint;
 import org.mobicents.servlet.sip.catalina.SipServletImpl;
 import org.mobicents.servlet.sip.catalina.SipStandardManager;
+import org.mobicents.servlet.sip.catalina.annotations.SipInstanceManager;
 import org.mobicents.servlet.sip.catalina.security.SipSecurityUtils;
 import org.mobicents.servlet.sip.catalina.security.authentication.DigestAuthenticator;
 import org.mobicents.servlet.sip.core.MobicentsSipServlet;
@@ -99,8 +91,6 @@ import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.core.session.MobicentsSipSession;
 import org.mobicents.servlet.sip.core.session.SipApplicationSessionCreationThreadLocal;
 import org.mobicents.servlet.sip.core.session.SipSessionsUtilImpl;
-import org.mobicents.servlet.sip.core.timers.FaultTolerantSasTimerService;
-import org.mobicents.servlet.sip.core.timers.FaultTolerantTimerServiceImpl;
 import org.mobicents.servlet.sip.core.timers.ProxyTimerService;
 import org.mobicents.servlet.sip.core.timers.ProxyTimerServiceImpl;
 import org.mobicents.servlet.sip.core.timers.SipApplicationSessionTimerService;
@@ -150,6 +140,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	protected transient MobicentsSipLoginConfig sipLoginConfig;
 	protected transient SipSecurityUtils sipSecurityUtils;
 	protected transient SipDigestAuthenticator sipDigestAuthenticator;
+	protected transient String securityDomain;
 	
 	protected boolean hasDistributableManager;
 	
@@ -209,8 +200,8 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 
 	@Override
 	public void init() throws Exception {
-		if(logger.isInfoEnabled()) {
-			logger.info("Initializing the sip context");
+		if(logger.isDebugEnabled()) {
+			logger.debug("Initializing the sip context");
 		}
 //		if (this.getParent() != null) {
 //			// Add the main configuration listener for sip applications
@@ -227,8 +218,8 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		
 		prepareServletContext();
 		
-		if(logger.isInfoEnabled()) {
-			logger.info("sip context Initialized");
+		if(logger.isDebugEnabled()) {
+			logger.debug("sip context Initialized");
 		}	
 	}
 
@@ -246,24 +237,28 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		this.getServletContext().setAttribute(javax.servlet.sip.SipServlet.SIP_FACTORY,
 				sipFactoryFacade);
 		if(timerService == null) {
-			if(getDistributable() && hasDistributableManager) {
-				if(logger.isInfoEnabled()) {
-					logger.info("Using the Fault Tolerant Timer Service to schedule fault tolerant timers in a distributed environment");
-				}
-				timerService = new FaultTolerantTimerServiceImpl((DistributableSipManager)getSipManager());
-			} else {
-				timerService = new TimerServiceImpl(sipApplicationDispatcher.getSipService());
-			}
+// FIXME: distributable not supported
+//			if(getDistributable() && hasDistributableManager) {
+//				if(logger.isInfoEnabled()) {
+//					logger.info("Using the Fault Tolerant Timer Service to schedule fault tolerant timers in a distributed environment");
+//				}
+//				timerService = new FaultTolerantTimerServiceImpl((DistributableSipManager)getSipManager());
+//			} else {
+//				timerService = new TimerServiceImpl();
+//			}
+			timerService = new TimerServiceImpl(sipApplicationDispatcher.getSipService());
 		}
 		if(proxyTimerService == null) {
 			proxyTimerService = new ProxyTimerServiceImpl();
 		}
 		if(sasTimerService == null || !sasTimerService.isStarted()) {
-			if(getDistributable() && hasDistributableManager) {
-				sasTimerService = new FaultTolerantSasTimerService((DistributableSipManager)getSipManager(), 4);
-			} else {
-				sasTimerService = new StandardSipApplicationSessionTimerService();
-			}
+// FIXME: distributable not supported
+//distributable			if(getDistributable() && hasDistributableManager) {
+//				sasTimerService = new FaultTolerantSasTimerService((DistributableSipManager)getSipManager(), 4);
+//			} else {
+//				sasTimerService = new StandardSipApplicationSessionTimerService();
+//			}
+			sasTimerService = new StandardSipApplicationSessionTimerService();
 		}
 		this.getServletContext().setAttribute(javax.servlet.sip.SipServlet.TIMER_SERVICE,
 				timerService);
@@ -301,8 +296,8 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 
 	@Override
 	public synchronized void start() throws LifecycleException {
-		if(logger.isInfoEnabled()) {
-			logger.info("Starting the sip context");
+		if(logger.isDebugEnabled()) {
+			logger.debug("Starting the sip context " + getName());
 		}
 		if( initialized ) { 
 			prepareServletContext();
@@ -341,8 +336,8 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
         	// due to refactoring on http://code.google.com/p/mobicents/issues/detail?id=2794
         	// we set the container on the manager right before the start and after the context have been init-ed
 			hasDistributableManager = true;				
-			if(logger.isInfoEnabled()) {
-				logger.info("this context contains a manager that allows applications to work in a distributed environment");
+			if(logger.isDebugEnabled()) {
+				logger.debug("this context contains a manager that allows applications to work in a distributed environment");
 			}			
 			((SipManager)getManager()).setMobicentsSipFactory(
 					(sipApplicationDispatcher.getSipFactory()));
@@ -372,26 +367,26 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 			if(manager instanceof DistributableSipManager) {
 				// only call the setContainer on the manager when it has been fully initialized
 				hasDistributableManager = true;				
-				if(logger.isInfoEnabled()) {
-					logger.info("this context contains a manager that allows applications to work in a distributed environment");
+				if(logger.isDebugEnabled()) {
+					logger.debug("this context contains a manager that allows applications to work in a distributed environment");
 				}
 				((SipManager)getManager()).setMobicentsSipFactory(
 						(sipApplicationDispatcher.getSipFactory()));
 				((CatalinaSipManager)manager).setContainer(this);	
 			}
-			if(logger.isInfoEnabled()) {
-				logger.info("sip application session timeout for this context is " + sipApplicationSessionTimeout + " minutes");
+			if(logger.isDebugEnabled()) {
+				logger.debug("sip application session timeout for this context is " + sipApplicationSessionTimeout + " minutes");
 			}
 			
-			if(logger.isInfoEnabled()) {
-				logger.info("http session timeout for this context is " + getSessionTimeout() + " minutes");
+			if(logger.isDebugEnabled()) {
+				logger.debug("http session timeout for this context is " + getSessionTimeout() + " minutes");
 			}
-			if(logger.isInfoEnabled()) {
-				logger.info("sip context started");
+			if(logger.isDebugEnabled()) {
+				logger.debug("sip context started " + getName());
 			}
 		} else {
 			if(logger.isInfoEnabled()) {
-				logger.info("sip context didn't started due to errors");
+				logger.info("sip context " + getName() + " didn't started due to errors");
 			}
 		}
 										
@@ -408,14 +403,16 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
         return ((ConvergedApplicationContext)context).getFacade();
 
     }
-	
+
+	// AS7 invokes this before listenerStart()
 	@Override
-	public boolean listenerStart() {
-		boolean ok = super.listenerStart();
+    public boolean contextListenerStart() {
+		boolean ok = super.contextListenerStart();
 		//the web listeners couldn't be started so we don't even try to load the sip ones
 		if(!ok) {
 			return ok;
 		}
+
 		if (logger.isDebugEnabled())
             logger.debug("Configuring sip listeners");
 
@@ -425,7 +422,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
         if(!ok) {
 			return ok;
 		}
-        
+
         List<ServletContextListener> servletContextListeners = sipListeners.getServletContextListeners();
         if (servletContextListeners != null) {
             ServletContextEvent event =
@@ -449,9 +446,24 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
                 // TODO Annotation processing                 
             }
         }
+
+        return (ok);
+
+    }
+
+	@Override
+	public boolean listenerStart() {
+		boolean ok = super.listenerStart();
+		//the web listeners couldn't be started so we don't even try to load the sip ones
+		if(!ok) {
+			return ok;
+		}
+		if (logger.isDebugEnabled())
+            logger.debug("Configuring sip listeners");
+
         return ok;
 	}
-	
+
 	@Override
 	public boolean listenerStop() {
 		boolean ok = super.listenerStop();
@@ -521,7 +533,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	@Override
 	public synchronized void stop() throws LifecycleException {
 		if(logger.isInfoEnabled()) {
-			logger.info("Stopping the sip context");
+			logger.info("Stopping the sip context " + getName());
 		}
 		if(manager instanceof SipManager) {
 			((SipManager)manager).dumpSipSessions();
@@ -560,7 +572,17 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		// Issue 1478 : nullify the ref to avoid reusing it
 		timerService = null;
 		getServletContext().setAttribute(javax.servlet.sip.SipServlet.TIMER_SERVICE, null);
-		logger.info("sip context stopped");
+		// Issue 48 (https://bitbucket.org/telestax/telscale-sip-servlets/issue/48/sipstandardservice-stopgracefuly-for)
+		if(gracefulStopFuture != null) {
+			gracefulStopFuture.cancel(false);
+			gracefulStopFuture = null;
+			if(logger.isDebugEnabled()) {
+				logger.debug("context graceful task cancelled " + getName());
+			}
+		}
+		if(logger.isInfoEnabled()) {
+			logger.info("sip context stopped " + getName());
+		}
 	}
 
 	@Override
@@ -738,6 +760,16 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public void removeConstraint(SipSecurityConstraint securityConstraint) {
 		super.removeConstraint(securityConstraint);
 	}
+	
+
+	public void setSecurityDomain(String securityDomain) {
+		this.securityDomain = securityDomain;
+	}
+	
+	public String getSecurityDomain() {
+		return securityDomain;
+	}
+
 	
 	/* (non-Javadoc)
 	 * @see org.mobicents.servlet.sip.startup.SipContext#getSmallIcon()
@@ -981,33 +1013,33 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		return info;
 	}
 
-	public AnnotationProcessor getAnnotationProcessor() {
-		// TODO Auto-generated method stub
-		return new DummyAnnotationProcessor();
-	}
+//	public AnnotationProcessor getAnnotationProcessor() {
+//		// TODO Auto-generated method stub
+//		return new DummyAnnotationProcessor();
+//	}
 	
 // ----------------------------------------------- DummyAnnotationProcessor Inner Class
     
     
-    protected class DummyAnnotationProcessor implements AnnotationProcessor {
-
-        public void postConstruct(Object instance)
-                throws IllegalAccessException, InvocationTargetException {
-            // Do nothing
-        }
-
-        public void preDestroy(Object instance) throws IllegalAccessException,
-                InvocationTargetException {
-            getInstanceManager().destroyInstance(instance);
-        }
-
-        public void processAnnotations(Object instance)
-                throws IllegalAccessException, InvocationTargetException,
-                NamingException {
-            getInstanceManager().newInstance(instance);
-        }
-        
-    }
+//    protected class DummyAnnotationProcessor implements AnnotationProcessor {
+//
+//        public void postConstruct(Object instance)
+//                throws IllegalAccessException, InvocationTargetException {
+//            // Do nothing
+//        }
+//
+//        public void preDestroy(Object instance) throws IllegalAccessException,
+//                InvocationTargetException {
+//            getInstanceManager().destroyInstance(instance);
+//        }
+//
+//        public void processAnnotations(Object instance)
+//                throws IllegalAccessException, InvocationTargetException,
+//                NamingException {
+//            getInstanceManager().newInstance(instance);
+//        }
+//        
+//    }
 
     /*
      * (non-Javadoc)
@@ -1115,15 +1147,16 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	 */
     public boolean enterSipAppHa(boolean startCacheActivity) {
     	boolean batchStarted = false;
-		if(getDistributable() && hasDistributableManager) {
-			batchStarted = startBatchTransaction();
-//			if(bindSessions) {
-//				ConvergedSessionReplicationContext.enterSipappAndBindSessions(sipApplicationSession,
-//				getSipManager(), startCacheActivity);
-//			} else {
-				ConvergedSessionReplicationContext.enterSipapp(null, null, startCacheActivity);
-//			}
-		}
+// FIXME: distributable not supported
+//		if(getDistributable() && hasDistributableManager) {
+//			batchStarted = startBatchTransaction();
+////			if(bindSessions) {
+////				ConvergedSessionReplicationContext.enterSipappAndBindSessions(sipApplicationSession,
+////				getSipManager(), startCacheActivity);
+////			} else {
+//				ConvergedSessionReplicationContext.enterSipapp(null, null, startCacheActivity);
+////			}
+//		}
 		return batchStarted;
 	}
 	
@@ -1131,86 +1164,89 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
      * (non-Javadoc)
      * @see org.mobicents.servlet.sip.startup.SipContext#exitSipAppHa(org.mobicents.servlet.sip.message.SipServletRequestImpl, org.mobicents.servlet.sip.message.SipServletResponseImpl, boolean)
      */
-	public void exitSipAppHa(MobicentsSipServletRequest request, MobicentsSipServletResponse response, boolean batchStarted) {		
-		if (getDistributable() && hasDistributableManager) {
-			if(logger.isDebugEnabled()) {
-				if(request != null) {
-					logger.debug("We are now after the servlet invocation for request " + request + ", We replicate no matter what " );
-				} else if (response != null) {
-					logger.debug("We are now after the servlet invocation for request " + response + ", We replicate no matter what " );
-				} else {
-					logger.debug("We are now after the servlet invocation, We replicate no matter what " );
-				}
-			}
-			try {
-				ConvergedSessionReplicationContext ctx = ConvergedSessionReplicationContext
-						.exitSipapp();
-
-				final SnapshotSipManager snapshotSipManager = ctx.getSoleSnapshotSipManager();
-				if(logger.isDebugEnabled()) {
-					logger.debug("Snapshot Manager " + snapshotSipManager);
-				}
-				if (snapshotSipManager != null) {
-					Set<ClusteredSipSession<? extends OutgoingDistributableSessionData>> sipSessions = ctx.getSipSessions();
-					for (ClusteredSipSession<? extends OutgoingDistributableSessionData> clusteredSipSession : sipSessions) {
-						snapshotSipManager.snapshot(clusteredSipSession);
-					}
-					Set<ClusteredSipApplicationSession<? extends OutgoingDistributableSessionData>> sipApplicationSessions = ctx.getSipApplicationSessions();
-					for (ClusteredSipApplicationSession<? extends OutgoingDistributableSessionData> clusteredSipApplicationSession : sipApplicationSessions) {
-						snapshotSipManager.snapshot(clusteredSipApplicationSession);
-					}
-				} 
-			} catch (Throwable e) {
-				logger.error("A problem occured while replicating", e);
-				// no need to rethrow an exception here as this is not recoverable and this could mess up the concurrency release of the semaphore on the session
-			} finally {
-				endBatchTransaction(batchStarted);
-				if(logger.isDebugEnabled()) {
-					if(request != null) {
-						logger.debug("We are now after the replication finishCacheActivity for request " + request + ", We replicate no matter what " );
-					} else if (response != null) {
-						logger.debug("We are now after the replication finishCacheActivity for request " + response + ", We replicate no matter what " );
-					} else {
-						logger.debug("We are now after the replication finishCacheActivity, We replicate no matter what " );
-					}
-				}
-			}
-		}
+	public void exitSipAppHa(MobicentsSipServletRequest request, MobicentsSipServletResponse response, boolean batchStarted) {	
+// FIXME: distributable not supported
+//		if (getDistributable() && hasDistributableManager) {
+//			if(logger.isInfoEnabled()) {
+//				if(request != null) {
+//					logger.info("We are now after the servlet invocation for request " + request + ", We replicate no matter what " );
+//				} else if (response != null) {
+//					logger.info("We are now after the servlet invocation for request " + response + ", We replicate no matter what " );
+//				} else {
+//					logger.info("We are now after the servlet invocation, We replicate no matter what " );
+//				}
+//			}
+//			try {
+//				ConvergedSessionReplicationContext ctx = ConvergedSessionReplicationContext
+//						.exitSipapp();
+//
+//				final SnapshotSipManager snapshotSipManager = ctx.getSoleSnapshotSipManager();
+//				if(logger.isDebugEnabled()) {
+//					logger.debug("Snapshot Manager " + snapshotSipManager);
+//				}
+//				if (snapshotSipManager != null) {
+//					Set<ClusteredSipSession<? extends OutgoingDistributableSessionData>> sipSessions = ctx.getSipSessions();
+//					for (ClusteredSipSession<? extends OutgoingDistributableSessionData> clusteredSipSession : sipSessions) {
+//						snapshotSipManager.snapshot(clusteredSipSession);
+//					}
+//					Set<ClusteredSipApplicationSession<? extends OutgoingDistributableSessionData>> sipApplicationSessions = ctx.getSipApplicationSessions();
+//					for (ClusteredSipApplicationSession<? extends OutgoingDistributableSessionData> clusteredSipApplicationSession : sipApplicationSessions) {
+//						snapshotSipManager.snapshot(clusteredSipApplicationSession);
+//					}
+//				} 
+//			} catch (Throwable e) {
+//				logger.error("A problem occured while replicating", e);
+//				// no need to rethrow an exception here as this is not recoverable and this could mess up the concurrency release of the semaphore on the session
+//			} finally {
+//				endBatchTransaction(batchStarted);
+//				if(logger.isDebugEnabled()) {
+//					if(request != null) {
+//						logger.debug("We are now after the replication finishCacheActivity for request " + request + ", We replicate no matter what " );
+//					} else if (response != null) {
+//						logger.debug("We are now after the replication finishCacheActivity for request " + response + ", We replicate no matter what " );
+//					} else {
+//						logger.debug("We are now after the replication finishCacheActivity, We replicate no matter what " );
+//					}
+//				}
+//			}
+//		}
 	}
 	
-	private boolean startBatchTransaction() {
-		DistributedCacheConvergedSipManager distributedConvergedManager = ((ClusteredSipManager) manager)
-				.getDistributedCacheConvergedSipManager();
-		BatchingManager tm = distributedConvergedManager.getBatchingManager();
-		boolean started = false;
-		try {
-			if (tm != null && tm.isBatchInProgress() == false) {
-				tm.startBatch();
-				started = true;
-			}
-		} catch (RuntimeException re) {
-			throw re;
-		} catch (Exception e) {
-			throw new IllegalStateException(
-					"Failed to initiate batch replication transaction", e);
-		}
-
-		return started;
-	}
+// FIXME: distributable not supported
+//	private boolean startBatchTransaction() {
+//		DistributedCacheConvergedSipManager distributedConvergedManager = ((ClusteredSipManager) manager)
+//				.getDistributedCacheConvergedSipManager();
+//		BatchingManager tm = distributedConvergedManager.getBatchingManager();
+//		boolean started = false;
+//		try {
+//			if (tm != null && tm.isBatchInProgress() == false) {
+//				tm.startBatch();
+//				started = true;
+//			}
+//		} catch (RuntimeException re) {
+//			throw re;
+//		} catch (Exception e) {
+//			throw new IllegalStateException(
+//					"Failed to initiate batch replication transaction", e);
+//		}
+//
+//		return started;
+//	}
 	
-	private void endBatchTransaction(boolean wasStarted) {
-		DistributedCacheConvergedSipManager<? extends OutgoingDistributableSessionData> distributedConvergedManager = ((ClusteredSipManager) manager)
-				.getDistributedCacheConvergedSipManager();
-		BatchingManager tm = distributedConvergedManager.getBatchingManager();
-		try {
-			if (tm != null && tm.isBatchInProgress() == true && wasStarted) {
-				tm.endBatch();
-			}
-		} catch (Exception e) {
-			logger.error("Failed to stop batch replication transaction", e);
-			// no need to rethrow an exception here as this is not recoverable and this could mess up the concurrency release of the semaphore on the session
-		}
-	}
+// FIXME: distributable not supported
+//	private void endBatchTransaction(boolean wasStarted) {
+//		DistributedCacheConvergedSipManager<? extends OutgoingDistributableSessionData> distributedConvergedManager = ((ClusteredSipManager) manager)
+//				.getDistributedCacheConvergedSipManager();
+//		BatchingManager tm = distributedConvergedManager.getBatchingManager();
+//		try {
+//			if (tm != null && tm.isBatchInProgress() == true && wasStarted) {
+//				tm.endBatch();
+//			}
+//		} catch (Exception e) {
+//			logger.error("Failed to stop batch replication transaction", e);
+//			// no need to rethrow an exception here as this is not recoverable and this could mess up the concurrency release of the semaphore on the session
+//		}
+//	}
 	
 	public boolean notifySipContextListeners(SipContextEvent event) {
 		boolean ok = true;
@@ -1228,106 +1264,112 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 				sasTimerService.start();
 			}
 		}
-				
-		enterSipApp(null, null, false);
-		boolean batchStarted = enterSipAppHa(true);
-		try {
-			for (MobicentsSipServlet container : childrenMap.values()) {
-				if(logger.isDebugEnabled()) {
-					logger.debug("container " + container.getName() + ", class : " + container.getClass().getName());
-				}
-				if(container instanceof Wrapper) {			
-					Wrapper wrapper = (Wrapper) container;
-					Servlet sipServlet = null;
-					try {
-						sipServlet = wrapper.allocate();
-						if(sipServlet instanceof SipServlet) {
-							// Fix for issue 1086 (http://code.google.com/p/mobicents/issues/detail?id=1086) : 
-							// Cannot send a request in SipServletListener.initialize() for servlet-selection applications
-							boolean servletHandlerWasNull = false;
-							if(servletHandler == null) {
-								servletHandler = container.getName();
-								servletHandlerWasNull = true;
-							}
-							final ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
-							try {
-								final ClassLoader cl = getLoader().getClassLoader();
-								Thread.currentThread().setContextClassLoader(cl);
-							
-								switch(event.getEventType()) {
-									case SERVLET_INITIALIZED : {
-										SipServletContextEvent sipServletContextEvent = 
-											new SipServletContextEvent(getServletContext(), (SipServlet)sipServlet);
-										List<SipServletListener> sipServletListeners = sipListeners.getSipServletsListeners();
-										if(logger.isDebugEnabled()) {
-											logger.debug(sipServletListeners.size() + " SipServletListener to notify of servlet initialization");
-										}
-										for (SipServletListener sipServletListener : sipServletListeners) {					
-											sipServletListener.servletInitialized(sipServletContextEvent);					
-										}
-										break;
-									}
-									case SIP_CONNECTOR_ADDED : {
-										// reload the outbound interfaces if they have changed
-										this.getServletContext().setAttribute(javax.servlet.sip.SipServlet.OUTBOUND_INTERFACES,
-												sipApplicationDispatcher.getOutboundInterfaces());	
-										
-										List<SipConnectorListener> sipConnectorListeners = sipListeners.getSipConnectorListeners();
-										if(logger.isDebugEnabled()) {
-											logger.debug(sipConnectorListeners.size() + " SipConnectorListener to notify of sip connector addition");
-										}
-										for (SipConnectorListener sipConnectorListener : sipConnectorListeners) {					
-											sipConnectorListener.sipConnectorAdded((SipConnector)event.getEventObject());				
-										}
-										break;
-									}
-									case SIP_CONNECTOR_REMOVED : {
-										// reload the outbound interfaces if they have changed
-										this.getServletContext().setAttribute(javax.servlet.sip.SipServlet.OUTBOUND_INTERFACES,
-												sipApplicationDispatcher.getOutboundInterfaces());
-										
-										List<SipConnectorListener> sipConnectorListeners = sipListeners.getSipConnectorListeners();
-										if(logger.isDebugEnabled()) {
-											logger.debug(sipConnectorListeners.size() + " SipConnectorListener to notify of sip connector removal");
-										}
-										for (SipConnectorListener sipConnectorListener : sipConnectorListeners) {					
-											sipConnectorListener.sipConnectorRemoved((SipConnector)event.getEventObject());				
-										}
-										break;
-									}								
+		
+		if(this.available) {
+			enterSipApp(null, null, false);
+			boolean batchStarted = enterSipAppHa(true);
+			try {
+				for (MobicentsSipServlet container : childrenMap.values()) {
+					if(logger.isDebugEnabled()) {
+						logger.debug("container " + container.getName() + ", class : " + container.getClass().getName());
+					}
+					if(container instanceof Wrapper) {			
+						Wrapper wrapper = (Wrapper) container;
+						Servlet sipServlet = null;
+						try {
+							sipServlet = wrapper.allocate();
+							if(sipServlet instanceof SipServlet) {
+								// Fix for issue 1086 (http://code.google.com/p/mobicents/issues/detail?id=1086) : 
+								// Cannot send a request in SipServletListener.initialize() for servlet-selection applications
+								boolean servletHandlerWasNull = false;
+								if(servletHandler == null) {
+									servletHandler = container.getName();
+									servletHandlerWasNull = true;
 								}
-								if(servletHandlerWasNull) {
-									servletHandler = null;
+								final ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+								try {
+									final ClassLoader cl = getLoader().getClassLoader();
+									Thread.currentThread().setContextClassLoader(cl);
+									// http://code.google.com/p/sipservlets/issues/detail?id=135
+									bindThreadBindingListener();
+								
+									switch(event.getEventType()) {
+										case SERVLET_INITIALIZED : {
+											SipServletContextEvent sipServletContextEvent = 
+												new SipServletContextEvent(getServletContext(), (SipServlet)sipServlet);
+											List<SipServletListener> sipServletListeners = sipListeners.getSipServletsListeners();
+											if(logger.isDebugEnabled()) {
+												logger.debug(sipServletListeners.size() + " SipServletListener to notify of servlet initialization");
+											}
+											for (SipServletListener sipServletListener : sipServletListeners) {					
+												sipServletListener.servletInitialized(sipServletContextEvent);					
+											}
+											break;
+										}
+										case SIP_CONNECTOR_ADDED : {
+											// reload the outbound interfaces if they have changed
+											this.getServletContext().setAttribute(javax.servlet.sip.SipServlet.OUTBOUND_INTERFACES,
+													sipApplicationDispatcher.getOutboundInterfaces());	
+											
+											List<SipConnectorListener> sipConnectorListeners = sipListeners.getSipConnectorListeners();
+											if(logger.isDebugEnabled()) {
+												logger.debug(sipConnectorListeners.size() + " SipConnectorListener to notify of sip connector addition");
+											}
+											for (SipConnectorListener sipConnectorListener : sipConnectorListeners) {					
+												sipConnectorListener.sipConnectorAdded((SipConnector)event.getEventObject());				
+											}
+											break;
+										}
+										case SIP_CONNECTOR_REMOVED : {
+											// reload the outbound interfaces if they have changed
+											this.getServletContext().setAttribute(javax.servlet.sip.SipServlet.OUTBOUND_INTERFACES,
+													sipApplicationDispatcher.getOutboundInterfaces());
+											
+											List<SipConnectorListener> sipConnectorListeners = sipListeners.getSipConnectorListeners();
+											if(logger.isDebugEnabled()) {
+												logger.debug(sipConnectorListeners.size() + " SipConnectorListener to notify of sip connector removal");
+											}
+											for (SipConnectorListener sipConnectorListener : sipConnectorListeners) {					
+												sipConnectorListener.sipConnectorRemoved((SipConnector)event.getEventObject());				
+											}
+											break;
+										}								
+									}
+									if(servletHandlerWasNull) {
+										servletHandler = null;
+									}
+								} finally {
+									// http://code.google.com/p/sipservlets/issues/detail?id=135
+									unbindThreadBindingListener();
+									Thread.currentThread().setContextClassLoader(oldClassLoader);
 								}
-							} finally {
-								Thread.currentThread().setContextClassLoader(oldClassLoader);
+							}					
+						} catch (ServletException e) {
+							logger.error("Cannot allocate the servlet "+ wrapper.getServletClass() +" for notifying the listener " +
+									" of the event " + event.getEventType(), e);
+							ok = false; 
+						} catch (Throwable e) {
+							logger.error("An error occured when notifying the servlet " + wrapper.getServletClass() +
+									" of the event " + event.getEventType(), e);
+							ok = false; 
+						} 
+						try {
+							if(sipServlet != null) {
+								wrapper.deallocate(sipServlet);
 							}
-						}					
-					} catch (ServletException e) {
-						logger.error("Cannot allocate the servlet "+ wrapper.getServletClass() +" for notifying the listener " +
-								" of the event " + event.getEventType(), e);
-						ok = false; 
-					} catch (Throwable e) {
-						logger.error("An error occured when notifying the servlet " + wrapper.getServletClass() +
-								" of the event " + event.getEventType(), e);
-						ok = false; 
-					} 
-					try {
-						if(sipServlet != null) {
-							wrapper.deallocate(sipServlet);
+						} catch (ServletException e) {
+				            logger.error("Deallocate exception for servlet" + wrapper.getName(), e);
+				            ok = false;
+						} catch (Throwable e) {
+							logger.error("Deallocate exception for servlet" + wrapper.getName(), e);
+				            ok = false;
 						}
-					} catch (ServletException e) {
-			            logger.error("Deallocate exception for servlet" + wrapper.getName(), e);
-			            ok = false;
-					} catch (Throwable e) {
-						logger.error("Deallocate exception for servlet" + wrapper.getName(), e);
-			            ok = false;
 					}
 				}
+			} finally {
+				exitSipAppHa(null, null, batchStarted);
+				exitSipApp(null, null);	
 			}
-		} finally {
-			exitSipAppHa(null, null, batchStarted);
-			exitSipApp(null, null);	
 		}
 		return ok;
 	}
@@ -1338,8 +1380,8 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 
 	public void setConcurrencyControlMode(ConcurrencyControlMode mode) {
 		this.concurrencyControlMode = mode;
-		if(concurrencyControlMode != null && logger.isInfoEnabled()) {
-			logger.info("Concurrency Control set to " + concurrencyControlMode.toString() + " for application " + applicationName);
+		if(concurrencyControlMode != null && logger.isDebugEnabled()) {
+			logger.debug("Concurrency Control set to " + concurrencyControlMode.toString() + " for application " + applicationName);
 		}
 	}
 	
@@ -1392,22 +1434,39 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		return sipDigestAuthenticator;
 	}
 
+	public SipInstanceManager getSipInstanceManager() {
+    	return (SipInstanceManager) super.getInstanceManager();
+    }
+	
+    @Override
+    public void setInstanceManager(InstanceManager instanceManager) {
+        super.setInstanceManager(instanceManager);
+    }
+
+	// http://code.google.com/p/sipservlets/issues/detail?id=135
+	public void bindThreadBindingListener() {
+		super.getThreadBindingListener().bind();
+	}
+	public void unbindThreadBindingListener() {
+		super.getThreadBindingListener().unbind();
+	}
+
 	@Override
 	public void enterSipContext() {
 		final ClassLoader cl = getSipContextClassLoader();
 		Thread.currentThread().setContextClassLoader(cl);
+		// http://code.google.com/p/sipservlets/issues/detail?id=135
+		bindThreadBindingListener();
 	}
 
 	@Override
 	public void exitSipContext(ClassLoader oldClassLoader) {
+		// http://code.google.com/p/sipservlets/issues/detail?id=135
+		unbindThreadBindingListener();
 		Thread.currentThread().setContextClassLoader(oldClassLoader);
 	}
 
 	@Override
-	/*
-	 * (non-Javadoc)
-	 * @see org.mobicents.servlet.sip.core.SipContext#stopGracefully(long)
-	 */
 	public void stopGracefully(long timeToWait) {
 		// http://code.google.com/p/sipservlets/issues/detail?id=195 
 		// Support for Graceful Shutdown of SIP Applications and Overall Server
@@ -1419,6 +1478,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		applicationsUndeployed.add(applicationName);
 		sipApplicationDispatcher.getSipApplicationRouter().applicationUndeployed(applicationsUndeployed);
 		if(timeToWait == 0) {
+			// equivalent to forceful stop
 			if(gracefulStopFuture != null) {
 				gracefulStopFuture.cancel(false);
 			}
@@ -1428,24 +1488,14 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 				logger.error("The server couldn't be stopped", e);
 			}
 		} else {
-			gracefulStopFuture = sipApplicationDispatcher.getAsynchronousScheduledExecutor().scheduleWithFixedDelay(new ContextGracefulStopTask(this), 30000, 30000, TimeUnit.MILLISECONDS);
-			if(timeToWait > 0) {				
-				gracefulStopFuture = sipApplicationDispatcher.getAsynchronousScheduledExecutor().schedule(
-						new Runnable() {
-							public void run() { 
-								gracefulStopFuture.cancel(false);
-								try {
-									stop();
-								} catch (LifecycleException e) {
-									logger.error("The server couldn't be stopped", e);
-								}
-							}
-						}
-	                , timeToWait, TimeUnit.MILLISECONDS);
+                        if(timeToWait > 0) {
+				gracefulStopFuture = sipApplicationDispatcher.getAsynchronousScheduledExecutor().scheduleWithFixedDelay(new ContextGracefulStopTask(this, timeToWait), timeToWait, timeToWait, TimeUnit.MILLISECONDS);
+                        } else {
+				gracefulStopFuture = sipApplicationDispatcher.getAsynchronousScheduledExecutor().scheduleWithFixedDelay(new ContextGracefulStopTask(this, timeToWait), 30000, 30000, TimeUnit.MILLISECONDS);
 			}
-		}
+		}		
 	}
-	
+
 	@Override
 	public boolean isStoppingGracefully() {
 		if(gracefulStopFuture != null)

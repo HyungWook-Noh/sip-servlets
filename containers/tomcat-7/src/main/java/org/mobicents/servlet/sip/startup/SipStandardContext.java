@@ -126,15 +126,15 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	private static transient final Logger logger = Logger.getLogger(SipStandardContext.class);
 
 	/**
-     * The descriptive information string for this implementation.
-     */
-    private static final String info =
-        "org.mobicents.servlet.sip.startup.SipStandardContext/1.0";
-    
+	 * The descriptive information string for this implementation.
+	 */
+	private static final String info =
+			"org.mobicents.servlet.sip.startup.SipStandardContext/1.0";
+
 	// as mentionned per JSR 289 Section 6.1.2.1 default lifetime for an 
 	// application session is 3 minutes
 	private static int DEFAULT_LIFETIME = 3;
-	
+
 	protected String applicationName;
 	protected String smallIcon;
 	protected String largeIcon;
@@ -147,49 +147,49 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	protected transient MobicentsSipLoginConfig sipLoginConfig;
 	protected transient SipSecurityUtils sipSecurityUtils;
 	protected transient SipDigestAuthenticator sipDigestAuthenticator;
-	
+
 	protected boolean hasDistributableManager;
-	
-    protected String namingContextName;
-    
-    protected transient Method sipApplicationKeyMethod;
-    protected ConcurrencyControlMode concurrencyControlMode;
+
+	protected String namingContextName;
+
+	protected transient Method sipApplicationKeyMethod;
+	protected ConcurrencyControlMode concurrencyControlMode;
 	/**
-     * The set of sip application listener class names configured for this
-     * application, in the order they were encountered in the sip.xml file.
-     */
-    protected transient List<String> sipApplicationListeners = new CopyOnWriteArrayList<String>();
-    
-    // Issue 1200 this is needed to be able to give a default servlet handler if we are not in main-servlet servlet selection case
-    // by example when creating a new sip application session from a factory from an http servlet
-    private String servletHandler;
-    private boolean isMainServlet;
-    private String mainServlet;
-    /**
-     * The set of sip servlet mapping configured for this
-     * application.
-     */
-    protected transient List<MobicentsSipServletMapping> sipServletMappings = new ArrayList<MobicentsSipServletMapping>();
-    
-    protected transient SipApplicationDispatcher sipApplicationDispatcher = null;
-    
-    protected transient Map<String, MobicentsSipServlet> childrenMap;
-    protected transient Map<String, MobicentsSipServlet> childrenMapByClassName;
+	 * The set of sip application listener class names configured for this
+	 * application, in the order they were encountered in the sip.xml file.
+	 */
+	protected transient List<String> sipApplicationListeners = new CopyOnWriteArrayList<String>();
+
+	// Issue 1200 this is needed to be able to give a default servlet handler if we are not in main-servlet servlet selection case
+	// by example when creating a new sip application session from a factory from an http servlet
+	private String servletHandler;
+	private boolean isMainServlet;
+	private String mainServlet;
+	/**
+	 * The set of sip servlet mapping configured for this
+	 * application.
+	 */
+	protected transient List<MobicentsSipServletMapping> sipServletMappings = new ArrayList<MobicentsSipServletMapping>();
+
+	protected transient SipApplicationDispatcher sipApplicationDispatcher = null;
+
+	protected transient Map<String, MobicentsSipServlet> childrenMap;
+	protected transient Map<String, MobicentsSipServlet> childrenMapByClassName;
 
 	protected boolean sipJNDIContextLoaded = false;
-	
+
 	// timer service used to schedule sip application session expiration timer
-    protected transient SipApplicationSessionTimerService sasTimerService = null;
-    // timer service used to schedule sip servlet originated timer tasks
-    protected transient SipServletTimerService timerService = null;
-    // timer service used to schedule proxy timer tasks
-    protected transient ProxyTimerService proxyTimerService = null;
-    // http://code.google.com/p/mobicents/issues/detail?id=2450
-    private transient ThreadLocal<SipApplicationSessionCreationThreadLocal> sipApplicationSessionsAccessedThreadLocal = new ThreadLocal<SipApplicationSessionCreationThreadLocal>();
-    // http://code.google.com/p/mobicents/issues/detail?id=2534 && http://code.google.com/p/mobicents/issues/detail?id=2526
-    private transient ThreadLocal<Boolean> isManagedThread = new ThreadLocal<Boolean>();
-    // http://code.google.com/p/sipservlets/issues/detail?id=195
-    private ScheduledFuture<?> gracefulStopFuture;
+	protected transient SipApplicationSessionTimerService sasTimerService = null;
+	// timer service used to schedule sip servlet originated timer tasks
+	protected transient SipServletTimerService timerService = null;
+	// timer service used to schedule proxy timer tasks
+	protected transient ProxyTimerService proxyTimerService = null;
+	// http://code.google.com/p/mobicents/issues/detail?id=2450
+	private transient ThreadLocal<SipApplicationSessionCreationThreadLocal> sipApplicationSessionsAccessedThreadLocal = new ThreadLocal<SipApplicationSessionCreationThreadLocal>();
+	// http://code.google.com/p/mobicents/issues/detail?id=2534 && http://code.google.com/p/mobicents/issues/detail?id=2526
+	private transient ThreadLocal<Boolean> isManagedThread = new ThreadLocal<Boolean>();
+	// http://code.google.com/p/sipservlets/issues/detail?id=195
+	private ScheduledFuture<?> gracefulStopFuture;
 	/**
 	 * 
 	 */
@@ -212,21 +212,21 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		if(logger.isInfoEnabled()) {
 			logger.info("Initializing the sip context");
 		}
-//		if (this.getParent() != null) {
-//			// Add the main configuration listener for sip applications
-//			LifecycleListener sipConfigurationListener = new SipContextConfig();
-//			this.addLifecycleListener(sipConfigurationListener);			
-//			setDelegate(true);
-//		}				
+		//		if (this.getParent() != null) {
+		//			// Add the main configuration listener for sip applications
+		//			LifecycleListener sipConfigurationListener = new SipContextConfig();
+		//			this.addLifecycleListener(sipConfigurationListener);			
+		//			setDelegate(true);
+		//		}				
 		// call the super method to correctly initialize the context and fire
 		// up the
 		// init event on the new registered SipContextConfig, so that the
 		// standardcontextconfig
 		// is correctly initialized too
 		super.initInternal();
-		
+
 		prepareServletContext();
-		
+
 		if(logger.isInfoEnabled()) {
 			logger.info("sip context Initialized");
 		}	
@@ -248,7 +248,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		if(proxyTimerService == null) {			
 			proxyTimerService = new ProxyTimerServiceImpl();			
 		}
-		
+
 		if(sasTimerService == null || !sasTimerService.isStarted()) {
 			sasTimerService = new StandardSipApplicationSessionTimerService();
 		}
@@ -281,7 +281,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 			Service service = ((Engine)container).getService();
 			if(service instanceof SipService) {
 				sipApplicationDispatcher = 
-					((SipService)service).getSipApplicationDispatcher();								
+						((SipService)service).getSipApplicationDispatcher();								
 			}
 		}
 		if(sipApplicationDispatcher == null) {
@@ -294,94 +294,94 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		if(logger.isInfoEnabled()) {
 			logger.info("Starting the sip context");
 		}
-//		if( this.getState().equals(LifecycleState.INITIALIZED)) { 
-			prepareServletContext();
-//		}	
-		 // Add missing components as necessary
+		//		if( this.getState().equals(LifecycleState.INITIALIZED)) { 
+		prepareServletContext();
+		//		}	
+		// Add missing components as necessary
 		boolean ok = true;
-        if (getResources() == null) {   // (1) Required by Loader
-            if (logger.isDebugEnabled())
-                logger.debug("Configuring default Resources");
-            try {
-            	if ((getDocBase() != null) && (getDocBase().endsWith(".war")) && (!(new File(getBasePath())).isDirectory()))
-                    setResources(new WARDirContext());                
-                if ((getDocBase() != null) && (getDocBase().endsWith(".sar")) && (!(new File(getBasePath())).isDirectory()))
-                    setResources(new SARDirContext());
-                else
-                    setResources(new FileDirContext());
-            } catch (IllegalArgumentException e) {
-                logger.error("Error initializing resources: " + e.getMessage());
-                ok = false;
-            }
-        }
-        if (ok) {
-            if (!resourcesStart()) {
-                logger.error( "Error in resourceStart()");
-                ok = false;
-            }
-        }
-        // Configure default manager if none was specified
-        if (manager == null) {
-            if ((getCluster() != null) && getDistributable()) {
-                try {
-                    manager = getCluster().createManager(getName());
-                } catch (Exception ex) {
-                    logger.error("standardContext.clusterFail", ex);
-//                    ok = false;
-                }
-            } else {
-                setManager(new SipStandardManager());
-            }
-        }
-        // Reading the "catalina.useNaming" environment variable
-        String useNamingProperty = System.getProperty("catalina.useNaming");
-        if ((useNamingProperty != null)
-            && (useNamingProperty.equals("false"))) {
-            setUseNaming(false);
-        }
-                        
-        // the loader is needed for creating the DefaultSipInstanceManager
-        if (getLoader() == null) {
-            WebappLoader webappLoader = new WebappLoader(getParentClassLoader());
-            webappLoader.setDelegate(getDelegate());
-            setLoader(webappLoader);
-            webappLoader.start();
-            // Report this property change to interested listeners
-            support.firePropertyChange("loader", null, webappLoader);
-        } else {
-        	WebappLoader loader = (WebappLoader) getLoader();
-        	loader.setDelegate(getDelegate());
-        	setLoader(loader);
-        	loader.start();
-        	// Report this property change to interested listeners
-            support.firePropertyChange("loader", null, loader);
-        }
-        
-        //activating our custom naming context to be able to set the sip factory in JNDI
-        if (isUseNaming()) {    
-        	if (getNamingContextListener() == null) {
-            	NamingContextListener namingContextListener = new SipNamingContextListener();
-                namingContextListener.setName(getNamingContextName());
-                setNamingContextListener(namingContextListener);
-                addLifecycleListener(namingContextListener);
-                addContainerListener(namingContextListener);                
-            }
-        	// Replace the default annotation processor. This is needed to handle resource injection
+		if (getResources() == null) {   // (1) Required by Loader
+			if (logger.isDebugEnabled())
+				logger.debug("Configuring default Resources");
+			try {
+				if ((getDocBase() != null) && (getDocBase().endsWith(".war")) && (!(new File(getBasePath())).isDirectory()))
+					setResources(new WARDirContext());                
+				if ((getDocBase() != null) && (getDocBase().endsWith(".sar")) && (!(new File(getBasePath())).isDirectory()))
+					setResources(new SARDirContext());
+				else
+					setResources(new FileDirContext());
+			} catch (IllegalArgumentException e) {
+				logger.error("Error initializing resources: " + e.getMessage());
+				ok = false;
+			}
+		}
+		if (ok) {
+			if (!resourcesStart()) {
+				logger.error( "Error in resourceStart()");
+				ok = false;
+			}
+		}
+		// Configure default manager if none was specified
+		if (manager == null) {
+			if ((getCluster() != null) && getDistributable()) {
+				try {
+					manager = getCluster().createManager(getName());
+				} catch (Exception ex) {
+					logger.error("standardContext.clusterFail", ex);
+					//                    ok = false;
+				}
+			} else {
+				setManager(new SipStandardManager());
+			}
+		}
+		// Reading the "catalina.useNaming" environment variable
+		String useNamingProperty = System.getProperty("catalina.useNaming");
+		if ((useNamingProperty != null)
+				&& (useNamingProperty.equals("false"))) {
+			setUseNaming(false);
+		}
+
+		// the loader is needed for creating the DefaultSipInstanceManager
+		if (getLoader() == null) {
+			WebappLoader webappLoader = new WebappLoader(getParentClassLoader());
+			webappLoader.setDelegate(getDelegate());
+			setLoader(webappLoader);
+			webappLoader.start();
+			// Report this property change to interested listeners
+			support.firePropertyChange("loader", null, webappLoader);
+		} else {
+			WebappLoader loader = (WebappLoader) getLoader();
+			loader.setDelegate(getDelegate());
+			setLoader(loader);
+			loader.start();
+			// Report this property change to interested listeners
+			support.firePropertyChange("loader", null, loader);
+		}
+
+		//activating our custom naming context to be able to set the sip factory in JNDI
+		if (isUseNaming()) {    
+			if (getNamingContextListener() == null) {
+				NamingContextListener namingContextListener = new SipNamingContextListener();
+				namingContextListener.setName(getNamingContextName());
+				setNamingContextListener(namingContextListener);
+				addLifecycleListener(namingContextListener);
+				addContainerListener(namingContextListener);                
+			}
+			// Replace the default annotation processor. This is needed to handle resource injection
 			// for SipFactory, Session utils and other objects residing in the servlet context space.
 			// Of course if the variable is not found in in the servet context it defaults to the
 			// normal lookup method - in the default naming context.
 			//tomcat naming 
-        	Map<String, Map<String, String>> injectionMap = buildInjectionMap(
-                    getIgnoreAnnotations() ? new NamingResources(): getNamingResources());
-        	this.setInstanceManager(
+			Map<String, Map<String, String>> injectionMap = buildInjectionMap(
+					getIgnoreAnnotations() ? new NamingResources(): getNamingResources());
+			this.setInstanceManager(
 					new DefaultSipInstanceManager(
 							getNamingContextListener().getEnvContext(),
 							injectionMap, this, this.getClass().getClassLoader()));
-        } else {
-        	// jboss or other kind of naming
+		} else {
+			// jboss or other kind of naming
 			try {
 				Map<String, Map<String, String>> injectionMap = buildInjectionMap(
-	                    getIgnoreAnnotations() ? new NamingResources(): getNamingResources());
+						getIgnoreAnnotations() ? new NamingResources(): getNamingResources());
 				InitialContext iniCtx = new InitialContext();
 				Context envCtx = (Context) iniCtx.lookup("java:comp/env");					
 				this.setInstanceManager(
@@ -391,13 +391,13 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 			} catch (NamingException e) {
 				logger.error("Impossible to get the naming context ", e);
 			}
-        }
+		}
 		//JSR 289 Section 2.1.1 Step 1.Deploy the application.
 		//This will make start the sip context config, which will in turn parse the sip descriptor deployment
 		//and call load on startup which is equivalent to
 		//JSR 289 Section 2.1.1 Step 2.Invoke servlet.init(), the initialization method on the Servlet. Invoke the init() on all the load-on-startup Servlets in the application
 		super.startInternal();	
-								
+
 		if(getAvailable()) {
 			// Replace the default annotation processor. This is needed to handle resource injection
 			// for SipFactory, Session utils and other objects residing in the servlet context space.
@@ -407,7 +407,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 				if(isUseNaming()) {
 					//tomcat naming 
 					Map<String, Map<String, String>> injectionMap = buildInjectionMap(
-		                    getIgnoreAnnotations() ? new NamingResources(): getNamingResources());
+							getIgnoreAnnotations() ? new NamingResources(): getNamingResources());
 					this.setInstanceManager(
 							new DefaultSipInstanceManager(
 									getNamingContextListener().getEnvContext(),
@@ -416,7 +416,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 					// jboss or other kind of naming
 					try {
 						Map<String, Map<String, String>> injectionMap = buildInjectionMap(
-			                    getIgnoreAnnotations() ? new NamingResources(): getNamingResources());
+								getIgnoreAnnotations() ? new NamingResources(): getNamingResources());
 						InitialContext iniCtx = new InitialContext();
 						Context envCtx = (Context) iniCtx.lookup("java:comp/env");					
 						this.setInstanceManager(
@@ -435,7 +435,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 						sipApplicationDispatcher.getSipFactory());
 				((CatalinaSipManager)manager).setContainer(this);
 			}			
-			
+
 			// JSR 289 16.2 Servlet Selection
 			// When using this mechanism (the main-servlet) for servlet selection, 
 			// if there is only one servlet in the application then this
@@ -469,16 +469,16 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 
 	@Override
 	public ServletContext getServletContext() {	
-        if (context == null) {
-            context = new ConvergedApplicationContext(this);
-            if (getAltDDName() != null)
-                context.setAttribute(Globals.ALT_DD_ATTR,getAltDDName());
-        }
+		if (context == null) {
+			context = new ConvergedApplicationContext(this);
+			if (getAltDDName() != null)
+				context.setAttribute(Globals.ALT_DD_ATTR,getAltDDName());
+		}
 
-        return ((ConvergedApplicationContext)context).getFacade();
+		return ((ConvergedApplicationContext)context).getFacade();
 
-    }
-	
+	}
+
 	@Override
 	public boolean listenerStart() {
 		boolean ok = super.listenerStart();
@@ -487,115 +487,115 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 			return ok;
 		}
 		if (logger.isDebugEnabled())
-            logger.debug("Configuring sip listeners");
+			logger.debug("Configuring sip listeners");
 
 		if(!sipJNDIContextLoaded) {
 			loadSipJNDIContext();
 		}
-		
-        // Instantiate the required listeners
-        ClassLoader loader = getLoader().getClassLoader();
-        ok = sipListeners.loadListeners(findSipApplicationListeners(), loader);
-        if(!ok) {
+
+		// Instantiate the required listeners
+		ClassLoader loader = getLoader().getClassLoader();
+		ok = sipListeners.loadListeners(findSipApplicationListeners(), loader);
+		if(!ok) {
 			return ok;
 		}
-        
-        List<ServletContextListener> servletContextListeners = sipListeners.getServletContextListeners();
-        if (servletContextListeners != null) {
-            ServletContextEvent event =
-                new ServletContextEvent(getServletContext());
-            for (ServletContextListener servletContextListener : servletContextListeners) {						
-                if (servletContextListener == null)
-                    continue;
-                
-                try {
-                    fireContainerEvent("beforeContextInitialized", servletContextListener);
-                    servletContextListener.contextInitialized(event);
-                    fireContainerEvent("afterContextInitialized", servletContextListener);
-                } catch (Throwable t) {
-                    fireContainerEvent("afterContextInitialized", servletContextListener);
-                    getLogger().error
-                        (sm.getString("standardContext.listenerStart",
-                        		servletContextListener.getClass().getName()), t);
-                    ok = false;
-                }
-                
-                // TODO Annotation processing                 
-            }
-        }
-        return ok;
+
+		List<ServletContextListener> servletContextListeners = sipListeners.getServletContextListeners();
+		if (servletContextListeners != null) {
+			ServletContextEvent event =
+					new ServletContextEvent(getServletContext());
+			for (ServletContextListener servletContextListener : servletContextListeners) {						
+				if (servletContextListener == null)
+					continue;
+
+				try {
+					fireContainerEvent("beforeContextInitialized", servletContextListener);
+					servletContextListener.contextInitialized(event);
+					fireContainerEvent("afterContextInitialized", servletContextListener);
+				} catch (Throwable t) {
+					fireContainerEvent("afterContextInitialized", servletContextListener);
+					getLogger().error
+					(sm.getString("standardContext.listenerStart",
+							servletContextListener.getClass().getName()), t);
+					ok = false;
+				}
+
+				// TODO Annotation processing                 
+			}
+		}
+		return ok;
 	}
-	
+
 	@Override
 	public boolean listenerStop() {
 		boolean ok = super.listenerStop();
 		if (logger.isDebugEnabled())
-            logger.debug("Sending application stop events");
-        
-        List<ServletContextListener> servletContextListeners = sipListeners.getServletContextListeners();
-        if (servletContextListeners != null) {
-            ServletContextEvent event =
-                new ServletContextEvent(getServletContext());
-            for (ServletContextListener servletContextListener : servletContextListeners) {						
-                if (servletContextListener == null)
-                    continue;
-                
-                try {
-                    fireContainerEvent("beforeContextDestroyed", servletContextListener);
-                    servletContextListener.contextDestroyed(event);
-                    fireContainerEvent("afterContextDestroyed", servletContextListener);
-                } catch (Throwable t) {
-                    fireContainerEvent("afterContextDestroyed", servletContextListener);
-                    getLogger().error
-                        (sm.getString("standardContext.listenerStop",
-                        		servletContextListener.getClass().getName()), t);
-                    ok = false;
-                }
-                
-                // TODO Annotation processing                 
-            }
-        }
+			logger.debug("Sending application stop events");
 
-        // TODO Annotation processing check super class on tomcat 6
-         
-        sipListeners.clean();
+		List<ServletContextListener> servletContextListeners = sipListeners.getServletContextListeners();
+		if (servletContextListeners != null) {
+			ServletContextEvent event =
+					new ServletContextEvent(getServletContext());
+			for (ServletContextListener servletContextListener : servletContextListeners) {						
+				if (servletContextListener == null)
+					continue;
 
-        return ok;
+				try {
+					fireContainerEvent("beforeContextDestroyed", servletContextListener);
+					servletContextListener.contextDestroyed(event);
+					fireContainerEvent("afterContextDestroyed", servletContextListener);
+				} catch (Throwable t) {
+					fireContainerEvent("afterContextDestroyed", servletContextListener);
+					getLogger().error
+					(sm.getString("standardContext.listenerStop",
+							servletContextListener.getClass().getName()), t);
+					ok = false;
+				}
+
+				// TODO Annotation processing                 
+			}
+		}
+
+		// TODO Annotation processing check super class on tomcat 6
+
+		sipListeners.clean();
+
+		return ok;
 	}
 
 	/**
-     * Get base path. Copy pasted from StandardContext Tomcat class
-     */
-    public String getBasePath() {
-        String docBase = null;
-        Container container = this;
-        while (container != null) {
-            if (container instanceof Host)
-                break;
-            container = container.getParent();
-        }
-        File file = new File(getDocBase());
-        if (!file.isAbsolute()) {
-            if (container == null) {
-                docBase = (new File(engineBase(), getDocBase())).getPath();
-            } else {
-                // Use the "appBase" property of this container
-                String appBase = ((Host) container).getAppBase();
-                file = new File(appBase);
-                if (!file.isAbsolute())
-                    file = new File(engineBase(), appBase);
-                docBase = (new File(file, getDocBase())).getPath();
-            }
-        } else {
-            docBase = file.getPath();
-        }
-        return docBase;
-    }
-	
+	 * Get base path. Copy pasted from StandardContext Tomcat class
+	 */
+	public String getBasePath() {
+		String docBase = null;
+		Container container = this;
+		while (container != null) {
+			if (container instanceof Host)
+				break;
+			container = container.getParent();
+		}
+		File file = new File(getDocBase());
+		if (!file.isAbsolute()) {
+			if (container == null) {
+				docBase = (new File(engineBase(), getDocBase())).getPath();
+			} else {
+				// Use the "appBase" property of this container
+				String appBase = ((Host) container).getAppBase();
+				file = new File(appBase);
+				if (!file.isAbsolute())
+					file = new File(engineBase(), appBase);
+				docBase = (new File(file, getDocBase())).getPath();
+			}
+		} else {
+			docBase = file.getPath();
+		}
+		return docBase;
+	}
+
 	@Override
 	public synchronized void stopInternal() throws LifecycleException {
 		if(logger.isInfoEnabled()) {
-			logger.info("Stopping the sip context");
+			logger.info("Stopping the sip context" + name);
 		}
 		if(manager instanceof SipManager) {
 			((SipManager)manager).dumpSipSessions();
@@ -632,32 +632,42 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		if(proxyTimerService != null) {
 			proxyTimerService.stop();
 		}
+		// Issue 48 (https://bitbucket.org/telestax/telscale-sip-servlets/issue/48/sipstandardservice-stopgracefuly-for)
+		if(gracefulStopFuture != null) {
+			gracefulStopFuture.cancel(false);
+			gracefulStopFuture = null;
+			if(logger.isDebugEnabled()) {
+				logger.debug("context graceful task cancelled " + getName());
+			}
+		}
 		// Issue 1478 : nullify the ref to avoid reusing it
 		timerService = null;
 		getServletContext().setAttribute(javax.servlet.sip.SipServlet.TIMER_SERVICE, null);
 		setLoader(null);
 		// not needed since the JNDI will be destroyed automatically
-//		if(isUseNaming()) {
-//			fireContainerEvent(SipNamingContextListener.NAMING_CONTEXT_SIP_FACTORY_REMOVED_EVENT, sipFactoryFacade);
-//			fireContainerEvent(SipNamingContextListener.NAMING_CONTEXT_SIP_SESSIONS_UTIL_REMOVED_EVENT, sipSessionsUtil);
-//			fireContainerEvent(SipNamingContextListener.NAMING_CONTEXT_TIMER_SERVICE_REMOVED_EVENT, TimerServiceImpl.getInstance());
-//			fireContainerEvent(SipNamingContextListener.NAMING_CONTEXT_SIP_SUBCONTEXT_REMOVED_EVENT, null);
-//		}  else {
-//        	try {
-//				InitialContext iniCtx = new InitialContext();
-//				Context envCtx = (Context) iniCtx.lookup("java:comp/env");
-//				// jboss or other kind of naming
-//				SipNamingContextListener.removeSipFactory(envCtx, sipFactoryFacade);
-//				SipNamingContextListener.removeSipSessionsUtil(envCtx, sipSessionsUtil);
-//				SipNamingContextListener.removeTimerService(envCtx, TimerServiceImpl.getInstance());
-//				SipNamingContextListener.removeSipSubcontext(envCtx);
-//			} catch (NamingException e) {
-//				//It is possible that the context has already been removed so no problem,
-//				//we are stopping anyway
-////				logger.error("Impossible to get the naming context ", e);				
-//			}	        	
-//        }		
-		logger.info("sip context stopped");
+		//		if(isUseNaming()) {
+		//			fireContainerEvent(SipNamingContextListener.NAMING_CONTEXT_SIP_FACTORY_REMOVED_EVENT, sipFactoryFacade);
+		//			fireContainerEvent(SipNamingContextListener.NAMING_CONTEXT_SIP_SESSIONS_UTIL_REMOVED_EVENT, sipSessionsUtil);
+		//			fireContainerEvent(SipNamingContextListener.NAMING_CONTEXT_TIMER_SERVICE_REMOVED_EVENT, TimerServiceImpl.getInstance());
+		//			fireContainerEvent(SipNamingContextListener.NAMING_CONTEXT_SIP_SUBCONTEXT_REMOVED_EVENT, null);
+		//		}  else {
+		//        	try {
+		//				InitialContext iniCtx = new InitialContext();
+		//				Context envCtx = (Context) iniCtx.lookup("java:comp/env");
+		//				// jboss or other kind of naming
+		//				SipNamingContextListener.removeSipFactory(envCtx, sipFactoryFacade);
+		//				SipNamingContextListener.removeSipSessionsUtil(envCtx, sipSessionsUtil);
+		//				SipNamingContextListener.removeTimerService(envCtx, TimerServiceImpl.getInstance());
+		//				SipNamingContextListener.removeSipSubcontext(envCtx);
+		//			} catch (NamingException e) {
+		//				//It is possible that the context has already been removed so no problem,
+		//				//we are stopping anyway
+		////				logger.error("Impossible to get the naming context ", e);				
+		//			}	        	
+		//        }		
+		if(logger.isInfoEnabled()) {
+			logger.info("sip context stopped " + name);
+		}
 	}
 
 	@Override
@@ -667,7 +677,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		}
 		super.loadOnStartup(containers);	
 	}
-	
+
 	protected void loadSipJNDIContext() {
 		if(getInstanceManager() instanceof SipInstanceManager) {
 			if(getNamingContextListener() != null) {
@@ -690,7 +700,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 			fireContainerEvent(SipNamingContextListener.NAMING_CONTEXT_SIP_SESSIONS_UTIL_ADDED_EVENT, sipSessionsUtil);
 			fireContainerEvent(SipNamingContextListener.NAMING_CONTEXT_TIMER_SERVICE_ADDED_EVENT, timerService);			
 		} else {
-        	try {
+			try {
 				InitialContext iniCtx = new InitialContext();
 				Context envCtx = (Context) iniCtx.lookup("java:comp/env");
 				// jboss or other kind of naming
@@ -703,7 +713,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 				logger.error("Impossible to get the naming context ", e);
 				throw new IllegalStateException(e);
 			}	        			
-        }
+		}
 		sipJNDIContextLoaded  = true;
 	}
 
@@ -711,7 +721,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public Wrapper createWrapper() {		
 		return super.createWrapper();
 	}		
-	
+
 	@Override
 	public void addChild(Container container) {
 		if(children.get(container.getName()) == null) {
@@ -722,7 +732,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 			}
 		}
 	}
-	
+
 	public void addChild(SipServletImpl sipServletImpl) {
 		SipServletImpl existingServlet = (SipServletImpl) childrenMap.get(sipServletImpl.getName());		
 		if(existingServlet != null) {			
@@ -739,35 +749,35 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		childrenMapByClassName.put(sipServletImpl.getServletClass(), sipServletImpl);		
 		super.addChild(sipServletImpl);
 	}
-		
+
 	public void removeChild(SipServletImpl sipServletImpl) {
 		super.removeChild(sipServletImpl);
 		childrenMap.remove(sipServletImpl.getName());
 		childrenMapByClassName.remove(sipServletImpl.getServletClass());
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public Map<String, MobicentsSipServlet> getChildrenMap() {		
 		return childrenMap;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public MobicentsSipServlet findSipServletByName(String name) {
 		if (name == null)
-            return (null);
+			return (null);
 		return childrenMap.get(name);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public MobicentsSipServlet findSipServletByClassName(String className) {
 		if (className == null)
-            return (null);
+			return (null);
 		return childrenMapByClassName.get(className);
 	}
 
@@ -832,7 +842,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public boolean isMainServlet() {
 		return isMainServlet;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.mobicents.servlet.sip.startup.SipContext#getMainServlet()
 	 */
@@ -861,15 +871,15 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public void setProxyTimeout(int proxyTimeout) {
 		this.proxyTimeout = proxyTimeout;
 	}
-		
+
 	public void addConstraint(SipSecurityConstraint securityConstraint) {		
 		super.addConstraint(securityConstraint);
 	}
-	
+
 	public void removeConstraint(SipSecurityConstraint securityConstraint) {
 		super.removeConstraint(securityConstraint);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.mobicents.servlet.sip.startup.SipContext#getSmallIcon()
 	 */
@@ -882,63 +892,63 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public void setSmallIcon(String smallIcon) {
 		this.smallIcon = smallIcon;
 	}
-	
+
 	@Override
 	public void setLoginConfig(LoginConfig config) {	
 		super.setLoginConfig(config);
 	}
-	
+
 	@Override
 	public LoginConfig getLoginConfig() {	
 		return super.getLoginConfig();
 	}
-	
+
 	public void setSipLoginConfig(MobicentsSipLoginConfig config) {
 		this.sipLoginConfig = config;
 	}
-	
+
 	public MobicentsSipLoginConfig getSipLoginConfig() {
 		return this.sipLoginConfig;
 	}
 	/**
-     * Add a new Listener class name to the set of Listeners
-     * configured for this application.
-     *
-     * @param listener Java class name of a listener class
-     */
-    public void addSipApplicationListener(String listener) {
+	 * Add a new Listener class name to the set of Listeners
+	 * configured for this application.
+	 *
+	 * @param listener Java class name of a listener class
+	 */
+	public void addSipApplicationListener(String listener) {
 
-    	sipApplicationListeners.add(listener);
-    	fireContainerEvent("addSipApplicationListener", listener);
+		sipApplicationListeners.add(listener);
+		fireContainerEvent("addSipApplicationListener", listener);
 
-        // FIXME - add instance if already started?
+		// FIXME - add instance if already started?
 
-    }
-    
-    /**
-     * Remove the specified application listener class from the set of
-     * listeners for this application.
-     *
-     * @param listener Java class name of the listener to be removed
-     */
-    public void removeSipApplicationListener(String listener) {
+	}
 
-    	sipApplicationListeners.remove(listener);
+	/**
+	 * Remove the specified application listener class from the set of
+	 * listeners for this application.
+	 *
+	 * @param listener Java class name of the listener to be removed
+	 */
+	public void removeSipApplicationListener(String listener) {
 
-        // Inform interested listeners
-        fireContainerEvent("removeSipApplicationListener", listener);
+		sipApplicationListeners.remove(listener);
 
-        // FIXME - behavior if already started?
+		// Inform interested listeners
+		fireContainerEvent("removeSipApplicationListener", listener);
 
-    }
-    
-    /**
-     * Return the set of sip application listener class names configured
-     * for this application.
-     */
-    public String[] findSipApplicationListeners() {
-        return sipApplicationListeners.toArray(new String[sipApplicationListeners.size()]);
-    }
+		// FIXME - behavior if already started?
+
+	}
+
+	/**
+	 * Return the set of sip application listener class names configured
+	 * for this application.
+	 */
+	public String[] findSipApplicationListeners() {
+		return sipApplicationListeners.toArray(new String[sipApplicationListeners.size()]);
+	}
 
 	/**
 	 * @return the sipApplicationDispatcher
@@ -953,33 +963,33 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public SipFactoryFacade getSipFactoryFacade() {
 		return sipFactoryFacade;
 	}		
-	
+
 	/**
 	 * @return the sipSessionsUtil
 	 */
 	public SipSessionsUtilImpl getSipSessionsUtil() {
 		return sipSessionsUtil;
 	}
-	
+
 	/**
 	 * @return the timerService
 	 */
 	public TimerService getTimerService() {
 		return timerService;
 	}
-	
+
 	/**
 	 * @return the proxyTimerService
 	 */
 	public ProxyTimerService getProxyTimerService() {
 		return proxyTimerService;
 	}
-	
+
 	/**
-     * Get naming context full name.
-     */
-    private String getNamingContextName() {    	
-	    if (namingContextName == null) {
+	 * Get naming context full name.
+	 */
+	private String getNamingContextName() {    	
+		if (namingContextName == null) {
 			Container parent = getParent();
 			if (parent == null) {
 				namingContextName = getName();
@@ -998,28 +1008,28 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 			}
 		}
 		return namingContextName;
-    }
-    
-    @Override
-    public synchronized void setManager(Manager manager) {
-    	if(manager instanceof SipManager && sipApplicationDispatcher != null) {
+	}
+
+	@Override
+	public synchronized void setManager(Manager manager) {
+		if(manager instanceof SipManager && sipApplicationDispatcher != null) {
 			((SipManager)manager).setMobicentsSipFactory(
 					sipApplicationDispatcher.getSipFactory()); 
 			((CatalinaSipManager)manager).setContainer(this);
 		}
-    	if(manager instanceof DistributableSipManager) {
+		if(manager instanceof DistributableSipManager) {
 			hasDistributableManager = true;
 			if(logger.isInfoEnabled()) {
 				logger.info("this context contains a manager that allows applications to work in a distributed environment");
 			}
 		}
-    	super.setManager(manager);
-    }
-    
-    @Override
-    public Manager getManager() {    	
-    	return super.getManager();
-    }
+		super.setManager(manager);
+	}
+
+	@Override
+	public Manager getManager() {    	
+		return super.getManager();
+	}
 
 	/**
 	 * @return the sipApplicationSessionTimeout in minutes
@@ -1042,7 +1052,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public void setSipApplicationKeyMethod(Method sipApplicationKeyMethod) {
 		this.sipApplicationKeyMethod = sipApplicationKeyMethod;
 	}
-	
+
 	public String getJbossBasePath() {
 		return getBasePath();
 	}
@@ -1063,7 +1073,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public List<MobicentsSipServletMapping> findSipServletMappings() {
 		return sipServletMappings;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1082,7 +1092,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		}
 		return null;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1096,12 +1106,12 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public final SipManager getSipManager() {
 		return (SipManager)manager;
 	}
-	
+
 	@Override
 	public String getInfo() {
 		return info;
 	}
-	
+
 	/**
 	 * Notifies the sip servlet listeners that the servlet has been initialized
 	 * and that it is ready for service
@@ -1150,46 +1160,46 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 								Thread.currentThread().setContextClassLoader(cl);
 
 								switch(event.getEventType()) {
-									case SERVLET_INITIALIZED : {
-										SipServletContextEvent sipServletContextEvent = 
+								case SERVLET_INITIALIZED : {
+									SipServletContextEvent sipServletContextEvent = 
 											new SipServletContextEvent(getServletContext(), (SipServlet)sipServlet);
-										List<SipServletListener> sipServletListeners = sipListeners.getSipServletsListeners();
-										if(logger.isDebugEnabled()) {
-											logger.debug(sipServletListeners.size() + " SipServletListener to notify of servlet initialization");
-										}
-										for (SipServletListener sipServletListener : sipServletListeners) {
-											sipServletListener.servletInitialized(sipServletContextEvent);					
-										}
-										break;
+									List<SipServletListener> sipServletListeners = sipListeners.getSipServletsListeners();
+									if(logger.isDebugEnabled()) {
+										logger.debug(sipServletListeners.size() + " SipServletListener to notify of servlet initialization");
 									}
-									case SIP_CONNECTOR_ADDED : {
-										// reload the outbound interfaces if they have changed
-										this.getServletContext().setAttribute(javax.servlet.sip.SipServlet.OUTBOUND_INTERFACES,
-												sipApplicationDispatcher.getOutboundInterfaces());	
-										
-										List<SipConnectorListener> sipConnectorListeners = sipListeners.getSipConnectorListeners();
-										if(logger.isDebugEnabled()) {
-											logger.debug(sipConnectorListeners.size() + " SipConnectorListener to notify of sip connector addition");
-										}
-										for (SipConnectorListener sipConnectorListener : sipConnectorListeners) {					
-											sipConnectorListener.sipConnectorAdded((SipConnector)event.getEventObject());				
-										}
-										break;
+									for (SipServletListener sipServletListener : sipServletListeners) {
+										sipServletListener.servletInitialized(sipServletContextEvent);					
 									}
-									case SIP_CONNECTOR_REMOVED : {
-										// reload the outbound interfaces if they have changed
-										this.getServletContext().setAttribute(javax.servlet.sip.SipServlet.OUTBOUND_INTERFACES,
-												sipApplicationDispatcher.getOutboundInterfaces());	
-										
-										List<SipConnectorListener> sipConnectorListeners = sipListeners.getSipConnectorListeners();
-										if(logger.isDebugEnabled()) {
-											logger.debug(sipConnectorListeners.size() + " SipConnectorListener to notify of sip connector removal");
-										}
-										for (SipConnectorListener sipConnectorListener : sipConnectorListeners) {					
-											sipConnectorListener.sipConnectorRemoved((SipConnector)event.getEventObject());				
-										}
-										break;
+									break;
+								}
+								case SIP_CONNECTOR_ADDED : {
+									// reload the outbound interfaces if they have changed
+									this.getServletContext().setAttribute(javax.servlet.sip.SipServlet.OUTBOUND_INTERFACES,
+											sipApplicationDispatcher.getOutboundInterfaces());	
+
+									List<SipConnectorListener> sipConnectorListeners = sipListeners.getSipConnectorListeners();
+									if(logger.isDebugEnabled()) {
+										logger.debug(sipConnectorListeners.size() + " SipConnectorListener to notify of sip connector addition");
 									}
+									for (SipConnectorListener sipConnectorListener : sipConnectorListeners) {					
+										sipConnectorListener.sipConnectorAdded((SipConnector)event.getEventObject());				
+									}
+									break;
+								}
+								case SIP_CONNECTOR_REMOVED : {
+									// reload the outbound interfaces if they have changed
+									this.getServletContext().setAttribute(javax.servlet.sip.SipServlet.OUTBOUND_INTERFACES,
+											sipApplicationDispatcher.getOutboundInterfaces());	
+
+									List<SipConnectorListener> sipConnectorListeners = sipListeners.getSipConnectorListeners();
+									if(logger.isDebugEnabled()) {
+										logger.debug(sipConnectorListeners.size() + " SipConnectorListener to notify of sip connector removal");
+									}
+									for (SipConnectorListener sipConnectorListener : sipConnectorListeners) {					
+										sipConnectorListener.sipConnectorRemoved((SipConnector)event.getEventObject());				
+									}
+									break;
+								}
 								}
 								if(servletHandlerWasNull) {
 									servletHandler = null;
@@ -1212,11 +1222,11 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 							wrapper.deallocate(sipServlet);
 						}
 					} catch (ServletException e) {
-			            logger.error("Deallocate exception for servlet" + wrapper.getName(), e);
-			            ok = false;
+						logger.error("Deallocate exception for servlet" + wrapper.getName(), e);
+						ok = false;
 					} catch (Throwable e) {
 						logger.error("Deallocate exception for servlet" + wrapper.getName(), e);
-			            ok = false;
+						ok = false;
 					}
 				}
 			}
@@ -1226,107 +1236,107 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 		}
 		return ok;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.mobicents.servlet.sip.startup.SipContext#enterSipApp(org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession, org.mobicents.servlet.sip.core.session.MobicentsSipSession, boolean)
 	 */
 	public void enterSipApp(MobicentsSipApplicationSession sipApplicationSession, MobicentsSipSession sipSession, boolean checkIsManagedThread) {		
 		switch (concurrencyControlMode) {
-			case SipSession:				
-				if(sipSession != null) {
-					sipSession.acquire();					
-				} 
-				break;
-			case SipApplicationSession:
+		case SipSession:				
+			if(sipSession != null) {
+				sipSession.acquire();					
+			} 
+			break;
+		case SipApplicationSession:
+			if(logger.isDebugEnabled()) {
+				logger.debug("checkIsManagedThread " + checkIsManagedThread + " , isManagedThread " + isManagedThread.get());
+			}
+			// http://code.google.com/p/mobicents/issues/detail?id=2534 && http://code.google.com/p/mobicents/issues/detail?id=2526
+			if(!checkIsManagedThread || (checkIsManagedThread && Boolean.TRUE.equals(isManagedThread.get()))) {
+				if(isManagedThread.get() == null) {
+					isManagedThread.set(Boolean.TRUE);
+				}
+				if(sipApplicationSession != null) {									
+					SipApplicationSessionCreationThreadLocal sipApplicationSessionCreationThreadLocal = sipApplicationSessionsAccessedThreadLocal.get();
+					if(sipApplicationSessionCreationThreadLocal == null) {
+						sipApplicationSessionCreationThreadLocal = new SipApplicationSessionCreationThreadLocal();
+						sipApplicationSessionsAccessedThreadLocal.set(sipApplicationSessionCreationThreadLocal);
+					}
+					boolean notPresent = sipApplicationSessionCreationThreadLocal.getSipApplicationSessions().add(sipApplicationSession);
+					if(notPresent) {
+						if(logger.isDebugEnabled()) {
+							logger.debug("acquiring sipApplicationSession=" + sipApplicationSession +
+									" since it is not present in our local thread of accessed sip application sessions " );
+						}
+						sipApplicationSession.acquire();
+					} else {
+						if(logger.isDebugEnabled()) {
+							logger.debug("not acquiring sipApplicationSession=" + sipApplicationSession +
+									" since it is present in our local thread of accessed sip application sessions ");
+						}
+					}
+				}
+			} else {
 				if(logger.isDebugEnabled()) {
-					logger.debug("checkIsManagedThread " + checkIsManagedThread + " , isManagedThread " + isManagedThread.get());
+					logger.debug("not acquiring sipApplicationSession=" + sipApplicationSession +
+							" since isManagedThread is " + isManagedThread.get());
 				}
-				// http://code.google.com/p/mobicents/issues/detail?id=2534 && http://code.google.com/p/mobicents/issues/detail?id=2526
-				if(!checkIsManagedThread || (checkIsManagedThread && Boolean.TRUE.equals(isManagedThread.get()))) {
-					if(isManagedThread.get() == null) {
-						isManagedThread.set(Boolean.TRUE);
-					}
-					if(sipApplicationSession != null) {									
-						SipApplicationSessionCreationThreadLocal sipApplicationSessionCreationThreadLocal = sipApplicationSessionsAccessedThreadLocal.get();
-						if(sipApplicationSessionCreationThreadLocal == null) {
-							sipApplicationSessionCreationThreadLocal = new SipApplicationSessionCreationThreadLocal();
-							sipApplicationSessionsAccessedThreadLocal.set(sipApplicationSessionCreationThreadLocal);
-						}
-						boolean notPresent = sipApplicationSessionCreationThreadLocal.getSipApplicationSessions().add(sipApplicationSession);
-						if(notPresent) {
-							if(logger.isDebugEnabled()) {
-								logger.debug("acquiring sipApplicationSession=" + sipApplicationSession +
-										" since it is not present in our local thread of accessed sip application sessions " );
-							}
-							sipApplicationSession.acquire();
-						} else {
-							if(logger.isDebugEnabled()) {
-								logger.debug("not acquiring sipApplicationSession=" + sipApplicationSession +
-										" since it is present in our local thread of accessed sip application sessions ");
-							}
-						}
-					}
-				} else {
-					if(logger.isDebugEnabled()) {
-						logger.debug("not acquiring sipApplicationSession=" + sipApplicationSession +
-								" since isManagedThread is " + isManagedThread.get());
-					}
-				}
-				break;
-			case None:
-				break;
+			}
+			break;
+		case None:
+			break;
 		}		
 	} 
-    
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.mobicents.servlet.sip.startup.SipContext#exitSipApp(org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession, org.mobicents.servlet.sip.core.session.MobicentsSipSession)
 	 */
 	public void exitSipApp(MobicentsSipApplicationSession sipApplicationSession, MobicentsSipSession sipSession) {
 		switch (concurrencyControlMode) {
-			case SipSession:
-				if(sipSession != null) {
-					sipSession.release();
+		case SipSession:
+			if(sipSession != null) {
+				sipSession.release();
+			} else {
+				if(logger.isDebugEnabled()) {
+					logger.debug("NOT RELEASING SipSession on exit sipApplicationSession=" + sipApplicationSession +
+							" sipSession=" + sipSession + " semaphore=null");
+				}
+			}
+			break;
+		case SipApplicationSession:
+			boolean wasSessionReleased = false;
+			SipApplicationSessionCreationThreadLocal sipApplicationSessionCreationThreadLocal = sipApplicationSessionsAccessedThreadLocal.get();
+			if(sipApplicationSessionCreationThreadLocal != null) {					
+				for(MobicentsSipApplicationSession sipApplicationSessionAccessed : sipApplicationSessionsAccessedThreadLocal.get().getSipApplicationSessions()) {
+					sipApplicationSessionAccessed.release();
+					if(sipApplicationSessionAccessed.equals(sipApplicationSession)) {
+						wasSessionReleased = true;
+					}
+				}		
+				sipApplicationSessionsAccessedThreadLocal.get().getSipApplicationSessions().clear();
+				sipApplicationSessionsAccessedThreadLocal.set(null);
+				sipApplicationSessionsAccessedThreadLocal.remove();
+			}
+			isManagedThread.set(null);
+			isManagedThread.remove();
+			if(!wasSessionReleased) {
+				if(sipApplicationSession != null) {
+					sipApplicationSession.release();
 				} else {
 					if(logger.isDebugEnabled()) {
-						logger.debug("NOT RELEASING SipSession on exit sipApplicationSession=" + sipApplicationSession +
+						logger.debug("NOT RELEASING SipApplicationSession on exit sipApplicationSession=" + sipApplicationSession +
 								" sipSession=" + sipSession + " semaphore=null");
 					}
 				}
-				break;
-			case SipApplicationSession:
-				boolean wasSessionReleased = false;
-				SipApplicationSessionCreationThreadLocal sipApplicationSessionCreationThreadLocal = sipApplicationSessionsAccessedThreadLocal.get();
-				if(sipApplicationSessionCreationThreadLocal != null) {					
-					for(MobicentsSipApplicationSession sipApplicationSessionAccessed : sipApplicationSessionsAccessedThreadLocal.get().getSipApplicationSessions()) {
-						sipApplicationSessionAccessed.release();
-						if(sipApplicationSessionAccessed.equals(sipApplicationSession)) {
-							wasSessionReleased = true;
-						}
-					}		
-					sipApplicationSessionsAccessedThreadLocal.get().getSipApplicationSessions().clear();
-					sipApplicationSessionsAccessedThreadLocal.set(null);
-					sipApplicationSessionsAccessedThreadLocal.remove();
-				}
-				isManagedThread.set(null);
-				isManagedThread.remove();
-				if(!wasSessionReleased) {
-					if(sipApplicationSession != null) {
-						sipApplicationSession.release();
-					} else {
-						if(logger.isDebugEnabled()) {
-							logger.debug("NOT RELEASING SipApplicationSession on exit sipApplicationSession=" + sipApplicationSession +
-									" sipSession=" + sipSession + " semaphore=null");
-						}
-					}
-				}
-				break;
-			case None:
-				break;
+			}
+			break;
+		case None:
+			break;
 		}		
 	}
-	
+
 	public ConcurrencyControlMode getConcurrencyControlMode() {		
 		return concurrencyControlMode;
 	}
@@ -1337,7 +1347,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 			logger.info("Concurrency Control set to " + concurrencyControlMode.toString() + " for application " + applicationName);
 		}
 	}
- 
+
 	public SipRubyController getSipRubyController() {
 		return null;
 	}
@@ -1345,7 +1355,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public void setSipRubyController(SipRubyController rubyController) {
 		throw new UnsupportedOperationException("ruby applications are not supported on Tomcat or JBoss 4.X versions");
 	}
-	
+
 	public SipApplicationSessionTimerService getSipApplicationSessionTimerService() {
 		return sasTimerService;
 	}
@@ -1353,14 +1363,14 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public boolean hasDistributableManager() {		
 		return hasDistributableManager;
 	}
-	
+
 	/**
 	 * @return the servletHandler
 	 */
 	public String getServletHandler() {
 		return servletHandler;
 	}
-	
+
 	/**
 	 * @param servletHandler the servletHandler to set
 	 */
@@ -1388,71 +1398,71 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public void exitSipAppHa(MobicentsSipServletRequest request, MobicentsSipServletResponse response, boolean batchStarted) {
 		// we don't support ha features, so nothing to do here
 	}
-	
+
 	/**
 	 * Copied from Tomcat 7 StandardContext
 	 * 
 	 * @param namingResources
 	 * @return injectionMap
 	 */
-    private Map<String, Map<String, String>> buildInjectionMap(NamingResources namingResources) {
-        Map<String, Map<String, String>> injectionMap = new HashMap<String, Map<String, String>>();
-        for (Injectable resource: namingResources.findLocalEjbs()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        for (Injectable resource: namingResources.findEjbs()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        for (Injectable resource: namingResources.findEnvironments()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        for (Injectable resource: namingResources.findMessageDestinationRefs()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        for (Injectable resource: namingResources.findResourceEnvRefs()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        for (Injectable resource: namingResources.findResources()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        for (Injectable resource: namingResources.findServices()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        return injectionMap;
-    }
-    
-    /**
-     * Copied from Tomcat 7 StandardContext
-     * 
-     * @param resource
-     * @param injectionMap
-     */
-    private void addInjectionTarget(Injectable resource, Map<String, Map<String, String>> injectionMap) {
-        List<InjectionTarget> injectionTargets = resource.getInjectionTargets();
-        if (injectionTargets != null && injectionTargets.size() > 0) {
-            String jndiName = resource.getName();
-            for (InjectionTarget injectionTarget: injectionTargets) {
-                String clazz = injectionTarget.getTargetClass();
-                Map<String, String> injections = injectionMap.get(clazz);
-                if (injections == null) {
-                    injections = new HashMap<String, String>();
-                    injectionMap.put(clazz, injections);
-                }
-                injections.put(injectionTarget.getTargetName(), jndiName);
-            }
-        }
-    }
-    	
-    @Override
-    public SipInstanceManager getSipInstanceManager() {
-    	return (SipInstanceManager) super.getInstanceManager();
-    }
-    
-    @Override
-    public void setInstanceManager(InstanceManager instanceManager) {
-        super.setInstanceManager(instanceManager);
-    }
-	
+	private Map<String, Map<String, String>> buildInjectionMap(NamingResources namingResources) {
+		Map<String, Map<String, String>> injectionMap = new HashMap<String, Map<String, String>>();
+		for (Injectable resource: namingResources.findLocalEjbs()) {
+			addInjectionTarget(resource, injectionMap);
+		}
+		for (Injectable resource: namingResources.findEjbs()) {
+			addInjectionTarget(resource, injectionMap);
+		}
+		for (Injectable resource: namingResources.findEnvironments()) {
+			addInjectionTarget(resource, injectionMap);
+		}
+		for (Injectable resource: namingResources.findMessageDestinationRefs()) {
+			addInjectionTarget(resource, injectionMap);
+		}
+		for (Injectable resource: namingResources.findResourceEnvRefs()) {
+			addInjectionTarget(resource, injectionMap);
+		}
+		for (Injectable resource: namingResources.findResources()) {
+			addInjectionTarget(resource, injectionMap);
+		}
+		for (Injectable resource: namingResources.findServices()) {
+			addInjectionTarget(resource, injectionMap);
+		}
+		return injectionMap;
+	}
+
+	/**
+	 * Copied from Tomcat 7 StandardContext
+	 * 
+	 * @param resource
+	 * @param injectionMap
+	 */
+	private void addInjectionTarget(Injectable resource, Map<String, Map<String, String>> injectionMap) {
+		List<InjectionTarget> injectionTargets = resource.getInjectionTargets();
+		if (injectionTargets != null && injectionTargets.size() > 0) {
+			String jndiName = resource.getName();
+			for (InjectionTarget injectionTarget: injectionTargets) {
+				String clazz = injectionTarget.getTargetClass();
+				Map<String, String> injections = injectionMap.get(clazz);
+				if (injections == null) {
+					injections = new HashMap<String, String>();
+					injectionMap.put(clazz, injections);
+				}
+				injections.put(injectionTarget.getTargetName(), jndiName);
+			}
+		}
+	}
+
+	@Override
+	public SipInstanceManager getSipInstanceManager() {
+		return (SipInstanceManager) super.getInstanceManager();
+	}
+
+	@Override
+	public void setInstanceManager(InstanceManager instanceManager) {
+		super.setInstanceManager(instanceManager);
+	}
+
 	public ClassLoader getSipContextClassLoader() {
 		return getLoader().getClassLoader();
 	}
@@ -1460,7 +1470,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public boolean isPackageProtectionEnabled() {		
 		return SecurityUtil.isPackageProtectionEnabled();
 	}
-	
+
 	public boolean authorize(MobicentsSipServletRequest request) {
 		return sipSecurityUtils.authorize(request);
 	}
@@ -1479,7 +1489,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	public void exitSipContext(ClassLoader oldClassLoader) {
 		Thread.currentThread().setContextClassLoader(oldClassLoader);
 	}
-	
+
 	@Override
 	/*
 	 * (non-Javadoc)
@@ -1506,24 +1516,14 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 				logger.error("The server couldn't be stopped", e);
 			}
 		} else {
-			gracefulStopFuture = sipApplicationDispatcher.getAsynchronousScheduledExecutor().scheduleWithFixedDelay(new ContextGracefulStopTask(this), 30000, 30000, TimeUnit.MILLISECONDS);
-			if(timeToWait > 0) {
-				gracefulStopFuture = sipApplicationDispatcher.getAsynchronousScheduledExecutor().schedule(
-						new Runnable() {
-							public void run() { 
-								gracefulStopFuture.cancel(false);
-								try {
-									stop();
-								} catch (LifecycleException e) {
-									logger.error("The server couldn't be stopped", e);
-								}
-							}
-						}
-	                , timeToWait, TimeUnit.MILLISECONDS);
+                        if(timeToWait > 0) {
+				gracefulStopFuture = sipApplicationDispatcher.getAsynchronousScheduledExecutor().scheduleWithFixedDelay(new ContextGracefulStopTask(this, timeToWait), timeToWait, timeToWait, TimeUnit.MILLISECONDS);
+                        } else {
+				gracefulStopFuture = sipApplicationDispatcher.getAsynchronousScheduledExecutor().scheduleWithFixedDelay(new ContextGracefulStopTask(this, timeToWait), 30000, 30000, TimeUnit.MILLISECONDS);
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean isStoppingGracefully() {
 		if(gracefulStopFuture != null)
