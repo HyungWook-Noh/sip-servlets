@@ -1515,11 +1515,14 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 			} catch (LifecycleException e) {
 				logger.error("The server couldn't be stopped", e);
 			}
-		} else {
-                        if(timeToWait > 0) {
-				gracefulStopFuture = sipApplicationDispatcher.getAsynchronousScheduledExecutor().scheduleWithFixedDelay(new ContextGracefulStopTask(this, timeToWait), timeToWait, timeToWait, TimeUnit.MILLISECONDS);
-                        } else {
-				gracefulStopFuture = sipApplicationDispatcher.getAsynchronousScheduledExecutor().scheduleWithFixedDelay(new ContextGracefulStopTask(this, timeToWait), 30000, 30000, TimeUnit.MILLISECONDS);
+		} else {		
+			long gracefulStopTaskInterval = 30000;
+			if(timeToWait > 0 && timeToWait < gracefulStopTaskInterval) {
+				// if the time to Wait is < to the gracefulStopTaskInterval then we schedule the task directly once to the time to wait
+				gracefulStopFuture = sipApplicationDispatcher.getAsynchronousScheduledExecutor().schedule(new ContextGracefulStopTask(this, timeToWait), timeToWait, TimeUnit.MILLISECONDS);         
+			} else {
+				// if the time to Wait is > to the gracefulStopTaskInterval or infinite (negative value) then we schedule the task to run every gracefulStopTaskInterval, not needed to be exactly precise on the timeToWait in this case
+				gracefulStopFuture = sipApplicationDispatcher.getAsynchronousScheduledExecutor().scheduleWithFixedDelay(new ContextGracefulStopTask(this, timeToWait), gracefulStopTaskInterval, gracefulStopTaskInterval, TimeUnit.MILLISECONDS);                      
 			}
 		}
 	}
