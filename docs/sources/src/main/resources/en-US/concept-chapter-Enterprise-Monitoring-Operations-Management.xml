@@ -109,7 +109,7 @@
         <section>
 	        <title>JMX Monitoring for &SHORT_PLATFORM_NAME; for JBoss AS5/EAP5</title>
 	        <para>
-		        Follow the link <ulink url="https://127.0.0.1:8080/jmx-console">To see the JMX Beans available</ulink>.
+		        Follow the link <ulink url="https://127.0.0.1:8080/jmx-console">https://127.0.0.1:8080/jmx-console</ulink>, after the server has been started, to see the JMX Beans available.
 	        </para>
 	        			
         </section>
