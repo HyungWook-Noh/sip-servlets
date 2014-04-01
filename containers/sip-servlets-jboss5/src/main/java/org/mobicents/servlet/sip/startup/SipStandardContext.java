@@ -1013,7 +1013,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
      * (non-Javadoc)
      * @see org.mobicents.servlet.sip.startup.SipContext#enterSipApp(org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession, org.mobicents.servlet.sip.core.session.MobicentsSipSession, boolean)
      */
-    public void enterSipApp(MobicentsSipApplicationSession sipApplicationSession, MobicentsSipSession sipSession, boolean checkIsManagedThread) {       
+    public void enterSipApp(MobicentsSipApplicationSession sipApplicationSession, MobicentsSipSession sipSession, boolean checkIsManagedThread, boolean isContainerManaged) {       
         switch (concurrencyControlMode) {
             case SipSession:                
                 if(sipSession != null) {
@@ -1022,7 +1022,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
                 break;
             case SipApplicationSession:
                 if(logger.isDebugEnabled()) {
-                    logger.debug("checkIsManagedThread " + checkIsManagedThread + " , isManagedThread " + isManagedThread.get());
+                	logger.debug("checkIsManagedThread " + checkIsManagedThread + " , isManagedThread " + isManagedThread.get() + ", isContainerManaged " + isContainerManaged);
                 }
                 // http://code.google.com/p/mobicents/issues/detail?id=2534 && http://code.google.com/p/mobicents/issues/detail?id=2526 
                 if(!checkIsManagedThread || (checkIsManagedThread && Boolean.TRUE.equals(isManagedThread.get()))) {
@@ -1036,18 +1036,21 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
                             sipApplicationSessionsAccessedThreadLocal.set(sipApplicationSessionCreationThreadLocal);
                         }
                         boolean notPresent = sipApplicationSessionCreationThreadLocal.getSipApplicationSessions().add(sipApplicationSession);
-                        if(notPresent) {
-                            if(logger.isDebugEnabled()) {
-                                logger.debug("acquiring sipApplicationSession=" + sipApplicationSession +
-                                        " since it is not present in our local thread of accessed sip application sessions " );
-                            }
-                            sipApplicationSession.acquire();
-                        } else {
-                            if(logger.isDebugEnabled()) {
-                                logger.debug("not acquiring sipApplicationSession=" + sipApplicationSession +
-                                        " since it is present in our local thread of accessed sip application sessions ");
-                            }
-                        }
+                        if(notPresent && isContainerManaged) {
+							if(logger.isDebugEnabled()) {
+								logger.debug("acquiring sipApplicationSession=" + sipApplicationSession +
+										" since it is not present in our local thread of accessed sip application sessions " );
+							}
+							sipApplicationSession.acquire();
+						} else if(logger.isDebugEnabled()) {
+							if(!isContainerManaged) {
+								logger.debug("not acquiring sipApplicationSession=" + sipApplicationSession +
+										" since application specified the container shouldn't managed it ");
+							} else {
+								logger.debug("not acquiring sipApplicationSession=" + sipApplicationSession +
+										" since it is present in our local thread of accessed sip application sessions ");
+							}
+						}
                     }
                 } else {
                     if(logger.isDebugEnabled()) {
@@ -1245,7 +1248,7 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
             }
         }
                 
-        enterSipApp(null, null, false);
+        enterSipApp(null, null, false, true);
         boolean batchStarted = enterSipAppHa(true);
         try {
             for (MobicentsSipServlet container : childrenMap.values()) {
