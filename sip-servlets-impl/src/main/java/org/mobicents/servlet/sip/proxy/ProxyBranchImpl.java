@@ -80,6 +80,8 @@ import org.mobicents.servlet.sip.rfc5626.IncorrectFlowIdentifierException;
 import org.mobicents.servlet.sip.rfc5626.RFC5626Helper;
 import org.mobicents.servlet.sip.startup.StaticServiceHolder;
 
+import com.sun.mail.iap.Response;
+
 /**
  * @author root
  *
@@ -187,6 +189,25 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 					outgoingRequest.getMethod().equalsIgnoreCase(Request.INVITE)) {
 				if(lastResponse != null) { /* According to SIP RFC we should send cancel only if we receive any response first*/
 					SipServletRequest cancelRequest = outgoingRequest.createCancel();
+					if(logger.isDebugEnabled()) {
+						logger.debug("Trying to cancel ProxyBranch for outgoing request " + outgoingRequest);
+					}
+					if(lastResponse.getStatus() > Response.OK && !recursedBranches.isEmpty()) {
+						//  Javadoc says it should throw an java.lang.IllegalStateException if the transaction has already been completed and it has no child branches
+						if(logger.isDebugEnabled()) {
+							logger.debug("lastResponse status for this branch is " + lastResponse.getStatus() + " and it has " + recursedBranches.size() + " to cancel");
+						}
+						return;
+					}
+					SipServletRequest cancelRequest = null;
+					if(outgoingRequest.getMethod().equalsIgnoreCase(Request.PRACK) || outgoingRequest.getMethod().equalsIgnoreCase(Request.UPDATE)) {
+						// https://code.google.com/p/sipservlets/issues/detail?id=253 and https://code.google.com/p/sipservlets/issues/detail?id=33
+						// in case of PRACK or UPDATE we need to take the original INVITE
+						cancelRequest = originalRequest.getLinkedRequest().createCancel();
+					} else {
+						cancelRequest = outgoingRequest.createCancel();
+					}
+					
 					//Adding reason headers if needed
 					if(protocol != null && reasonCode != null && reasonText != null
 							&& protocol.length == reasonCode.length && reasonCode.length == reasonText.length) {
