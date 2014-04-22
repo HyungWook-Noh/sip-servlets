@@ -27,7 +27,6 @@ import gov.nist.javax.sip.ServerTransactionExt;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-import javax.servlet.sip.Proxy;
 import javax.servlet.sip.SipSession.State;
 import javax.sip.InvalidArgumentException;
 import javax.sip.ServerTransaction;
@@ -42,6 +41,7 @@ import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.core.DispatcherException;
 import org.mobicents.servlet.sip.core.RoutingState;
 import org.mobicents.servlet.sip.core.SipContext;
+import org.mobicents.servlet.sip.core.proxy.MobicentsProxy;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.core.session.MobicentsSipSession;
 import org.mobicents.servlet.sip.message.SipServletMessageImpl;
@@ -238,7 +238,8 @@ public class CancelRequestDispatcher extends RequestDispatcher {
 			final SipContext sipContext = sipApplicationSession.getSipContext();
 			try {
 				sipContext.enterSipApp(sipApplicationSession, sipSession, false);		
-				final Proxy proxy = sipSession.getProxy();
+				final MobicentsProxy proxy = sipSession.getProxy();
+
 				if(proxy != null) {
 					if(logger.isDebugEnabled()) {
 						logger.debug("proxying the CANCEL " + sipServletRequest);
@@ -255,7 +256,7 @@ public class CancelRequestDispatcher extends RequestDispatcher {
 						}
 					} else {
 						// otherwise, all branches are cancelled, and response processing continues as usual
-						proxy.cancel();
+						proxy.cancelAllExcept(null, null, null, null, false);
 					}
 					// Fix for Issue 796 : SIP servlet (simple proxy) does not receive "Cancel" requests. (http://code.google.com/p/mobicents/issues/detail?id=796)
 					// JSR 289 Section 10.2.6 Receiving CANCEL : In either case, the application is subsequently invoked with the CANCEL request

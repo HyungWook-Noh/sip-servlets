@@ -264,6 +264,9 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 			} else if(from.contains("nonexist")) {
 				uris.add(uri3);
 				proxy.setProxyTimeout(40);
+			} else if(from.contains("cancel-480-sequential-2-locations")) {
+				uris.add(uri1);
+				proxy.setProxyTimeout(140);
 			} else {
 				uris.add(uri2);
 				uris.add(uri1);
@@ -509,10 +512,35 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 	}
 	
 	@Override
-	protected void doBranchResponse(SipServletResponse resp)
+	protected void doSuccessResponse(SipServletResponse response)
 			throws ServletException, IOException {
-		logger.info("doBranchResponse callback was called " + resp);		
-		resp.getApplicationSession().setAttribute("branchResponseReceived", "true");		
+		if(response.getFrom().getURI().toString().contains("modify-SDP")) {
+			if(response.getMethod().equals("INVITE")) {
+				if(response.getStatus() == 200) {
+					response.setContentType(CONTENT_TYPE);
+					response.setContent("SDP modified successfully".getBytes("UTF-8"),CONTENT_TYPE);
+				}
+			}
+		}
+	}
+	
+	@Override
+	protected void doBranchResponse(SipServletResponse response)
+			throws ServletException, IOException {
+		logger.info("doBranchResponse callback was called " + response);		
+		response.getApplicationSession().setAttribute("branchResponseReceived", "true");	
+		if(response.getStatus() == 408) {
+			sendMessage("doBranchTimeoutReceived", 5080, "udp");
+		}
+		if(response.getStatus() == 480) {
+			// https://code.google.com/p/sipservlets/issues/detail?id=266
+			SipFactory sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
+			ArrayList<URI> uris = new ArrayList<URI>();
+			// This URi completes and need to be canceled before answering
+			uris.add(sipFactory.createAddress("sip:neutral@" + host + ":5058").getURI());
+			List<ProxyBranch> branches = response.getProxy().createProxyBranches(uris);
+			response.getProxy().startProxy();
+		}
 	}	
 	
 	// SipErrorListener methods
