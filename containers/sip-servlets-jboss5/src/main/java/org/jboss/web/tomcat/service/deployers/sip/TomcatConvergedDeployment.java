@@ -37,6 +37,8 @@ import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
 import javax.servlet.sip.SipSessionsUtil;
 import javax.servlet.sip.TimerService;
 
@@ -469,21 +471,18 @@ public class TomcatConvergedDeployment extends TomcatDeployment {
 							TimerService timerService = (TimerService) sipContext.getTimerService();
 							SipSessionsUtil sipSessionsUtil = (SipSessionsUtil) sipContext.getSipSessionsUtil();
 							
-							NonSerializableFactory.rebind(
-										applicationNameSubcontext,
-										SIP_FACTORY_JNDI_NAME,
-										sipFactoryFacade);
-							 
-							NonSerializableFactory
-									.rebind(
-											applicationNameSubcontext,
-											SIP_SESSIONS_UTIL_JNDI_NAME,
-											sipSessionsUtil);
-							NonSerializableFactory
-									.rebind(
-											applicationNameSubcontext,
-											TIMER_SERVICE_JNDI_NAME,
-											timerService);
+							rebindUniqueKey(
+									applicationNameSubcontext,
+									SIP_FACTORY_JNDI_NAME,
+									sipFactoryFacade);
+							rebindUniqueKey(
+									applicationNameSubcontext,
+									SIP_SESSIONS_UTIL_JNDI_NAME,
+									sipSessionsUtil);
+							rebindUniqueKey(
+									applicationNameSubcontext,
+									TIMER_SERVICE_JNDI_NAME,
+									timerService);
 							
 							// Backward compatibility for global JNDI MSS names from AS 4 http://code.google.com/p/mobicents/issues/detail?id=1439
 							// Since this is the global JNDI, It is critical to do this is a safe way to handle redeployment, so repeated lookups must go well.
@@ -511,9 +510,9 @@ public class TomcatConvergedDeployment extends TomcatDeployment {
 								}
 								
 								//It is critical to rebind for redeploy
-								NonSerializableFactory.rebind(globaApplicationNameSubcontext,SIP_FACTORY_JNDI_NAME, sipFactoryFacade);
-								NonSerializableFactory.rebind(globaApplicationNameSubcontext, SIP_SESSIONS_UTIL_JNDI_NAME, sipSessionsUtil);
-								NonSerializableFactory.rebind(globaApplicationNameSubcontext,TIMER_SERVICE_JNDI_NAME, timerService);
+								rebindUniqueKey(globaApplicationNameSubcontext,SIP_FACTORY_JNDI_NAME, sipFactoryFacade);
+								rebindUniqueKey(globaApplicationNameSubcontext, SIP_SESSIONS_UTIL_JNDI_NAME, sipSessionsUtil);
+								rebindUniqueKey(globaApplicationNameSubcontext,TIMER_SERVICE_JNDI_NAME, timerService);
 							}
 							if (log.isDebugEnabled()) {
 								log
@@ -557,21 +556,18 @@ public class TomcatConvergedDeployment extends TomcatDeployment {
 						TimerService timerService = (TimerService) sipContext.getTimerService();
 						SipSessionsUtil sipSessionsUtil = (SipSessionsUtil) sipContext.getSipSessionsUtil();
 						
-						NonSerializableFactory.rebind(
-									applicationNameSubcontext,
-									SIP_FACTORY_JNDI_NAME,
-									sipFactoryFacade);
-						 
-						NonSerializableFactory
-								.rebind(
-										applicationNameSubcontext,
-										SIP_SESSIONS_UTIL_JNDI_NAME,
-										sipSessionsUtil);
-						NonSerializableFactory
-								.rebind(
-										applicationNameSubcontext,
-										TIMER_SERVICE_JNDI_NAME,
-										timerService);
+						rebindUniqueKey(
+								applicationNameSubcontext,
+								SIP_FACTORY_JNDI_NAME,
+								sipFactoryFacade);
+						rebindUniqueKey(
+								applicationNameSubcontext,
+								SIP_SESSIONS_UTIL_JNDI_NAME,
+								sipSessionsUtil);
+						rebindUniqueKey(
+								applicationNameSubcontext,
+								TIMER_SERVICE_JNDI_NAME,
+								timerService);
 						if (log.isDebugEnabled()) {
 							log
 									.debug("Sip Objects made available to global JNDI under following conetxt : java:comp/env/sip/"
@@ -589,4 +585,35 @@ public class TomcatConvergedDeployment extends TomcatDeployment {
 			}
 		}
 	}
+
+	//
+	// josemrecio@gmail.com
+	//
+	// A convenience method that simplifies the process of rebinding a
+	// non-serializable object into a JNDI context, using a unique key (built from the full jndi path)
+	// to prevent overwriting resources with the same base name (but belonging to different contexts) 
+	// See http://code.google.com/p/mobicents/issues/detail?id=3109
+	//
+
+	// Based on org.jboss.util.naming.NonSerializableFactory
+	/*
+	 * Copyright 2005, JBoss Inc., and individual contributors as indicated
+	 * by the @authors tag. See the copyright.txt in the distribution for a
+	 * full listing of individual contributors.
+	 */
+	/* @author <a href="mailto:Scott.Stark@jboss.org">Scott Stark</a>.
+	 * @version $Revision: 2975 $
+	 */
+    public static synchronized void rebindUniqueKey(Context ctx, String jndiKey, Object target) throws NamingException
+    {
+    	// jndiKey is relative to ctx, so it is not unique
+    	// rebindkey must be unique, we build it from the full jndi path
+    	String rebindKey = ctx.composeName(ctx.getNameInNamespace(), jndiKey).toString();
+    	NonSerializableFactory.rebind(rebindKey, target);
+    	String className = target.getClass().getName();
+    	String factory = NonSerializableFactory.class.getName();
+    	StringRefAddr addr = new StringRefAddr("nns", rebindKey);
+    	Reference memoryRef = new Reference(className, addr, factory, null);
+    	ctx.rebind(jndiKey, memoryRef);
+    }
 }
