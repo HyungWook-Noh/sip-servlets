@@ -341,11 +341,11 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 				logger.info("doInvite: uri = " + uri);
 				proxy.setParallel(false);
 			}
-			if (from.contains("update")){
-				proxy.setProxyTimeout(40);
-			} else {
-				proxy.setProxyTimeout(4);
-			}
+			if (from.contains("update") || from.contains("prack") || from.contains("redirect") || from.contains("cancel")){
+                proxy.setProxyTimeout(40);
+		    } else {
+		            proxy.setProxyTimeout(4);
+		    }
 			if(TEST_2_TRYING.equals(fromURI.getUser())) {
 				try {
 					Thread.sleep(1000);
