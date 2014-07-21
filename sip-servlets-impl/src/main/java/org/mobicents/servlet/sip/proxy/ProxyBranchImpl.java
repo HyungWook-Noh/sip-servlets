@@ -188,7 +188,6 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 			if(this.isStarted() && !canceled && !timedOut &&
 					outgoingRequest.getMethod().equalsIgnoreCase(Request.INVITE)) {
 				if(lastResponse != null) { /* According to SIP RFC we should send cancel only if we receive any response first*/
-					SipServletRequest cancelRequest = outgoingRequest.createCancel();
 					if(logger.isDebugEnabled()) {
 						logger.debug("Trying to cancel ProxyBranch for outgoing request " + outgoingRequest);
 					}
