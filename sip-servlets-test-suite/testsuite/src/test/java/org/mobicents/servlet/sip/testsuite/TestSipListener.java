@@ -1,23 +1,22 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * TeleStax, Open Source Cloud Communications
+ * Copyright 2011-2014, Telestax Inc and individual contributors
+ * by the @authors tag.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
+ * This program is free software: you can redistribute it and/or modify
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
+ * This file incorporates work covered by the following copyright contributed under the GNU LGPL : Copyright 2007-2011 Red Hat.
  */
 
 package org.mobicents.servlet.sip.testsuite;
@@ -34,6 +33,9 @@ import gov.nist.javax.sip.header.extensions.JoinHeader;
 import gov.nist.javax.sip.header.extensions.ReplacesHeader;
 import gov.nist.javax.sip.header.ims.PathHeader;
 import gov.nist.javax.sip.message.MessageExt;
+import gov.nist.javax.sip.message.SIPResponse;
+import gov.nist.javax.sip.stack.SIPDialog;
+import gov.nist.javax.sip.stack.SIPTransaction;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -305,6 +307,7 @@ public class TestSipListener implements SipListener {
 	private Response inviteOkResponse;
 
 	private boolean sendNotify = true;
+	private boolean sendNotifyBeforeResponseToSubscribe = false;
 	
 	private boolean countRetrans = false;	
 	private int nbRetrans = 0;	
@@ -806,7 +809,13 @@ public class TestSipListener implements SipListener {
 			 * 
 			 *  Do this before creating the NOTIFY request below
 			 */
-			st.sendResponse(response);
+			if(!sendNotifyBeforeResponseToSubscribe) {
+				logger.info("Sending Response to Subscribe");
+				Thread.sleep(waitBeforeFinalResponse);
+				st.sendResponse(response);
+			} else {
+				((SIPDialog)dialog).setLastResponse((SIPTransaction)st, (SIPResponse)response); 
+			}
 			//Thread.sleep(1000); // Be kind to implementations
 						
 			/*
@@ -820,7 +829,7 @@ public class TestSipListener implements SipListener {
 			 * the subscription is not active.
 			 */
 			if(sendNotify ) {
-				Request notifyRequest = dialog.createRequest( "NOTIFY" );
+				Request notifyRequest = dialog.createRequest("NOTIFY");
 				
 				
 				// Mark the contact header, to check that the remote contact is updated
@@ -857,6 +866,11 @@ public class TestSipListener implements SipListener {
 				if (expires.getExpires() != 0) {
 					Thread myEventSource = new Thread(new MyEventSource(this,eventHeader));
 					myEventSource.start();
+				}
+				if(sendNotifyBeforeResponseToSubscribe) {
+					logger.info("Sending Response to Subscribe");
+					Thread.sleep(waitBeforeFinalResponse);
+					st.sendResponse(response);
 				}
 			}
 		} catch (Throwable ex) {
@@ -3568,5 +3582,20 @@ public class TestSipListener implements SipListener {
 	 */
 	public void setCancelRequest(Request cancelRequest) {
 		this.cancelRequest = cancelRequest;
+	}
+
+	/**
+	 * @return the sendNotifyBeforeResponseToSubscribe
+	 */
+	public boolean isSendNotifyBeforeResponseToSubscribe() {
+		return sendNotifyBeforeResponseToSubscribe;
+	}
+
+	/**
+	 * @param sendNotifyBeforeResponseToSubscribe the sendNotifyBeforeResponseToSubscribe to set
+	 */
+	public void setSendNotifyBeforeResponseToSubscribe(
+			boolean sendNotifyBeforeResponseToSubscribe) {
+		this.sendNotifyBeforeResponseToSubscribe = sendNotifyBeforeResponseToSubscribe;
 	}
 }
