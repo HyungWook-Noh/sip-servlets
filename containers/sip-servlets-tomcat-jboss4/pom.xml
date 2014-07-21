@@ -182,6 +182,12 @@
 			<artifactId>sip-balancer-jar</artifactId>
 			<version>${mobicents.balancer.version}</version>
 			<scope>provided</scope>
+			<exclusions>
+			     <exclusion>
+			       <groupId>com.telscale.licensing</groupId>
+			       <artifactId>lce-core</artifactId>
+			     </exclusion>
+			   </exclusions>
 		</dependency>
 	</dependencies>
 	<build>

@@ -94,7 +94,8 @@
 		<mobicents.balancer.version>6.1.3.GA-TelScale</mobicents.balancer.version>
 		<mobicents.jain.sip.ha.version>6.1.3.GA-TelScale</mobicents.jain.sip.ha.version>
 		<mobicents.jain.sip.ext.version>6.1.3.GA-TelScale</mobicents.jain.sip.ext.version>		
-		<mobicents.commons.version>6.1.3.GA-TelScale</mobicents.commons.version>	
+		<mobicents.commons.version>6.1.3.GA-TelScale</mobicents.commons.version>
+		<telscale.license.version>1.5.0.Final</telscale.license.version>
 	</properties>
 	
 	<dependencies>
