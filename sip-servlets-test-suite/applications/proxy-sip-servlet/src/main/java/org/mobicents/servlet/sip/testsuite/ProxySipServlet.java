@@ -1,23 +1,20 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * TeleStax, Open Source Cloud Communications
+ * Copyright 2011-2014, Telestax Inc and individual contributors
+ * by the @authors tag.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
+ * This program is free software: you can redistribute it and/or modify
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
 package org.mobicents.servlet.sip.testsuite;
@@ -111,7 +108,7 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 		logger.info("Got request:\n" + request.getMethod());
 		SipServletRequestExt req = (SipServletRequestExt)request;
 		if(req.isOrphan() && !req.isInitial()) {
-			req.getSession().setAttribute("h", "hhh");
+			req.getSession().setAttribute("h", "hhh");			
 			return;
 		}
 		if(request.getFrom().toString().contains("proxy-orphan")) {
@@ -181,6 +178,10 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 			request.getApplicationSession().setAttribute(SIP_APPLICATION_SESSION_TIMEOUT, "true");			
 		}
 		if(!request.isInitial()){
+		    if(request.getFrom().toString().contains("final-response-subsequent")) {
+                // https://code.google.com/p/sipservlets/issues/detail?id=21
+                request.createResponse(491).send();
+            }
 			return;
 		}
 						
@@ -227,7 +228,17 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 			proxy.setRecordRoute(true);
 			proxy.setProxyTimeout(5);
 			logger.info("proxying to downstream proxy" + request.getRequestURI());
-			if(from.contains("route")) {
+			if(from.contains("push-route-app-server")) {
+				logger.info("Max Forwards " + request.getHeader("Max-Forwards"));
+				if(request.getHeader("Max-Forwards").equalsIgnoreCase("70")) {
+					logger.info("proxying to downstream app server on port 5069");
+					// only the first hop proxy to the second server or the second server will endlessly route to itself
+					URI uriAppServer = sipFactory.createAddress("sip:receiver@" + host + ":5069").getURI();	
+					request.pushRoute((SipURI)uriAppServer);
+					proxy.proxyTo(request.getRequestURI());
+					return;
+				}
+			} else if(from.contains("route")) {
 				request.pushRoute((SipURI)uri1);
 			}
 			if(from.contains("uri1")) {
@@ -333,6 +344,10 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 			proxy.setSupervised(true);
 			if(recordRoute) {
 				proxy.getRecordRouteURI().setParameter("testparamname", "TESTVALUE");
+				if((via.contains("TCP") || via.contains("tcp")) && fromURI.getUser().contains("tcp-record-route-tcp")) {
+					proxy.getRecordRouteURI().setTransportParam("TCP");
+					uri1.removeParameter("transport");
+				}
 			}		
 			proxy.setParallel(true);
 			if(CHECK_URI.equals(fromURI.getUser())) {
@@ -345,10 +360,10 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 				proxy.setParallel(false);
 			}
 			if (from.contains("update") || from.contains("prack") || from.contains("redirect") || from.contains("cancel")){
-		                proxy.setProxyTimeout(40);
-                        } else {
-		            	proxy.setProxyTimeout(4);
-		    	}
+				proxy.setProxyTimeout(40);
+			} else {
+				proxy.setProxyTimeout(4);
+			}
 			if(TEST_2_TRYING.equals(fromURI.getUser())) {
 				try {
 					Thread.sleep(1000);
@@ -539,6 +554,14 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 			// This URi completes and need to be canceled before answering
 			uris.add(sipFactory.createAddress("sip:neutral@" + host + ":5058").getURI());
 			List<ProxyBranch> branches = response.getProxy().createProxyBranches(uris);
+			for (ProxyBranch proxyBranch : branches) {
+			    if(response.getFrom().getURI().toString().contains("change-to-user")) {
+			        // https://code.google.com/p/sipservlets/issues/detail?id=154
+	                Address toHeader = proxyBranch.getRequest().getAddressHeader("To");
+	                SipURI toSipURI = (SipURI) toHeader.getURI();
+	                toSipURI.setUser("newuser");
+	            }
+            }			
 			response.getProxy().startProxy();
 		}
 	}	
