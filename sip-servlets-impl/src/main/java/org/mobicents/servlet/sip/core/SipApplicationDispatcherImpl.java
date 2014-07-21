@@ -410,7 +410,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, S
 			logger.debug("SipApplicationDispatcher Started");
 		}	
 		LicenseEnforcer enforcer = new LicenseEnforcerImpl();
-	    enforcer.validateLicense(true);
+		enforcer.validateLicense("TelScale-SIP-Servlets",true);
 	}	
 	
 	/*
