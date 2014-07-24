@@ -80,9 +80,10 @@ public class ProxyUtils {
 			RouteHeader rHeader = (RouteHeader) clonedRequest.getHeader(RouteHeader.NAME);
 			if(rHeader != null) {
 				String nextApp = ((javax.sip.address.SipURI)rHeader.getAddress().getURI()).getParameter(MessageDispatcher.RR_PARAM_APPLICATION_NAME);
-				// https://code.google.com/p/sipservlets/issues/detail?id=273
-				String nextSipAppId = ((javax.sip.address.SipURI)rHeader.getAddress().getURI()).getParameter(MessageDispatcher.APP_ID);
 				if(nextApp != null) {
+					// https://code.google.com/p/sipservlets/issues/detail?id=273
+					String nextSipAppId = ((javax.sip.address.SipURI)rHeader.getAddress().getURI()).getParameter(MessageDispatcher.APP_ID);
+				
 					final MobicentsSipApplicationSessionKey sipAppKey = originalRequest.getSipSession().getSipApplicationSession().getKey();
 					final String thisApp = sipFactoryImpl.getSipApplicationDispatcher().getHashFromApplicationName(sipAppKey.getApplicationName());
 					
