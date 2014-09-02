@@ -145,6 +145,16 @@
 		   <groupId>com.telscale.licensing</groupId>
 		   <artifactId>lce-core</artifactId>
 		   <version>${telscale.license.version}</version>
+		   <exclusions>
+			    <exclusion>
+				<groupId>com.telscale.licensing</groupId>
+		                <artifactId>lce-common</artifactId>
+			    </exclusion>
+			    <exclusion>
+				<groupId>com.telscale.licensing</groupId>
+		                <artifactId>lce-secret</artifactId>
+			    </exclusion>
+		   </exclusions>
 		</dependency>
 		
   		<dependency>
@@ -165,6 +175,12 @@
 		   <groupId>com.telscale.licensing</groupId>
 		   <artifactId>lce-notify</artifactId>
 		   <version>${telscale.license.version}</version>
+		   <exclusions>
+			    <exclusion>
+				<groupId>com.telscale.licensing</groupId>
+		                <artifactId>lce-common</artifactId>
+			    </exclusion>
+		   </exclusions>
 		</dependency>
 		
 		<dependency>
