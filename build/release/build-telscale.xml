@@ -184,10 +184,10 @@
 					<property name="jboss.config" value="@{jboss.config}"/>
 					<property name="distro" value="jboss-distro"/>
 				</ant>	
-				<antcall target="deploy-mss-jopr-plugin-5">			
+				<!--antcall target="deploy-mss-jopr-plugin-5">			
 					<param name="mss.home" value="${jboss-5-jdk6.home}"/>
 					<param name="jboss.config" value="@{jboss.config}"/>
-				</antcall>
+				</antcall-->
 			</sequential>
 		</for>
 		<!--ant dir="${base.path}" antfile="build-telscale.xml" target="build-mobicents-diameter-jboss-5">
@@ -395,7 +395,7 @@
 		</exec>
 	</target>
 	
-	<target name="deploy-mss-jopr-plugin-5">
+	<!--target name="deploy-mss-jopr-plugin-5">
 		<echo message="MSS_HOME=${mss.home}"/>
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../management/jopr-plugin-as-5">
 			<arg line="clean install -P set-git-hash" />
@@ -404,7 +404,7 @@
 		<move verbose="true" failonerror="false" file="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin.jar" tofile="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin.jar.bak" />
 		<copy overwrite="true" file="${base.path}/../../management/jopr-plugin-as-5/target/jopr-mobicents-sip-servlets-as-5-plugin-${mss.management.version}.jar" tofile="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/jopr-mobicents-sip-servlets-as-5-plugin-${mss.management.version}.jar" />
 		<get dest="${mss.home}/server/${jboss.config}/deploy/admin-console.war/plugins/rhq-jmx-plugin-1.2.0.GA.jar" src="${jopr-jmx-plugin-5.url}"/>
-	</target>
+	</target-->
 
 	<target name="deploy-mss-eap-jopr-plugin-5">
 		<echo message="MSS_HOME=${mss.home}"/>
