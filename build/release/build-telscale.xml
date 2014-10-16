@@ -462,37 +462,43 @@
 		</exec-->
 
 		<exec executable="git">
-		    <arg value="clone" />		    
+		    <arg value="clone" />
+		    <arg value="-b" />
+		    <arg value="ts1" />		    
 		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jsip.git" />
 		    <arg value="${basedir}/target/dependencies/jain-sip" />
 		</exec>
 
-		<exec executable="git" dir="${basedir}/target/dependencies/jain-sip">		
+		<!--exec executable="git" dir="${basedir}/target/dependencies/jain-sip">		
 		    <arg value="checkout" />
 		    <arg value="${tag.name}" />
-		</exec>
+		</exec-->
 
 		<exec executable="git">
-		    <arg value="clone" />		    
+		    <arg value="clone" />
+		    <arg value="-b" />
+		    <arg value="ts1" />			    
 		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jsip-ext.git" />
 		    <arg value="${basedir}/target/dependencies/jain-sip.ext" />
 		</exec>
 
-		<exec executable="git" dir="${basedir}/target/dependencies/jain-sip.ext">		
+		<!--exec executable="git" dir="${basedir}/target/dependencies/jain-sip.ext">		
 		    <arg value="checkout" />
 		    <arg value="${tag.name}" />
-		</exec>
+		</exec-->
 
 		<exec executable="git">
-		    <arg value="clone" />		    
+		    <arg value="clone" />
+	            <arg value="-b" />
+		    <arg value="ts1" />			    
 		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jsip-ha.git" />
 		    <arg value="${basedir}/target/dependencies/jain-sip.ha" />
 		</exec>
 
-		<exec executable="git" dir="${basedir}/target/dependencies/jain-sip.ha">		
+		<!--exec executable="git" dir="${basedir}/target/dependencies/jain-sip.ha">		
 		    <arg value="checkout" />
 		    <arg value="${tag.name}" />
-		</exec>
+		</exec-->
 
 		<ant dir="${basedir}/target/dependencies/jain-sip" antfile="${basedir}/target/dependencies/jain-sip/build.xml" target="javadoc"/>		
 
