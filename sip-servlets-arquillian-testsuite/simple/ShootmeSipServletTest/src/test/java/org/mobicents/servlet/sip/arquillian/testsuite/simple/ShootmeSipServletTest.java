@@ -109,7 +109,7 @@ public class ShootmeSipServletTest extends SipTestCase
 
 	@BeforeClass
 	public static void beforeClass(){
-		sipStackTool = new SipStackTool();
+		sipStackTool = new SipStackTool(ShootmeSipServletTest.class.toString());
 	}
 
 	@Before
@@ -187,6 +187,108 @@ public class ShootmeSipServletTest extends SipTestCase
 		assertNull(response.getMessage().getHeader(ContactHeader.NAME));
 	}
 
+    private static String mulipartContentType = "multipart" ;
+    private static String mulipartContentSubType = "mixed;boundary=boundary22" ;
+    private static String content = 
+        "--boundary22\r\n"+
+        "Content-Type: application/divers-xml\r\n\r\n"+
+        "<content>\r\n"+
+        "<content1>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris porttitor, felis sit amet sollicitudin viverra, diam nisl aliquet urna, nec condimentum ex sapien vitae eros. Ut convallis et lacus in rhoncus.</content1>\r\n"+
+        "<content2>Pellentesque et ligula eget dui viverra efficitur. Nulla sagittis fringilla arcu. In efficitur et nisl at finibus.</content2>\r\n"+
+        "<content3>Aliquam placerat, elit ac dignissim consequat, sem magna tempus augue, ac tincidunt diam magna sed arcu.</content3>\r\n"+
+        "<content4>Proin vitae nisi dolor.</content4>\r\n"+
+        "<content5>Vestibulum vulputate eget nulla non ornare. Duis lacinia nisi diam, vitae pellentesque metus mattis at.</content5>\r\n"+
+        "<content6>Curabitur ullamcorper justo orci. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vivamus convallis sem eget augue placerat, at lacinia diam sagittis. Vivamus in massa at leo tincidunt vehicula. Morbi sed nisl vel urna porta dapibus eget eget dolor.</content6>\r\n"+
+        "<content7>Nullam imperdiet diam diam, vel rutrum est placerat a. Cras fringilla ultrices ante, in efficitur orci iaculis eu. Aliquam erat volutpat. In hac habitasse platea dictumst. Praesent quis sodales lacus. Cras in tellus maximus, volutpat mi et, aliquam mi. Donec et porttitor lorem, ut ultricies arcu. Phasellus quis elementum ante, sed varius lacus. Quisque id metus vitae est ultricies rhoncus quis sed tortor. </content7>\r\n"+
+        "</content>\r\n\r\n"+
+        "--boundary22\r\n"+
+        "Content-Type: application/divers-xml\r\n\r\n"+
+        "<content>\r\n"+
+        "<content1>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris porttitor, felis sit amet sollicitudin viverra, diam nisl aliquet urna, nec condimentum ex sapien vitae eros. Ut convallis et lacus in rhoncus.</content1>\r\n"+
+        "<content2>Pellentesque et ligula eget dui viverra efficitur. Nulla sagittis fringilla arcu. In efficitur et nisl at finibus.</content2>\r\n"+
+        "<content3>Aliquam placerat, elit ac dignissim consequat, sem magna tempus augue, ac tincidunt diam magna sed arcu.</content3>\r\n"+
+        "<content4>Proin vitae nisi dolor.</content4>\r\n"+
+        "<content5>Vestibulum vulputate eget nulla non ornare. Duis lacinia nisi diam, vitae pellentesque metus mattis at.</content5>\r\n"+
+        "<content6>Curabitur ullamcorper justo orci. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vivamus convallis sem eget augue placerat, at lacinia diam sagittis. Vivamus in massa at leo tincidunt vehicula. Morbi sed nisl vel urna porta dapibus eget eget dolor.</content6>\r\n"+
+        "<content7>Nullam imperdiet diam diam, vel rutrum est placerat a. Cras fringilla ultrices ante, in efficitur orci iaculis eu. Aliquam erat volutpat. In hac habitasse platea dictumst. Praesent quis sodales lacus. Cras in tellus maximus, volutpat mi et, aliquam mi. Donec et porttitor lorem, ut ultricies arcu. Phasellus quis elementum ante, sed varius lacus. Quisque id metus vitae est ultricies rhoncus quis sed tortor. </content7>\r\n"+
+        "<content1>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris porttitor, felis sit amet sollicitudin viverra, diam nisl aliquet urna, nec condimentum ex sapien vitae eros. Ut convallis et lacus in rhoncus.</content1>\r\n"+
+        "<content2>Pellentesque et ligula eget dui viverra efficitur. Nulla sagittis fringilla arcu. In efficitur et nisl at finibus.</content2>\r\n"+
+        "<content3>Aliquam placerat, elit ac dignissim consequat, sem magna tempus augue, ac tincidunt diam magna sed arcu.</content3>\r\n"+
+        "<content4>Proin vitae nisi dolor.</content4>\r\n"+
+        "<content5>Vestibulum vulputate eget nulla non ornare. Duis lacinia nisi diam, vitae pellentesque metus mattis at.</content5>\r\n"+
+        "<content6>Curabitur ullamcorper justo orci. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vivamus convallis sem eget augue placerat, at lacinia diam sagittis. Vivamus in massa at leo tincidunt vehicula. Morbi sed nisl vel urna porta dapibus eget eget dolor.</content6>\r\n"+
+        "<content7>Nullam imperdiet diam diam, vel rutrum est placerat a. Cras fringilla ultrices ante, in efficitur orci iaculis eu. Aliquam erat volutpat. In hac habitasse platea dictumst. Praesent quis sodales lacus. Cras in tellus maximus, volutpat mi et, aliquam mi. Donec et porttitor lorem, ut ultricies arcu. Phasellus quis elementum ante, sed varius lacus. Quisque id metus vitae est ultricies rhoncus quis sed tortor. </content7>\r\n"+
+        "<content1>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris porttitor, felis sit amet sollicitudin viverra, diam nisl aliquet urna, nec condimentum ex sapien vitae eros. Ut convallis et lacus in rhoncus.</content1>\r\n"+
+        "<content2>Pellentesque et ligula eget dui viverra efficitur. Nulla sagittis fringilla arcu. In efficitur et nisl at finibus.</content2>\r\n"+
+        "<content3>Aliquam placerat, elit ac dignissim consequat, sem magna tempus augue, ac tincidunt diam magna sed arcu.</content3>\r\n"+
+        "<content4>Proin vitae nisi dolor.</content4>\r\n"+
+        "<content5>Vestibulum vulputate eget nulla non ornare. Duis lacinia nisi diam, vitae pellentesque metus mattis at.</content5>\r\n"+
+        "<content6>Curabitur ullamcorper justo orci. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vivamus convallis sem eget augue placerat, at lacinia diam sagittis. Vivamus in massa at leo tincidunt vehicula. Morbi sed nisl vel urna porta dapibus eget eget dolor.</content6>\r\n"+
+        "<content7>Nullam imperdiet diam diam, vel rutrum est placerat a. Cras fringilla ultrices ante, in efficitur orci iaculis eu. Aliquam erat volutpat. In hac habitasse platea dictumst. Praesent quis sodales lacus. Cras in tellus maximus, volutpat mi et, aliquam mi. Donec et porttitor lorem, ut ultricies arcu. Phasellus quis elementum ante, sed varius lacus. Quisque id metus vitae est ultricies rhoncus quis sed tortor. </content7>\r\n"+
+        "<content1>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris porttitor, felis sit amet sollicitudin viverra, diam nisl aliquet urna, nec condimentum ex sapien vitae eros. Ut convallis et lacus in rhoncus.</content1>\r\n"+
+        "<content2>Pellentesque et ligula eget dui viverra efficitur. Nulla sagittis fringilla arcu. In efficitur et nisl at finibus.</content2>\r\n"+
+        "<content3>Aliquam placerat, elit ac dignissim consequat, sem magna tempus augue, ac tincidunt diam magna sed arcu.</content3>\r\n"+
+        "<content4>Proin vitae nisi dolor.</content4>\r\n"+
+        "<content5>Vestibulum vulputate eget nulla non ornare. Duis lacinia nisi diam, vitae pellentesque metus mattis at.</content5>\r\n"+
+        "<content6>Curabitur ullamcorper justo orci. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.   Vivamus convallis sem eget augue placerat, at lacinia diam sagittis. Vivamus in massa at leo tincidunt vehicula. Morbi sed nisl vel urna porta dapibus eget eget dolor.</content6>\r\n"+
+        "<content7>Nullam imperdiet diam diam, vel rutrum est placerat a. Cras fringilla ultrices ante, in efficitur orci iaculis eu. Aliquam erat volutpat. In hac habitasse platea dictumst. Praesent quis sodales lacus. Cras in tellus maximus, volutpat mi et, aliquam mi. Donec et porttitor lorem, ut ultricies arcu. Phasellus quis elementum ante, sed varius lacus. Quisque id metus vitae est ultricies rhoncus quis sed tortor. </content7>\r\n"+
+        "<content1>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris porttitor, felis sit amet sollicitudin viverra, diam nisl aliquet urna, nec condimentum ex sapien vitae eros. Ut convallis et lacus in rhoncus.</content1>\r\n"+
+        "<content2>Pellentesque et ligula eget dui viverra efficitur. Nulla sagittis fringilla arcu. In efficitur et nisl at finibus.</content2>\r\n"+
+        "<content3>Aliquam placerat, elit ac dignissim consequat, sem magna tempus augue, ac tincidunt diam magna sed arcu.</content3>\r\n"+
+        "<content4>Proin vitae nisi dolor.</content4>\r\n"+
+        "<content5>Vestibulum vulputate eget nulla non ornare. Duis lacinia nisi diam, vitae pellentesque metus mattis at.</content5>\r\n"+
+        "<content6>Curabitur ullamcorper justo orci. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vivamus convallis sem eget augue placerat, at lacinia diam sagittis. Vivamus in massa at leo tincidunt vehicula. Morbi sed nisl vel urna porta dapibus eget eget dolor.</content6>\r\n"+
+        "<content7>Nullam imperdiet diam diam, vel rutrum est placerat a. Cras fringilla ultrices ante, in efficitur orci iaculis eu. Aliquam erat volutpat. In hac habitasse platea dictumst. Praesent quis sodales lacus. Cras in tellus maximus, volutpat mi et, aliquam mi. Donec et porttitor lorem, ut ultricies arcu. Phasellus quis elementum ante, sed varius lacus. Quisque id metus vitae est ultricies rhoncus quis sed tortor. </content7>\r\n"+
+        "<content7>Nullam imperdiet diam diam, vel rutrum est placerat a. Cras fringilla ultrices ante, in efficitur orci iaculis eu. Aliquam erat volutpat. In hac habitasse platea dictumst. Praesent quis sodales lacus. Cras in tellus maximus, volutpat mi et, aliquam mi. Donec et porttitor lorem, ut ultricies arcu.</content7>\r\n"+
+        "12345678901234567890123456789012345678901234567890123456789012345678901234567890\r\n"+
+        "12345678901234567890123456789012345678901234567890123456789012345678901234567890\r\n"+
+        "</content>\r\n\r\n"+
+        "--boundary22--\r\n";
+	
+	   @Test
+	    public void testShootmeMultipartContent() throws InterruptedException, SipException, ParseException, InvalidArgumentException {
+
+	        logger.info("About to deploy the application");
+	        deployer.deploy(testArchive);
+	        isDeployed = true;
+
+	        sipCallSender.initiateOutgoingCall(null, receiverURI, null, content, mulipartContentType, mulipartContentSubType, null, null);
+//	        sipCallSender.initiateOutgoingCall(receiverURI, null);
+
+	        Thread.sleep(TIMEOUT);
+
+	        assertTrue(sipCallSender.waitForAnswer(TIMEOUT));
+	        assertEquals(Response.OK, sipCallSender.getLastReceivedResponse().getStatusCode());
+
+	        assertTrue(sipCallSender.sendInviteOkAck());
+	        assertTrue(sipCallSender.disconnect());
+	        Thread.sleep(TIMEOUT);
+	        // test non regression for Issue 1687 : Contact Header is present in SIP Message where it shouldn't
+	        SipResponse response = sipCallSender.getLastReceivedResponse();
+	        assertEquals(Response.OK, response.getStatusCode());
+	        assertNull(response.getMessage().getHeader(ContactHeader.NAME));
+	    }
+	   
+       @Test
+       public void testShootmeMultipartContentWithModifiedContentLength() throws InterruptedException, SipException, ParseException, InvalidArgumentException {
+
+           logger.info("About to deploy the application");
+           deployer.deploy(testArchive);
+           isDeployed = true;
+
+           //This should FAIL because Content-Length: 9157 but calculated content length is 9156
+           String ContentLength = "Content-Length: "+(content.length()+1);
+           ArrayList<String> replaceHeaders = new ArrayList<String>();
+           replaceHeaders.add(ContentLength);
+           
+           sipCallSender.initiateOutgoingCall(null, receiverURI, null, content, mulipartContentType, mulipartContentSubType, null, replaceHeaders);
+//         sipCallSender.initiateOutgoingCall(receiverURI, null);
+
+           Thread.sleep(TIMEOUT);
+           assertFalse(sipCallSender.waitForAnswer(TIMEOUT));
+           assertEquals(Response.BAD_REQUEST, sipCallSender.getLastReceivedResponse().getStatusCode());
+       }
+	
 	/*
 	 * Non regression test for Issue 2115 http://code.google.com/p/mobicents/issues/detail?id=2115
 	 * MSS unable to handle GenericURI URIs
