@@ -688,7 +688,7 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	public void proxySubsequentRequest(MobicentsSipServletRequest sipServletRequest) {
 		SipServletRequestImpl request = (SipServletRequestImpl) sipServletRequest;
 		addTransaction(request);
-		// A re-INVITE needs special handling without goind through the dialog-stateful methods
+		// A re-INVITE needs special handling without going through the dialog-stateful methods
 		if(request.getMethod().equalsIgnoreCase("INVITE")) {
 			if(logger.isDebugEnabled()) {
 				logger.debug("Proxying reinvite request " + request);
@@ -718,7 +718,7 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 //				clonedRequest.removeFirst(RouteHeader.NAME);	
 //			}
 //		}
-
+		// https://telestax.atlassian.net/browse/MSS-119 update timer C for subsequent requests
 		updateTimer(false); 
 
 		try {

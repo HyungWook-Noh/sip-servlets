@@ -1126,6 +1126,14 @@ public class ProxyImpl implements MobicentsProxy, Externalizable {
 		return proxyTimerService;
 	}
 
+	/**
+	 * https://telestax.atlassian.net/browse/MSS-119
+	 * @param proxyTimerService
+	 */
+	public void setProxyTimerService(ProxyTimerService proxyTimerService) {
+		this.proxyTimerService = proxyTimerService;
+	}
+	
 	public void addProxyBranch(ProxyBranchImpl proxyBranchImpl) {
 		if(proxyBranches == null) {
 			this.proxyBranches = new LinkedHashMap<URI, ProxyBranchImpl> ();

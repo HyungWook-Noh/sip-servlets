@@ -78,6 +78,7 @@ import org.mobicents.ha.javax.sip.HASipDialog;
 import org.mobicents.ha.javax.sip.ReplicationStrategy;
 import org.mobicents.servlet.sip.GenericUtils;
 import org.mobicents.servlet.sip.catalina.CatalinaSipManager;
+import org.mobicents.servlet.sip.core.SipContext;
 import org.mobicents.servlet.sip.core.SipManager;
 import org.mobicents.servlet.sip.core.SipService;
 import org.mobicents.servlet.sip.core.message.MobicentsSipServletMessage;
@@ -893,6 +894,8 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 		proxy = (ProxyImpl) metaData.get(PROXY);
 		if(proxy != null) {
 			proxy.setMobicentsSipFactory(getManager().getMobicentsSipFactory());
+			// https://telestax.atlassian.net/browse/MSS-119
+			proxy.setProxyTimerService(((SipContext)getManager().getContainer()).getProxyTimerService());
 		}
 		
 		transport = (String) metaData.get(TRANSPORT);
