@@ -5,10 +5,10 @@
 	<property name="base.path" location="${ant.file.mobicents.sipservlets.release}/.." />
 	<property name="docs.stage.dir" location="${ant.file.mobicents.sipservlets.release}/../documentation" />
 	
-	<property name="mss.version" value="6.1.4" />
 	<property name="tag.name" value="ts113ga" />
-	<property name="mss.release.version" value="${mss.version}-TelScale-SNAPHOT" />
-	<property name="mss.management.version" value="${mss.version}-TelScale-SNAPSHOT" />
+	<!--property name="mss.version" value="6.1.4" />
+	<property name="mss.release.version" value="${mss.version}-TelScale-SNAPHOT" /-->
+	<property name="mss.management.version" value="${mss.release.version}" />
 	<property name="mss.snmp.version" value="6.1.2.GA-TelScale" />
 	<property name="snmp.tag.name" value="ts112ga" />
 	<property name="mss.release.configurations" value="all,default" />
