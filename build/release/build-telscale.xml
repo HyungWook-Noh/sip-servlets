@@ -248,7 +248,7 @@
 				<ant dir="${base.path}" antfile="build-telscale.xml" target="deploy-mss-eap-jopr-plugin-5">
 					<param name="mss.home" value="${eap-5.home}/jboss-as"/>
 					<param name="jboss.config" value="@{jboss.config}"/>
-				</antcall>
+				</ant>
 			</sequential>
 		</for>
 		<!--ant dir="${base.path}" antfile="build-telscale.xml" target="build-mobicents-diameter-jboss-5">
