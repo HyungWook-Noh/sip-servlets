@@ -245,11 +245,11 @@
 					<property name="distro" value="eap-distro"/>
 				</ant>	
 				<copy file="${base.path}/eap-metadata-deployer-jboss-beans.xml" overwrite="true" tofile="${mss.home}/server/${jboss.config}/deployers/metadata-deployer-jboss-beans.xml" />
-				<ant dir="${base.path}" antfile="build-telscale.xml" target="deploy-mss-eap-jopr-plugin-5">
+				<!--ant dir="${base.path}" antfile="build-telscale.xml" target="deploy-mss-eap-jopr-plugin-5">
 					<property name="mss.home" value="${eap-5.home}/jboss-as"/>
 					<property name="jboss.config" value="@{jboss.config}"/>
 					<property name="distro" value="eap-distro"/>
-				</ant>
+				</ant-->
 			</sequential>
 		</for>
 		<!--ant dir="${base.path}" antfile="build-telscale.xml" target="build-mobicents-diameter-jboss-5">
