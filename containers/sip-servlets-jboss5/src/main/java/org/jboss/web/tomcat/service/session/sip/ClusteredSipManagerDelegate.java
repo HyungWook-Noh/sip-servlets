@@ -161,6 +161,7 @@ public class ClusteredSipManagerDelegate extends SipManagerDelegate {
 			// put succeeded, use new value
             sipSessionImpl = session;
 		} else {
+			// https://telestax.atlassian.net/projects/MSS/issues/MSS-125 making sure we use the derived session
 			if(logger.isDebugEnabled()) {
 				logger.debug("Sip session already present with the key : " + key + ", session key found " + sipSessionImpl.getKey());
 			}
