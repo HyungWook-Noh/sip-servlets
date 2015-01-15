@@ -160,6 +160,18 @@ public class ClusteredSipManagerDelegate extends SipManagerDelegate {
 			}
 			// put succeeded, use new value
             sipSessionImpl = session;
+		} else {
+			if(logger.isDebugEnabled()) {
+				logger.debug("Sip session already present with the key : " + key + ", session key found " + sipSessionImpl.getKey());
+			}
+			if(sipSessionImpl.getKey().getToTag() != null && !sipSessionImpl.getKey().getToTag().equals(key.getToTag())) {
+				// take care of forking case where the to tag is different in the session key but sipSessions.putIfAbsent will return the wrong session ie the parent
+				// instead of the newly created one
+				if(logger.isDebugEnabled()) {
+					logger.debug("Sip session keys to tag are different, using the newly created session as it is a derived session");
+				}
+				sipSessionImpl = session;
+			}
 		}
 		return sipSessionImpl;
 	}

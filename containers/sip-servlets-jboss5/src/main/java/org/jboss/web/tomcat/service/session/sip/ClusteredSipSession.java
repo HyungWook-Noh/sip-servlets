@@ -1402,8 +1402,8 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 	@Override
 	public String toString() {
 		return new StringBuilder(getClass().getSimpleName()).append('[')
-				.append("id: ").append(haId).append(" lastAccessedTime: ")
-				.append(lastAccessedTime).append(" version: ").append(version)
+				.append("id: ").append(haId).append(" key: ").append(key)
+				.append(" lastAccessedTime: ").append(lastAccessedTime).append(" version: ").append(version)
 				.append(" lastOutdated: ").append(outdatedTime).append(']')
 				.toString();
 	}

@@ -2183,17 +2183,17 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 					logger.debug("check to see if needs to store and replicate "
 							+ "session with id " + session.getId() + " isValid " + session.isValidInternal() +
 							" getMustReplicateTimestamp " + session.getMustReplicateTimestamp() + 
-							" session state " + session.getState());
+							" session state " + session.getStateInternal());
 				}
 				boolean isRegister = session.isValidInternal() && session.getSessionCreatingTransactionRequest() != null && session.getSessionCreatingTransactionRequest().getMethod().equalsIgnoreCase(Request.REGISTER);
 				if (session.isValidInternal()
 						&& (session.isSessionDirty() || session.getMustReplicateTimestamp() || isRegister) && // Again for REGISTER we ignore the session.isDirty for the second part of http://code.google.com/p/mobicents/issues/detail?id=2799
 								// http://code.google.com/p/mobicents/issues/detail?id=2799 since REGISTER always stays in INITIAL state there is a dedicated check
-								((State.INITIAL.equals(session.getState()) && session.getSessionCreatingDialog() == null
+								((State.INITIAL.equals(session.getStateInternal()) && session.getSessionCreatingDialog() == null
 										&& session.getSessionCreatingTransactionRequest() != null && isRegister) ||
-								(State.CONFIRMED.equals(session.getState()) ||
+								(State.CONFIRMED.equals(session.getStateInternal()) ||
 										(((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).getReplicationStrategy().equals(ReplicationStrategy.EarlyDialog) 
-												&& State.EARLY.equals(session.getState()))))) {
+												&& State.EARLY.equals(session.getStateInternal()))))) {
 					final String realId = session.getId();
 					if(logger.isDebugEnabled()) {
 						logger.debug("replicating following sip session " + session.getId());
@@ -3440,15 +3440,15 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 		SipFactoryImpl sipFactoryImpl= (SipFactoryImpl) mobicentsSipFactory;
 		// Find it from the local store first
 		ClusteredSipSession<? extends OutgoingDistributableSessionData> session = findLocalSipSession(key, false, sipApplicationSessionImpl);
-		if(session == null) {
-			if (logger.isDebugEnabled()) {
+		if (logger.isDebugEnabled()) {
+			if(session == null) {
 				logger.debug("sip session " + key
 					+ " not found in the local store");
-			}
-		} else {
-			if (logger.isDebugEnabled()) {
-				logger.debug("sip session " + key
+			} else {
+				if (logger.isDebugEnabled()) {
+					logger.debug("sip session with key " + key + " and loaded session key " + session.getId()
 						+ " found in the local store " + session);
+				}
 			}
 		}		
 		
@@ -3476,6 +3476,15 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 							+ " in the distributed cache");
 	
 				session = loadSipSession(key, create, sipFactoryImpl, sipApplicationSessionImpl);
+				if (logger.isDebugEnabled()) {
+					if(session == null) {
+						logger.debug("sip session with key " + key + 
+								" not found thus not loaded from distributed cache " + session);
+					} else {
+						logger.debug("sip session with key " + key + " and loaded session key " + session.getId()
+							+ " loaded from distributed cache " + session);
+					}
+				}
 	//			if (session != null)
 	//		    {
 	//		          add(session);
@@ -3492,6 +3501,10 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 	
 				// Need to update it from the cache
 				loadSipSession(key, create, sipFactoryImpl, sipApplicationSessionImpl);
+				if (logger.isDebugEnabled()) {
+					logger.debug("sip session with key " + key + " and loaded session key " + session.getId()
+							+ " updated from distributed cache " + session);
+				}
 			}
 
 		}
