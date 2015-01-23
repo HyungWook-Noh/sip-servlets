@@ -643,5 +643,53 @@ public class DistributedCacheConvergedSipManagerDelegate<T extends OutgoingDistr
 		}
 		
 		jBossCacheService.getCacheWrapper().put(Fqn.fromString(fqn.toString() + "/" + AbstractJBossCacheService.VERSION_KEY.toString()), AbstractJBossCacheService.VERSION_KEY.toString(), sipSessionData.getVersion());
+	}
+
+	public boolean isSipApplicationSessionPresent(String sipApplicationSessionId) {
+		if (log_.isDebugEnabled()) {
+			log_.debug("isSipApplicationSessionPresent(): " + sipApplicationSessionId);
+		}
+		if (sipApplicationSessionId == null) {
+			throw new IllegalArgumentException("Null key");
+		}
+
+		Fqn<String> fqn = getSipApplicationSessionFqn(jBossCacheService.getCombinedPath(), sipApplicationSessionId);
+		Map<Object, Object> sessionData = jBossCacheService.getCacheWrapper().getData(fqn, true);
+
+		if (sessionData == null) {
+			// Requested session is no longer in the cache
+			if (log_.isDebugEnabled()) {
+				log_.debug("SipApplicationSession not Present in the cache anymore : " + sipApplicationSessionId);
+			}
+			return false;
+		}
+		if (log_.isDebugEnabled()) {
+			log_.debug("SipApplicationSession Present in the cache anymore : " + sipApplicationSessionId);
+		}
+		return true;
+	} 
+	
+	public boolean isSipSessionPresent(String sipAppSessionKey, String sipSessionId) {
+		if (log_.isDebugEnabled()) {
+			log_.debug("isSipSessionPresent(): " + sipSessionId);
+		}
+		if (sipSessionId == null) {
+			throw new IllegalArgumentException("Null key");
+		}
+
+		Fqn<String> fqn = getSipSessionFqn(jBossCacheService.getCombinedPath(), sipAppSessionKey, sipSessionId);
+		Map<Object, Object> sessionData = jBossCacheService.getCacheWrapper().getData(fqn, true);
+
+		if (sessionData == null) {
+			// Requested session is no longer in the cache
+			if (log_.isDebugEnabled()) {
+				log_.debug("SipApplicationSession not Present in the cache anymore : " + sipSessionId);
+			}
+			return false;
+		}
+		if (log_.isDebugEnabled()) {
+			log_.debug("SipApplicationSession Present in the cache anymore : " + sipSessionId);
+		}
+		return true;
 	} 
 }

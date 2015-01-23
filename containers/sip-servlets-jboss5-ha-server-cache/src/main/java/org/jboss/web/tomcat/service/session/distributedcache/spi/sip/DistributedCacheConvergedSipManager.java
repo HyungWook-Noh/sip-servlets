@@ -493,4 +493,7 @@ public interface DistributedCacheConvergedSipManager<T extends OutgoingDistribut
 	void setApplicationName(String applicationName);
 
 	void setApplicationNameHashed(String applicationNameHashed);
+
+	boolean isSipApplicationSessionPresent(String sipApplicationSessionId);
+	boolean isSipSessionPresent(String sipApplicationSessionId, String sipSessionId);
 }

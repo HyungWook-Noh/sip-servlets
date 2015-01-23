@@ -2507,9 +2507,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 			ClassLoader prevTCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(getApplicationClassLoader());
 			try {
-	            IncomingDistributableSessionData data = getDistributedCacheConvergedSipManager().getSipSessionData(applicationSessionKey.getId(), SessionManagerUtil.getSipSessionHaKey(key), initialLoad);
-	            if (data != null)
-	            {
+				boolean isSipSessionPresent = getDistributedCacheConvergedSipManager().isSipSessionPresent(applicationSessionKey.getId(),SessionManagerUtil.getSipSessionHaKey(key));
+				if (isSipSessionPresent) {
 	            	if(logger.isDebugEnabled()) {
 	        			logger.debug("data for sip session " + key + " found in the distributed cache");
 	        		}
@@ -2534,6 +2533,7 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 	            		}
 	            	} 
 	            	if(session!= null) {
+	            		IncomingDistributableSessionData data = getDistributedCacheConvergedSipManager().getSipSessionData(applicationSessionKey.getId(), SessionManagerUtil.getSipSessionHaKey(key), initialLoad);
 						session.update(data);
 						if (mustAdd && initialLoad) {
 	        	        	if(logger.isDebugEnabled()) {
@@ -2662,9 +2662,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 			ClassLoader prevTCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(getApplicationClassLoader());
 			try {
-				IncomingDistributableSessionData data = 
-					getDistributedCacheConvergedSipManager().getSipApplicationSessionData(key.getId(), initialLoad);
-				if (data != null) {
+				boolean isSipAppSessionPresent = getDistributedCacheConvergedSipManager().isSipApplicationSessionPresent(key.getId());
+				if (isSipAppSessionPresent) {
 					if (session == null) {
 						// This is either the first time we've seen this session on
 						// this
@@ -2678,7 +2677,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 						OwnedSessionUpdate osu = unloadedSipApplicationSessions_.get(key);
 						passivated = (osu != null && osu.passivated);						
 					}
-					if(session != null) {					
+					if(session != null) {	
+						IncomingDistributableSessionData data = 
+								getDistributedCacheConvergedSipManager().getSipApplicationSessionData(key.getId(), initialLoad);
 						session.update(data);
 						if (mustAdd && initialLoad) {
 							if(logger.isDebugEnabled()) {

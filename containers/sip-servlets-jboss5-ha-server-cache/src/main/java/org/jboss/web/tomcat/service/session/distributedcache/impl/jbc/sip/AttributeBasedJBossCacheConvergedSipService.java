@@ -469,4 +469,13 @@ public class AttributeBasedJBossCacheConvergedSipService extends
 		delegate.setApplicationNameHashed(applicationNameHashed);
 	}
 
+	@Override
+	public boolean isSipApplicationSessionPresent(String sipApplicationSessionId) {
+		return delegate.isSipApplicationSessionPresent(sipApplicationSessionId);
+	}
+
+	@Override
+	public boolean isSipSessionPresent(String sipApplicationSessionId, String sipSessionId) {
+		return delegate.isSipSessionPresent(sipApplicationSessionId, sipSessionId);
+	}
 }

@@ -482,4 +482,14 @@ public void removeSipApplicationSessionLocal(String key,
 			Map<Object, Object> distributedCacheData) {
 		return getAttributes(realId);
 	}
+	
+	@Override
+	public boolean isSipApplicationSessionPresent(String sipApplicationSessionId) {
+		return delegate.isSipApplicationSessionPresent(sipApplicationSessionId);
+	}
+
+	@Override
+	public boolean isSipSessionPresent(String sipApplicationSessionId, String sipSessionId) {
+		return delegate.isSipSessionPresent(sipApplicationSessionId, sipSessionId);
+	}
 }
