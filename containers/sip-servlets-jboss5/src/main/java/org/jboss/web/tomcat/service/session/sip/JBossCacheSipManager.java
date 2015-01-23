@@ -2507,6 +2507,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 			ClassLoader prevTCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(getApplicationClassLoader());
 			try {
+				// https://telestax.atlassian.net/browse/MSS-126 added isPresent instead of fetching the full data and attributes
+				// to avoid a deadly loop leading to StackOverFlowException
 				boolean isSipSessionPresent = getDistributedCacheConvergedSipManager().isSipSessionPresent(applicationSessionKey.getId(),SessionManagerUtil.getSipSessionHaKey(key));
 				if (isSipSessionPresent) {
 	            	if(logger.isDebugEnabled()) {
@@ -2662,6 +2664,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 			ClassLoader prevTCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(getApplicationClassLoader());
 			try {
+				// https://telestax.atlassian.net/browse/MSS-126 added isPresent instead of fetching the full data and attributes
+				// to avoid a deadly loop leading to StackOverFlowException
 				boolean isSipAppSessionPresent = getDistributedCacheConvergedSipManager().isSipApplicationSessionPresent(key.getId());
 				if (isSipAppSessionPresent) {
 					if (session == null) {
