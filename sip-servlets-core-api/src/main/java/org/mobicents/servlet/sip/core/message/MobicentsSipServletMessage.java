@@ -26,6 +26,7 @@ import javax.servlet.sip.SipServletMessage;
 import javax.sip.Transaction;
 import javax.sip.message.Message;
 
+import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.core.session.MobicentsSipSession;
 
 /**
@@ -44,4 +45,6 @@ public interface MobicentsSipServletMessage extends SipServletMessage {
 	MobicentsTransactionApplicationData getTransactionApplicationData();
 	
 	Message getMessage();
+	
+	MobicentsSipApplicationSession getSipApplicationSession(boolean create);
 }
