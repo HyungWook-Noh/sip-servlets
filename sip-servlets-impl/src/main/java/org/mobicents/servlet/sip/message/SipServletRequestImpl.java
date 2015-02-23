@@ -2223,51 +2223,82 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 	 * {@inheritDoc}
 	 */
 	public String getInitialRemoteAddr() {
-		if(message == null || ((SIPRequest)message).getRemoteAddress() == null) {
-			return null;
+        // https://code.google.com/p/sipservlets/issues/detail?id=255 includes both ACK Support without tx and packet
+        // source ip address
+        if(getMethod().equalsIgnoreCase(Request.ACK)) {
+            if(logger.isTraceEnabled()) {
+                logger.trace("ACK request trying to return the Via address as we don't have a transaction");
+            }
+            // replaced because wasn't giving correct info for ACK
+            if(message == null || ((SIPRequest)message).getRemoteAddress() == null) {
+                return null;
+            }
+            return ((SIPRequest)message).getRemoteAddress().getHostAddress();
+        } else if(getTransaction() != null) {
+            if(logger.isTraceEnabled()) {
+                logger.trace("transaction not null, returning packet source ip address");
+            }
+			if(((SIPTransaction)getTransaction()).getPeerPacketSourceAddress() != null) {
+				return ((SIPTransaction)getTransaction()).getPeerPacketSourceAddress().getHostAddress();
+			} else {
+				return ((SIPTransaction)getTransaction()).getPeerAddress();
+			}
+		} else {
+            if(logger.isTraceEnabled()) {
+                logger.trace("transaction null, returning top via ip address");
+            }
+			ViaHeader via = (ViaHeader) message.getHeader(ViaHeader.NAME);
+			if(via == null ||
+					// https://github.com/Mobicents/sip-servlets/issues/47
+					// check if the via is container generated, if it is then it means 
+					// this is an outgoing request or response and thus should return null
+					!sipFactoryImpl.getSipApplicationDispatcher().isViaHeaderExternal(via) ) {
+				return null;
+			} else {
+				return via.getHost();
+			}
 		}
-		return ((SIPRequest)message).getRemoteAddress().getHostAddress();
-		// replaced because wasn't giving correct info for ACK
-//		if(getTransaction() != null) {
-//			if(((SIPTransaction)getTransaction()).getPeerPacketSourceAddress() != null) {
-//				return ((SIPTransaction)getTransaction()).getPeerPacketSourceAddress().getHostAddress();
-//			} else {
-//				return ((SIPTransaction)getTransaction()).getPeerAddress();
-//			}
-//		} else {
-//			ViaHeader via = (ViaHeader) message.getHeader(ViaHeader.NAME);
-//			if(via == null) {
-//				return null;
-//			} else {
-//				return via.getHost();
-//			}
-//		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public int getInitialRemotePort() {
-		if(message == null ) {
-			return -1;
+        // https://code.google.com/p/sipservlets/issues/detail?id=255 includes both ACK Support without tx and packet
+        // source port
+        if(getMethod().equalsIgnoreCase(Request.ACK)) {
+            if(logger.isTraceEnabled()) {
+                logger.trace("ACK request trying to return the Via port as we don't have a transaction");
+            }
+            // replaced because wasn't giving correct info for ACK
+            if(message == null ) {
+                return -1;
+            }
+            return ((SIPRequest)message).getRemotePort();
+        } else if(getTransaction() != null) {
+            if(logger.isTraceEnabled()) {
+                logger.trace("transaction not null, returning packet source port");
+            }
+			if(((SIPTransaction)getTransaction()).getPeerPacketSourceAddress() != null) {
+				return ((SIPTransaction)getTransaction()).getPeerPacketSourcePort();
+			} else {
+				return ((SIPTransaction)getTransaction()).getPeerPort();
+			}
+		}else {
+            if(logger.isTraceEnabled()) {
+                logger.trace("transaction null, returning top via port");
+            }
+			ViaHeader via = (ViaHeader) message.getHeader(ViaHeader.NAME);
+			if(via == null ||
+					// https://github.com/Mobicents/sip-servlets/issues/47
+					// check if the via is container generated, if it is then it means 
+					// this is an outgoing request or response and thus should return null
+					!sipFactoryImpl.getSipApplicationDispatcher().isViaHeaderExternal(via) ) {
+				return -1;
+			} else {
+				return via.getPort()<=0 ? 5060 : via.getPort();
+			}
 		}
-		return ((SIPRequest)message).getRemotePort();
-		// replaced because wasn't giving correct info for ACK
-//		if(getTransaction() != null) {
-//			if(((SIPTransaction)getTransaction()).getPeerPacketSourceAddress() != null) {
-//				return ((SIPTransaction)getTransaction()).getPeerPacketSourcePort();
-//			} else {
-//				return ((SIPTransaction)getTransaction()).getPeerPort();
-//			}
-//		}else {
-//			ViaHeader via = (ViaHeader) message.getHeader(ViaHeader.NAME);
-//			if(via == null) {
-//				return -1;
-//			} else {
-//				return via.getPort()<=0 ? 5060 : via.getPort();
-//			}
-//		}
-		
 	}
 
 	/**
@@ -2278,7 +2309,11 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 			return ((SIPTransaction)getTransaction()).getTransport();
 		} else {
 			ViaHeader via = (ViaHeader) message.getHeader(ViaHeader.NAME);
-			if(via == null) {
+			if(via == null ||
+					// https://github.com/Mobicents/sip-servlets/issues/47
+					// check if the via is container generated, if it is then it means 
+					// this is an outgoing request or response and thus should return null
+					!sipFactoryImpl.getSipApplicationDispatcher().isViaHeaderExternal(via) ) {
 				return null;
 			} else {
 				return via.getTransport();
