@@ -3307,7 +3307,7 @@ public class JBossCacheSipManager extends JBossCacheManager implements
 					String attrib = attribNames.next();
 					result += "   ATTRIBUTE(" + attrib + ") -> " + appSession.getAttribute(attrib) + "\n";
 				}
-				Set<MobicentsSipSession> sipSessions = appSession.getSipSessions();
+				Set<MobicentsSipSession> sipSessions = appSession.getSipSessions(true);
 				for(MobicentsSipSession sipSession : sipSessions) {
 					Enumeration<String> attributeNames = sipSession.getAttributeNames();
 					result += "   [SIP SESSION] ID = " + sipSession.getId() + "\n";
