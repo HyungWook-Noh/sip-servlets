@@ -37,10 +37,10 @@ import javax.sip.header.WWWAuthenticateHeader;
 
 import org.apache.catalina.Realm;
 import org.apache.catalina.authenticator.Constants;
-import org.apache.catalina.util.MD5Encoder;
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.catalina.SipLoginConfig;
 import org.mobicents.servlet.sip.catalina.security.CatalinaSipPrincipal;
+import org.mobicents.servlet.sip.catalina.security.MD5Encoder;
 import org.mobicents.servlet.sip.core.message.MobicentsSipServletRequest;
 import org.mobicents.servlet.sip.core.message.MobicentsSipServletResponse;
 import org.mobicents.servlet.sip.core.security.MobicentsSipLoginConfig;
