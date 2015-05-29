@@ -989,7 +989,8 @@ public class SipApplicationSessionImpl implements MobicentsSipApplicationSession
 			}
 			expirationTimerTask = sipContext.getSipApplicationSessionTimerService().createSipApplicationSessionTimerTask(this);
 			expirationTimerTask = sipContext.getSipApplicationSessionTimerService().schedule(expirationTimerTask, deltaMilliseconds, TimeUnit.MILLISECONDS);
-
+			logger.debug("sip application session "+ key +" expiration timer rescheduled.");
+			
 			return deltaMinutes;
 		}				
 	}

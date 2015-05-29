@@ -1185,9 +1185,17 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
         boolean started = false;
         try {
             if (tm != null && tm.isBatchInProgress() == false) {
+            	if(logger.isDebugEnabled()) {
+                    logger.debug("Starting Batch Transaction with BatchingManager " + tm);
+                }
                 tm.startBatch();
                 started = true;
-            }
+                if(logger.isDebugEnabled()) {
+                    logger.debug("Started Batch Transaction with BatchingManager " + tm);
+                }
+            } else if(logger.isDebugEnabled()) {
+                logger.debug("no BatchingManager to start " + tm);
+            } 
         } catch (RuntimeException re) {
             throw re;
         } catch (Exception e) {
@@ -1204,8 +1212,16 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
         BatchingManager tm = distributedConvergedManager.getBatchingManager();
         try {
             if (tm != null && tm.isBatchInProgress() == true && wasStarted) {
+            	if(logger.isDebugEnabled()) {
+                    logger.debug("Ending Batch Transaction with BatchingManager " + tm);
+                }
                 tm.endBatch();
-            }
+                if(logger.isDebugEnabled()) {
+                    logger.debug("Ended Batch Transaction with BatchingManager " + tm);
+                }
+            } else if(logger.isDebugEnabled()) {
+                logger.debug("no BatchingManager to end " + tm);
+            } 
         } catch (Exception e) {
             logger.error("Failed to stop batch replication transaction", e);
             // no need to rethrow an exception here as this is not recoverable and this could mess up the concurrency release of the semaphore on the session
