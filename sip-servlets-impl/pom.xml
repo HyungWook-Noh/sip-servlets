@@ -173,6 +173,13 @@
 		
 		<dependency>
 		   <groupId>com.telscale.licensing</groupId>
+		   <artifactId>lce-offline</artifactId>
+		   <version>${telscale.license.version}</version>
+		   <classifier>obfuscated</classifier>
+		</dependency>	
+		
+		<dependency>
+		   <groupId>com.telscale.licensing</groupId>
 		   <artifactId>lce-notify</artifactId>
 		   <version>${telscale.license.version}</version>
 		   <exclusions>

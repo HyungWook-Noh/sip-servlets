@@ -97,6 +97,7 @@
 	<target name="release-tomcat" depends="extract-tomcat">
 		<copy file="TOMCAT-SIP-SERVLETS-README.txt" todir="${tomcat.home}" />
 		<copy file="${base.path}/telestax-license.xml" tofile="${tomcat.home}/bin/telestax-license.xml" />
+		<copy file="${base.path}/license_pubkey.der" tofile="${tomcat.home}/bin/license_pubkey.der" />
 
 		<mkdir dir="${tomcat.home}/conf/dars"/>
 		<copy file="${base.path}/dars/click2call-dar.properties" tofile="${tomcat.home}/conf/dars/mobicents-dar.properties" />
@@ -137,6 +138,7 @@
 	<target name="release-tomcat7" depends="extract-tomcat7">
 			<copy file="TOMCAT-SIP-SERVLETS-README.txt" todir="${tomcat7.home}" />
 			<copy file="${base.path}/telestax-license.xml" tofile="${tomcat7.home}/bin/telestax-license.xml" />
+			<copy file="${base.path}/license_pubkey.der" tofile="${tomcat7.home}/bin/license_pubkey.der" />
 
 			<mkdir dir="${tomcat7.home}/conf/dars"/>
 			<copy file="${base.path}/dars/click2call-async-dar.properties" tofile="${tomcat7.home}/conf/dars/mobicents-dar.properties" />
@@ -300,6 +302,7 @@
 	<target name="release-jboss-5-node">
 		<echo message="MSS_HOME= ${mss.home}"/>
 		<copy file="${base.path}/telestax-license.xml" tofile="${mss.home}/server/${jboss.config}/conf/telestax-license.xml" />
+		<copy file="${base.path}/license_pubkey.der" tofile="${mss.home}/server/${jboss.config}/conf/license_pubkey.der" />
 		<mkdir dir="${mss.home}/server/${jboss.config}/conf/dars" />
 		<copy file="${base.path}/dars/click2call-dar.properties" overwrite="true" tofile="${mss.home}/server/${jboss.config}/conf/dars/mobicents-dar.properties" />
 		<copy file="${base.path}/mss-sip-stack-jboss-5.properties" overwrite="true" tofile="${mss.home}/server/${jboss.config}/conf/mss-sip-stack.properties" />
@@ -580,6 +583,8 @@
 			tofile="${mss.home}/sip-balancer/lb-log4j.xml" />
 		<copy file="${base.path}/target/dependencies/sip-balancer/jar/src/test/resources/telestax-license.xml"
 			tofile="${mss.home}/sip-balancer/telestax-license.xml" />
+		<copy file="${base.path}/target/dependencies/sip-balancer/jar/src/test/resources/license_pubkey.der"
+			tofile="${mss.home}/sip-balancer/license_pubkey.der" />
 	</target>
 	
 	<target name="build-mobicents-sglc" depends="get-deps">
