@@ -3,7 +3,7 @@
     <customer>[customer name]</customer>
     <email>[customer email]</email>
     <notification>
-        <enabled>[true|false]</enabled>
+        <enabled>false</enabled>
         <hostname>smtp.googlemail.com</hostname>
         <smtpPort>465</smtpPort>
         <user>telscale-LI@telestax.com</user>
