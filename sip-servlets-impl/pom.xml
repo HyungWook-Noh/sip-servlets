@@ -282,7 +282,7 @@
 									<goal> copy-dependencies </goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-notify,commons-email</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-offline,lce-notify,commons-email</includeArtifactIds>
 									<outputDirectory>${CATALINA_HOME}/lib</outputDirectory>
 								</configuration>
 							</execution>
@@ -336,7 +336,7 @@
 									<goal> copy-dependencies </goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,concurrent,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-notify,commons-email</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,concurrent,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-offline,lce-notify,commons-email</includeArtifactIds>
 									<outputDirectory>${env.CATALINA_HOME}/lib</outputDirectory>
 								</configuration>
 							</execution>
@@ -387,7 +387,7 @@
 									<goal> copy-dependencies </goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-notify,commons-email</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-offline,lce-notify,commons-email</includeArtifactIds>
 									<outputDirectory>${CATALINA_HOME}/lib</outputDirectory>
 								</configuration>
 							</execution>
@@ -438,7 +438,7 @@
 									<goal> copy-dependencies </goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,concurrent,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-notify,commons-email</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,concurrent,log4j,commons-logging,dnsjava,stun4j,activation,mail,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-offline,lce-notify,commons-email</includeArtifactIds>
 									<outputDirectory>${env.CATALINA_HOME}/lib</outputDirectory>
 								</configuration>
 							</execution>
@@ -485,7 +485,7 @@
 									<goal>copy-dependencies</goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-notify,commons-email</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-offline,lce-notify,commons-email</includeArtifactIds>
 									<outputDirectory>${env.JBOSS_HOME}/server/${node}/deploy/jboss-web.deployer</outputDirectory>
 								</configuration>
 							</execution>
@@ -531,7 +531,7 @@
 									<goal> copy-dependencies </goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-notify,commons-email</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-offline,lce-notify,commons-email</includeArtifactIds>
 									<outputDirectory>${JBOSS_HOME}/server/${node}/deploy/jboss-web.deployer/</outputDirectory>
 								</configuration>
 							</execution>
@@ -579,7 +579,7 @@
 									<goal>copy-dependencies</goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-notify,commons-email</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-offline,lce-notify,commons-email</includeArtifactIds>
 									<outputDirectory>${env.JBOSS_HOME}/server/${node}/deploy/jbossweb.sar</outputDirectory>
 								</configuration>
 							</execution>
@@ -626,7 +626,7 @@
 									<goal>copy-dependencies</goal>
 								</goals>
 								<configuration>
-									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-notify,commons-email</includeArtifactIds>
+									<includeArtifactIds>jain-sip-api,jain-sip-ri,dnsjava,stun4j,mobicents-jain-sip-ha-core,mobicents-jain-sip-ext,commons-codec,commons-congestion,javolution,lce-core,lce-common,lce-secret,lce-offline,lce-notify,commons-email</includeArtifactIds>
 									<outputDirectory>${JBOSS_HOME}/server/${node}/deploy/jbossweb.sar</outputDirectory>
 								</configuration>
 							</execution>
