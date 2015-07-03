@@ -267,6 +267,19 @@ public class SipStandardService extends StandardService implements CatalinaSipSe
 			throw new LifecycleException("It's forbidden to set the Base Timer Interval to a non positive value");		
 		}
 		initSipStack();
+		// https://telestax.atlassian.net/browse/MSS-148 make sure we have a default to bin direction for better out of the box experience
+		if(System.getProperty("telscale.license.dir") == null) {
+			System.setProperty("telscale.license.dir", getCatalinaBase() + File.separatorChar + "bin");
+			if(logger.isDebugEnabled()) {
+				logger.debug("Setting telscale.license.dir directory to : " + getCatalinaBase() + File.separatorChar + "bin");
+			}
+		}
+		if(System.getProperty("telscale.license.key.location") == null) {
+			System.setProperty("telscale.license.key.location", getCatalinaBase() + File.separatorChar + "bin");
+			if(logger.isDebugEnabled()) {
+				logger.debug("Setting telscale.license.key.location directory to : " + getCatalinaBase() + File.separatorChar + "bin");
+			}
+		}
 		sipApplicationDispatcher.setBaseTimerInterval(baseTimerInterval);
 		sipApplicationDispatcher.setT2Interval(t2Interval);
 		sipApplicationDispatcher.setT4Interval(t4Interval);
