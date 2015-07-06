@@ -192,6 +192,9 @@
 				</antcall-->
 			</sequential>
 		</for>
+		<copy file="${base.path}/telestax-license.xml" tofile="${jboss-5-jdk6.home}/bin" />
+		<copy file="${base.path}/license_pubkey.der" tofile="${jboss-5-jdk6.home}/bin" />
+		
 		<!--ant dir="${base.path}" antfile="build-telscale.xml" target="build-mobicents-diameter-jboss-5">
 			<property name="mss.home" value="${jboss-5-jdk6.home}"/>
 			<property name="jboss.config" value="default"/>
@@ -254,6 +257,8 @@
 				</ant-->
 			</sequential>
 		</for>
+		<copy file="${base.path}/telestax-license.xml" tofile="${eap-5.home}/jboss-as/bin" />
+		<copy file="${base.path}/license_pubkey.der" tofile="${eap-5.home}/jboss-as/bin" />
 		<!--ant dir="${base.path}" antfile="build-telscale.xml" target="build-mobicents-diameter-jboss-5">
 			<property name="mss.home" value="${jboss-5-jdk6.home}"/>
 			<property name="jboss.config" value="default"/>
@@ -301,8 +306,6 @@
 	
 	<target name="release-jboss-5-node">
 		<echo message="MSS_HOME= ${mss.home}"/>
-		<copy file="${base.path}/telestax-license.xml" tofile="${mss.home}/server/${jboss.config}/conf/telestax-license.xml" />
-		<copy file="${base.path}/license_pubkey.der" tofile="${mss.home}/server/${jboss.config}/conf/license_pubkey.der" />
 		<copy file="${base.path}/run.conf" overwrite="true" tofile="${mss.home}/bin/run.conf" />
 		<mkdir dir="${mss.home}/server/${jboss.config}/conf/dars" />
 		<copy file="${base.path}/dars/click2call-dar.properties" overwrite="true" tofile="${mss.home}/server/${jboss.config}/conf/dars/mobicents-dar.properties" />
