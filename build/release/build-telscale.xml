@@ -303,6 +303,7 @@
 		<echo message="MSS_HOME= ${mss.home}"/>
 		<copy file="${base.path}/telestax-license.xml" tofile="${mss.home}/server/${jboss.config}/conf/telestax-license.xml" />
 		<copy file="${base.path}/license_pubkey.der" tofile="${mss.home}/server/${jboss.config}/conf/license_pubkey.der" />
+		<copy file="${base.path}/run.conf" overwrite="true" tofile="${mss.home}/bin/run.conf" />
 		<mkdir dir="${mss.home}/server/${jboss.config}/conf/dars" />
 		<copy file="${base.path}/dars/click2call-dar.properties" overwrite="true" tofile="${mss.home}/server/${jboss.config}/conf/dars/mobicents-dar.properties" />
 		<copy file="${base.path}/mss-sip-stack-jboss-5.properties" overwrite="true" tofile="${mss.home}/server/${jboss.config}/conf/mss-sip-stack.properties" />
