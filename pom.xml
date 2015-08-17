@@ -4,7 +4,7 @@
 	<parent>
         	<artifactId>mobicents-parent</artifactId>
         	<groupId>org.mobicents</groupId>
-        	<version>6.1.7.7</version>
+        	<version>6.1.7.8</version>
     	</parent>
 	<groupId>org.mobicents.servlet.sip</groupId>
 	<artifactId>sip-servlets-bootstrap</artifactId>
