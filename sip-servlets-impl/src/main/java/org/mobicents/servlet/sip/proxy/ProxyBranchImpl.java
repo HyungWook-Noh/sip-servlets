@@ -373,7 +373,7 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 		}
 		
 		this.proxyBranchTimeout = seconds;
-		if(this.started) updateTimer(false);
+		if(this.started) updateTimer(false, originalRequest.getSipApplicationSession(false));
 	}
 	
 	/**
@@ -395,7 +395,7 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 		}
 		
 		// Initialize these here for efficiency.
-		updateTimer(false);		
+		updateTimer(false, originalRequest.getSipApplicationSession(false));		
 		
 		SipURI recordRoute = null;
 		
@@ -424,7 +424,7 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 			logger.debug("Proxy Branch 1xx Timeout set to " + proxyBranch1xxTimeout);
 		}
 		if(proxyBranch1xxTimeout > 0) {
-			proxy1xxTimeoutTask = new ProxyBranchTimerTask(this, ResponseType.INFORMATIONAL);				
+			proxy1xxTimeoutTask = new ProxyBranchTimerTask(this, ResponseType.INFORMATIONAL, originalRequest.getSipApplicationSession(false));				
 			proxy.getProxyTimerService().schedule(proxy1xxTimeoutTask, proxyBranch1xxTimeout * 1000L);
 			proxyBranch1xxTimerStarted = true;
 		}
@@ -576,7 +576,7 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 				// Added for http://code.google.com/p/sipservlets/issues/detail?id=41
 				&& State.EARLY.equals(response.getSipSession().getState())) {
 				
-				updateTimer(true);
+				updateTimer(true, response.getSipApplicationSession(false));
 			}
 			
 			if(logger.isDebugEnabled())
@@ -719,7 +719,7 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 //			}
 //		}
 		// https://telestax.atlassian.net/browse/MSS-119 update timer C for subsequent requests
-		updateTimer(false); 
+		updateTimer(false, request.getSipApplicationSession(false)); 
 
 		try {
 			// Reset the proxy supervised state to default Chapter 6.2.1 - page down list bullet number 6
@@ -921,9 +921,10 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	/**
 	 * Restart the timer. Call this method when some activity shows the remote
 	 * party is still online.
+	 * @param mobicentsSipApplicationSession 
 	 *
 	 */
-	public void updateTimer(boolean cancel1xxTimer) {
+	public void updateTimer(boolean cancel1xxTimer, MobicentsSipApplicationSession mobicentsSipApplicationSession) {
 		if(cancel1xxTimer) {
 			cancel1xxTimer();
 		}
@@ -932,7 +933,7 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 			synchronized (cTimerLock) {
 				if(!proxyBranchTimerStarted) {
 					try {
-						final ProxyBranchTimerTask timerCTask = new ProxyBranchTimerTask(this, ResponseType.FINAL);
+						final ProxyBranchTimerTask timerCTask = new ProxyBranchTimerTask(this, ResponseType.FINAL, mobicentsSipApplicationSession);
 						if(logger.isDebugEnabled()) {
 							logger.debug("Proxy Branch Timeout set to " + proxyBranchTimeout);
 						}
