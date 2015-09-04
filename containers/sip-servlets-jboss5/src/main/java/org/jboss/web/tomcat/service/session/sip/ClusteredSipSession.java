@@ -861,6 +861,9 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 
 	protected void updateSipSession(DistributableSipSessionMetadata md) {
 		//From SipSession
+		if(logger.isDebugEnabled()) {
+			logger.debug("updating sip session metadata ");
+		}
 		final Map<String, Object> metaData = md.getMetaData();
 		handlerServlet = (String) metaData.get(HANDLER);		
 		Boolean valid = (Boolean)metaData.get(IS_VALID);
@@ -1036,6 +1039,9 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 					}
 				}
 			}
+		}
+		if(logger.isDebugEnabled()) {
+			logger.debug("updated sip session metadata ");
 		}
 	}
 
@@ -1433,6 +1439,9 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 	 */
 	protected void populateAttributes(
 			Map<String, Object> distributedCacheAttributes) {
+		if(logger.isTraceEnabled()) {
+			logger.trace("updating sip session attributes");
+		}
 		Map<String, Object> existing = getAttributesInternal();
 		Map<String, Object> excluded = removeExcludedAttributes(existing);
 
@@ -1440,11 +1449,17 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 
 		if(logger.isDebugEnabled()) {
 			logger.debug("putting following attributes " + distributedCacheAttributes + " in the sip session " + key);
+			for(Entry<String, Object> entry : distributedCacheAttributes.entrySet()) {
+				logger.debug("putting following attribute key " + entry.getKey() + " with value " + entry.getValue() + " in the sip session " + key);
+			}
 		}
 		
 		existing.putAll(distributedCacheAttributes);
 		if (excluded != null)
 			existing.putAll(excluded);
+		if(logger.isTraceEnabled()) {
+			logger.trace("updated sip session attributes");
+		}
 	}
 
 	protected final Map<String, Object> getAttributesInternal() {

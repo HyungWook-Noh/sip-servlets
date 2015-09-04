@@ -316,8 +316,48 @@ public class SessionBasedJBossCacheConvergedSipService extends
 	public Map<String, Object> getConvergedSessionAttributes(String realId,
 			Map<Object, Object> distributedCacheData) {
 		Map<String, Object> result = null;
+		
 		if(distributedCacheData != null) {
+			if (log_.isTraceEnabled()) {
+				log_.trace("getConvergedSessionAttributes(): distributedCacheData ");
+				log_.trace("getConvergedSessionAttributes(): distributedCacheData "
+								+ distributedCacheData);
+				log_.trace("getConvergedSessionAttributes(): distributedCacheData attributes non-unmarshalled "
+						+ distributedCacheData.get(ATTRIBUTE_KEY.toString()));
+			}
 			result = (Map<String, Object>) getUnMarshalledValue(distributedCacheData.get(ATTRIBUTE_KEY.toString()));
+			if (log_.isTraceEnabled()) {
+				log_.trace("getConvergedSessionAttributes(): distributedCacheData attributes unmarshalled "
+						+ result);
+			}
+			if(result == null) {
+				if (log_.isTraceEnabled()) {
+					log_.trace("getConvergedSessionAttributes(): distributedCacheData entrySet  "
+							+ distributedCacheData.entrySet());
+				}
+				for (Map.Entry<Object, Object> entry : distributedCacheData.entrySet()) {
+					if (entry.getKey() instanceof String) {
+						if (log_.isTraceEnabled()) {
+							log_.trace("getConvergedSessionAttributes(): distributedCacheData entry key"
+									+ entry.getKey() + " non unmarshalled value " + entry
+									.getValue());
+						}
+						Object unmarshalledValue = getUnMarshalledValue(entry
+								.getValue());
+						if(unmarshalledValue != null) {
+							result.put((String) entry.getKey(), unmarshalledValue);
+						}
+						if (log_.isTraceEnabled()) {
+							log_.trace("getConvergedSessionAttributes(): distributedCacheData entry key"
+									+ entry.getKey() + " unmarshalled value " + unmarshalledValue);
+						}
+					}
+				}
+			}
+		}
+		if (log_.isTraceEnabled()) {
+			log_.trace("getConvergedSessionAttributes(): distributedCacheData result "
+					+ result);
 		}
 	    return result == null ? Collections.EMPTY_MAP : result;
 	}

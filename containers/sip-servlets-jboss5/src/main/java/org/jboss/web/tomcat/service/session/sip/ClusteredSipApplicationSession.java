@@ -1187,18 +1187,28 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 	 */
 	protected void populateAttributes(
 			Map<String, Object> distributedCacheAttributes) {
+		if(logger.isTraceEnabled()) {
+			logger.trace("updating sip application session attributes");
+		}
+		
 		Map<String, Object> existing = getAttributesInternal();
 		Map<String, Object> excluded = removeExcludedAttributes(existing);
 
 		existing.clear();
 
 		if(logger.isDebugEnabled()) {
-			logger.debug("putting following attributes " + distributedCacheAttributes + " in the sip session " + key);
+			logger.debug("putting following attributes " + distributedCacheAttributes + " in the sip application session " + key);
+			for(Entry<String, Object> entry : distributedCacheAttributes.entrySet()) {
+				logger.debug("putting following attribute key " + entry.getKey() + " with value " + entry.getValue() + " in the sip application session " + key);
+			}
 		}
 		
 		existing.putAll(distributedCacheAttributes);
 		if (excluded != null)
 			existing.putAll(excluded);
+		if(logger.isTraceEnabled()) {
+			logger.trace("updated sip application session attributes");
+		}
 	}
 
 	protected final Map<String, Object> getAttributesInternal() {

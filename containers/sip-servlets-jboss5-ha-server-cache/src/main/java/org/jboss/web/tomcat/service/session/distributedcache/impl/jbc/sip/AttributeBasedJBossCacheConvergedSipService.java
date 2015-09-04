@@ -306,10 +306,27 @@ public class AttributeBasedJBossCacheConvergedSipService extends
 		Map<String, Object> attrs = new HashMap<String, Object>();
 		// fix for Issue 1621 http://code.google.com/p/mobicents/issues/detail?id=1621
 		if(distributedCacheData != null) {
+			if (log_.isTraceEnabled()) {
+				log_.trace("getConvergedSessionAttributes(): distributedCacheData ");
+				log_.trace("getConvergedSessionAttributes(): distributedCacheData "
+						+ distributedCacheData);
+				log_.trace("getConvergedSessionAttributes(): distributedCacheData entrySet  "
+						+ distributedCacheData.entrySet());
+			}
 			for (Map.Entry<Object, Object> entry : distributedCacheData.entrySet()) {
 				if (entry.getKey() instanceof String) {
-					attrs.put((String) entry.getKey(), getUnMarshalledValue(entry
-							.getValue()));
+					if (log_.isTraceEnabled()) {
+						log_.trace("getConvergedSessionAttributes(): distributedCacheData entry key"
+								+ entry.getKey() + " non unmarshalled value " + entry
+								.getValue());
+					}
+					Object unmarshalledValue = getUnMarshalledValue(entry
+							.getValue());
+					attrs.put((String) entry.getKey(), unmarshalledValue);
+					if (log_.isTraceEnabled()) {
+						log_.trace("getConvergedSessionAttributes(): distributedCacheData entry key"
+								+ entry.getKey() + " unmarshalled value " + unmarshalledValue);
+					}
 				}
 			}
 		}

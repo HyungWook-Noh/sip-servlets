@@ -2561,6 +2561,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 				Thread.currentThread().setContextClassLoader(prevTCL);
 			}
 		} catch (Exception ex) {
+			if(log_.isDebugEnabled())
+				log_.debug("Problem loading sip session",
+					ex);
 			try {
 				// if(doTx)
 				// Let's set it no matter what.
@@ -2716,6 +2719,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 				Thread.currentThread().setContextClassLoader(prevTCL);
 			}
 		} catch (Exception ex) {
+			if(log_.isDebugEnabled())
+				log_.debug("Problem loading sip application session",
+					ex);
 			try {
 				// if(doTx)
 				// Let's set it no matter what.
