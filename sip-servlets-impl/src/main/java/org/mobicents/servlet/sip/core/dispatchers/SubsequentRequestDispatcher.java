@@ -35,6 +35,7 @@ import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.sip.ProxyBranch;
+import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipServletResponse;
 import javax.sip.Dialog;
 import javax.sip.ServerTransaction;
@@ -687,7 +688,7 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 		}
 		
 		// Issue 2850 :	Use Request-URI custom Mobicents parameters to route request for misbehaving agents, workaround for Cisco-SIPGateway/IOS-12.x user agent
-		private void checkRequestURIForNonCompliantAgents(MobicentsProxyBranch finalBranch, Request request) {
+		private void checkRequestURIForNonCompliantAgents(MobicentsProxyBranch finalBranch, Request request) throws ServletParseException {
 			URI requestURI = request.getRequestURI();
 			if(request.getRequestURI() instanceof javax.sip.address.SipURI && ((Parameters)requestURI).getParameter(MessageDispatcher.RR_PARAM_PROXY_APP) != null && requestURI instanceof SipURI) {								
 				final String host = ((SipURI) requestURI).getHost();
@@ -698,7 +699,9 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 					if(logger.isDebugEnabled()) {
 						logger.debug("Non Compliant Agent targeting Mobicents directly, Changing the request URI from " + requestURI + " to " + finalBranch.getTargetURI() + " to avoid going in a loop");
 					}
-					request.setRequestURI(((URIImpl)finalBranch.getTargetURI()).getURI());
+					request.setRequestURI(
+							((URIImpl)(StaticServiceHolder.sipStandardService.getSipApplicationDispatcher().getSipFactory().createURI(
+							finalBranch.getTargetURI()))).getURI());
 				}								
 			}
 		}

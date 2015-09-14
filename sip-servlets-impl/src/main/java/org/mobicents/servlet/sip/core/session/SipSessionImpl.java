@@ -1486,6 +1486,8 @@ public class SipSessionImpl implements MobicentsSipSession {
 		if(sessionCreatingTransactionRequest != null && 				
 				transaction.equals(sessionCreatingTransactionRequest.getTransaction())) {
 			sessionCreatingTransactionRequest.cleanUp();
+			// https://telestax.atlassian.net/browse/MSS-153 improve performance by cleaning the request
+			sessionCreatingTransactionRequest = null;
 		}
 		
 		if (proxy != null) {

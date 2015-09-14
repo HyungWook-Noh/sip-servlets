@@ -94,9 +94,11 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	// From javadoc : object representing the request that is or to be proxied.
 	private transient SipServletRequestImpl outgoingRequest;
 	private transient SipServletResponseImpl lastResponse;
-	private URI targetURI;
+	// https://telestax.atlassian.net/browse/MSS-153 moving to String to optimize memory usage
+	private String targetURI;
 	private transient SipURI outboundInterface;
-	private transient SipURI recordRouteURI;
+	// https://telestax.atlassian.net/browse/MSS-153 moving to String to optimize memory usage
+	private transient String recordRouteURI;
 	private boolean recordRoutingEnabled;
 	private boolean recurse;
 	private transient SipURI pathURI;
@@ -113,7 +115,8 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	private boolean isAddToPath;
 	private transient List<ProxyBranch> recursedBranches;
 	private boolean waitingForPrack;
-	public transient ViaHeader viaHeader;
+	// https://telestax.atlassian.net/browse/MSS-153 not needing to store it
+//	public transient ViaHeader viaHeader;
 	
 	/*
 	 * It is best to use a linked list here because we expect more than one tx only very rarely.
@@ -138,20 +141,22 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	
 	public ProxyBranchImpl(URI uri, ProxyImpl proxy)
 	{
-		this.targetURI = uri;
+		this.targetURI = uri.toString();
 		this.proxy = proxy;
 		isAddToPath = proxy.getAddToPath();
 		this.originalRequest = (SipServletRequestImpl) proxy.getOriginalRequest();
-		this.recordRouteURI = proxy.recordRouteURI;
+		if(proxy.recordRouteURI != null) {
+			this.recordRouteURI = new String(proxy.recordRouteURI);
+		}
 		this.pathURI = proxy.pathURI;
 		this.outboundInterface = proxy.getOutboundInterface();
-		if(recordRouteURI != null) {
-			this.recordRouteURI = (SipURI)((SipURIImpl)recordRouteURI).clone();			
-		}
+//		if(recordRouteURI != null) {
+//			this.recordRouteURI = (SipURI)((SipURIImpl)recordRouteURI).clone();			
+//		}
 		this.proxyBranchTimeout = proxy.getProxyTimeout();
 		this.proxyBranch1xxTimeout = proxy.getProxy1xxTimeout();
 		this.canceled = false;
-		this.recursedBranches = new ArrayList<ProxyBranch>();
+		this.recursedBranches = null;
 		proxyBranchTimerStarted = false;
 		cTimerLock = new Object();
 		
@@ -285,8 +290,13 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	public SipURI getRecordRouteURI() {
 		if(this.getRecordRoute()) {
 			if(this.recordRouteURI == null) 
-				this.recordRouteURI = proxy.getSipFactoryImpl().createSipURI("proxy", "localhost");
-			return this.recordRouteURI;
+				this.recordRouteURI = "proxy@localhost";
+			try {
+				return ((SipURI)proxy.getSipFactoryImpl().createURI(recordRouteURI));
+			} catch (ServletParseException e) {
+				logger.error("A problem occured while setting the target URI while proxying a request " + recordRouteURI, e);
+				return null;
+			}
 		}
 		
 		else throw new IllegalStateException("Record Route not enabled for this ProxyBranch. You must call proxyBranch.setRecordRoute(true) before getting an URI.");
@@ -296,10 +306,16 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	 * @see javax.servlet.sip.ProxyBranch#getRecursedProxyBranches()
 	 */
 	public List<ProxyBranch> getRecursedProxyBranches() {
+		if(recursedBranches == null) {
+			return new ArrayList<ProxyBranch>();
+		}
 		return recursedBranches;
 	}
 	
 	public void addRecursedBranch(ProxyBranchImpl branch) {
+		if(recursedBranches == null) {
+			recursedBranches = new ArrayList<ProxyBranch>();
+		}
 		recursedBranches.add(branch);
 	}
 
@@ -403,16 +419,28 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 		// will be ignored in the Proxying
 		if(proxy.getRecordRoute() || this.getRecordRoute()) {
 			if(recordRouteURI == null) {
-				recordRouteURI = proxy.getSipFactoryImpl().createSipURI("proxy", "localhost");
+				recordRouteURI = "proxy@localhost";
 			}
-			recordRoute = recordRouteURI;
+			try {
+				recordRoute = ((SipURI)proxy.getSipFactoryImpl().createURI(recordRouteURI));
+			} catch (ServletParseException e) {
+				logger.error("A problem occured while setting the target URI while proxying a request " + recordRouteURI, e);
+			}
 		}
 		addTransaction(originalRequest);
 						
+		URI destination = null;
+		if(targetURI != null) {
+			try {
+				destination = proxy.getSipFactoryImpl().createURI(targetURI);
+			} catch (ServletParseException e) {
+				logger.error("A problem occured while setting the target URI while proxying a request " + targetURI, e);
+			}
+		}
 		Request cloned = ProxyUtils.createProxiedRequest(
 				outgoingRequest,
 				this,
-				this.targetURI,
+				destination,
 				this.outboundInterface,
 				recordRoute, 
 				this.pathURI);
@@ -718,8 +746,11 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 //				clonedRequest.removeFirst(RouteHeader.NAME);	
 //			}
 //		}
-		// https://telestax.atlassian.net/browse/MSS-119 update timer C for subsequent requests
-		updateTimer(false, request.getSipApplicationSession(false)); 
+		// https://telestax.atlassian.net/browse/MSS-153 perf optimization : we update the timer only on non ACK
+		if(!clonedRequest.getMethod().equalsIgnoreCase(Request.ACK) ) { 
+			// https://telestax.atlassian.net/browse/MSS-119 update timer C for subsequent requests
+			updateTimer(false, request.getSipApplicationSession(false)); 
+		}
 
 		try {
 			// Reset the proxy supervised state to default Chapter 6.2.1 - page down list bullet number 6
@@ -790,22 +821,38 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 		request.setRoutingState(RoutingState.PROXIED);
 		this.prackOriginalRequest = request;
 				
-		URI targetURI = null; 
+		URI targetURI = null;
+		String targetURIString = null; 
 		if(request.getMethod().equals(Request.PRACK) || request.getMethod().equals(Request.ACK)) {
-			targetURI = this.targetURI;
+			targetURIString = this.targetURI;
 		}
 		
 		// Determine the direction of the request. Either it's from the dialog initiator (the caller)
 		// or from the callee
 		if(!((MessageExt)request.getMessage()).getFromHeader().getTag().toString().equals(proxy.getCallerFromTag())) {
 			// If it's from the callee we should send it in the other direction
-			targetURI = proxy.getPreviousNode();
+			targetURIString = proxy.getPreviousNode();
+		}
+		if(targetURIString != null) {
+			try {
+				targetURI = sipFactoryImpl.createURI(targetURIString);
+			} catch (ServletParseException e) {
+				logger.error("A problem occured while setting the target URI while proxying a request " + targetURIString, e);
+			}
+		}
+		SipURI recordRoute = null;
+		if(recordRouteURI != null) {
+			try {
+				recordRoute = ((SipURI)proxy.getSipFactoryImpl().createURI(recordRouteURI));
+			} catch (ServletParseException e) {
+				logger.error("A problem occured while setting the target URI while proxying a request " + recordRouteURI, e);
+			}
 		}
 		// https://code.google.com/p/sipservlets/issues/detail?id=274
 		// as described in https://lists.cs.columbia.edu/pipermail/sip-implementors/2003-June/004986.html
 		// we should record route on reINVITE as well for robustness in case of UA crash, so adding recordRouteURI in the call to this method
 		Request clonedRequest = 
-			ProxyUtils.createProxiedRequest(request, this, targetURI, null, recordRouteURI, null);
+			ProxyUtils.createProxiedRequest(request, this, targetURI, null, recordRoute, null);
 
 		ViaHeader viaHeader = (ViaHeader) clonedRequest.getHeader(ViaHeader.NAME);
 		try {
@@ -1215,15 +1262,26 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	/**
 	 * @param targetURI the targetURI to set
 	 */
-	public void setTargetURI(URI targetURI) {
+	public void setTargetURI(String targetURI) {
 		this.targetURI = targetURI;
 	}
 
 	/**
 	 * @return the targetURI
 	 */
-	public URI getTargetURI() {
+	public String getTargetURI() {
 		return targetURI;
 	}
 
+//	@Override
+//	public void setRecordRouteURI(SipURI uri) {
+//		this.recordRouteURI = uri.toString();
+//	}
+
+//	/**
+//	 * @return the userSpecifiedRecordRoutingEnabled
+//	 */
+//	public boolean isAppSpecifiedRecordRoutingEnabled() {
+//		return appSpecifiedRecordRoutingEnabled;
+//	}
 }
