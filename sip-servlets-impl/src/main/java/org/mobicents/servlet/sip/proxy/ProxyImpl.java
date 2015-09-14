@@ -182,9 +182,12 @@ public class ProxyImpl implements MobicentsProxy, Externalizable {
             	originalRequest.cleanUp();
             	originalRequest.cleanUpLastResponses();
             	originalRequest = null;
-            	finalBranchForSubsequentRequests.setResponse(null);
-            	finalBranchForSubsequentRequests.setOriginalRequest(null);
-            	finalBranchForSubsequentRequests.setOutgoingRequest(null);
+            	if(finalBranchForSubsequentRequests != null) {
+	            	finalBranchForSubsequentRequests.cancelTimer();
+	            	finalBranchForSubsequentRequests.setResponse(null);
+	            	finalBranchForSubsequentRequests.setOriginalRequest(null);
+	            	finalBranchForSubsequentRequests.setOutgoingRequest(null);
+            	}
             }
     }
 	
@@ -378,7 +381,7 @@ public class ProxyImpl implements MobicentsProxy, Externalizable {
 	public SipURI getRecordRouteURI() {
 		if(!this.recordRoutingEnabled) throw new IllegalStateException("You must setRecordRoute(true) before getting URI");
 		try {
-			return new SipURIImpl((javax.sip.address.SipURI)sipFactoryImpl.createURI(recordRouteURI), ModifiableRule.ProxyRecordRouteNotModifiable);
+			return new SipURIImpl(((SipURIImpl)sipFactoryImpl.createURI(recordRouteURI)).getSipURI(), ModifiableRule.ProxyRecordRouteNotModifiable);
 		} catch (ServletParseException e) {
 			logger.error("A problem occured while setting the target URI while proxying a request " + recordRouteURI, e);
 			return null;
