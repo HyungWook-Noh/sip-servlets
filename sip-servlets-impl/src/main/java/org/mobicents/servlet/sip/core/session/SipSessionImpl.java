@@ -1483,13 +1483,6 @@ public class SipSessionImpl implements MobicentsSipSession {
 //			sessionCreatingTransactionRequest = null;
 //		}
 				
-		if(sessionCreatingTransactionRequest != null && 				
-				transaction.equals(sessionCreatingTransactionRequest.getTransaction())) {
-			sessionCreatingTransactionRequest.cleanUp();
-			// https://telestax.atlassian.net/browse/MSS-153 improve performance by cleaning the request
-			sessionCreatingTransactionRequest = null;
-		}
-		
 		if (proxy != null) {
 		    proxy.removeTransaction(transaction.getBranchId());
 		}
@@ -1499,6 +1492,16 @@ public class SipSessionImpl implements MobicentsSipSession {
 		}	
 		
 		updateReadyToInvalidate(transaction);
+		// nullify the sessionCreatingTransactionRequest only after updateReadyToInvalidate as it is used for error response checking
+		if(sessionCreatingTransactionRequest != null && 				
+				transaction.equals(sessionCreatingTransactionRequest.getTransaction())) {
+			sessionCreatingTransactionRequest.cleanUp();
+			// https://telestax.atlassian.net/browse/MSS-153 improve performance by cleaning the request for dialog based requests
+			// or proxy case or dialog creating methods
+			if(sessionCreatingDialog != null || proxy != null || JainSipUtils.DIALOG_CREATING_METHODS.contains(sessionCreatingTransactionRequest.getMethod())) {
+				sessionCreatingTransactionRequest = null;
+			}
+		}
 	}
 	
 	

@@ -249,9 +249,11 @@ public class ShootistSipServlet
 			logger.info("Got : " + sipServletResponse.getStatus());
 			if(	getServletContext().getInitParameter("cancel") != null) {
 				long now = System.currentTimeMillis(); 
-				long timeSent = (Long) sipServletResponse.getApplicationSession().getAttribute("timeSent");
-				if(now - timeSent > 30000) {
-					sendMessage(sipFactory.createApplicationSession(), sipFactory, "30 sec passed");
+				if(sipServletResponse.getApplicationSession().getAttribute("timeSent") != null) {
+					long timeSent = (Long) sipServletResponse.getApplicationSession().getAttribute("timeSent");
+					if(now - timeSent > 30000) {
+						sendMessage(sipFactory.createApplicationSession(), sipFactory, "30 sec passed");
+					}
 				}
 			}
 			if(sipServletResponse.getStatus() == 408) {			
