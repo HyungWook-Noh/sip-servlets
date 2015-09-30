@@ -24,6 +24,7 @@ package org.mobicents.servlet.sip.testsuite.address;
 
 import javax.servlet.sip.Parameterable;
 import javax.servlet.sip.ServletParseException;
+import javax.servlet.sip.SipURI;
 
 import org.mobicents.servlet.sip.message.SipFactoryImpl;
 
@@ -48,5 +49,6 @@ public class SipFactoryTest extends junit.framework.TestCase {
 		Parameterable p = sipFactory.createParameterable("3600");
 		p.setParameter("refresher", "uac");
 		System.out.println(p.toString());
+		sipFactory.createURI("sip:proxy@localhost");
 	}
 }

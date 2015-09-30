@@ -86,6 +86,7 @@ import org.mobicents.servlet.sip.startup.StaticServiceHolder;
  */
 public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 
+	private static final String DEFAULT_RECORD_ROUTE_URI = "sip:proxy@localhost";
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(ProxyBranchImpl.class);
 	private transient ProxyImpl proxy;
@@ -290,7 +291,7 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	public SipURI getRecordRouteURI() {
 		if(this.getRecordRoute()) {
 			if(this.recordRouteURI == null) 
-				this.recordRouteURI = "proxy@localhost";
+				this.recordRouteURI = DEFAULT_RECORD_ROUTE_URI;
 			try {
 				return ((SipURI)proxy.getSipFactoryImpl().createURI(recordRouteURI));
 			} catch (ServletParseException e) {
@@ -419,7 +420,7 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 		// will be ignored in the Proxying
 		if(proxy.getRecordRoute() || this.getRecordRoute()) {
 			if(recordRouteURI == null) {
-				recordRouteURI = "proxy@localhost";
+				recordRouteURI = DEFAULT_RECORD_ROUTE_URI;
 			}
 			try {
 				recordRoute = ((SipURI)proxy.getSipFactoryImpl().createURI(recordRouteURI));
