@@ -108,7 +108,10 @@ public class ProxyImpl implements MobicentsProxy, Externalizable {
 	private int bestResponseSent = -1;
 	protected transient SipURIImpl pathURI;
 	// https://telestax.atlassian.net/browse/MSS-153 moving to String to optimize memory usage
-	protected transient String recordRouteURI;
+	protected transient String recordRouteURIString;
+	// https://telestax.atlassian.net/browse/MSS-153 need to keep it as URI for the time of the transaction as
+	// com.bea.sipservlet.tck.agents.spec.ProxyBranchTest.testAddNoSysHeader adds parameters to it that need to be passed on the outgoing invite
+	protected transient SipURI recordRouteURI;
 	private transient SipURI outboundInterface;
 	private transient SipFactoryImpl sipFactoryImpl;
 	private boolean isNoCancel;
@@ -182,11 +185,16 @@ public class ProxyImpl implements MobicentsProxy, Externalizable {
             	originalRequest.cleanUp();
             	originalRequest.cleanUpLastResponses();
             	originalRequest = null;
+            	if(recordRouteURI != null) {
+            		recordRouteURIString = recordRouteURI.toString();
+            		recordRouteURI = null;
+            	}
             	if(finalBranchForSubsequentRequests != null) {
 	            	finalBranchForSubsequentRequests.cancelTimer();
 	            	finalBranchForSubsequentRequests.setResponse(null);
 	            	finalBranchForSubsequentRequests.setOriginalRequest(null);
 	            	finalBranchForSubsequentRequests.setOutgoingRequest(null);
+	            	
             	}
             }
     }
@@ -380,12 +388,16 @@ public class ProxyImpl implements MobicentsProxy, Externalizable {
 	 */
 	public SipURI getRecordRouteURI() {
 		if(!this.recordRoutingEnabled) throw new IllegalStateException("You must setRecordRoute(true) before getting URI");
-		try {
-			return new SipURIImpl(((SipURIImpl)sipFactoryImpl.createURI(recordRouteURI)).getSipURI(), ModifiableRule.ProxyRecordRouteNotModifiable);
-		} catch (ServletParseException e) {
-			logger.error("A problem occured while setting the target URI while proxying a request " + recordRouteURI, e);
-			return null;
+		if(recordRouteURI == null && recordRouteURIString != null) {
+			try {
+				recordRouteURI = new SipURIImpl(((SipURIImpl)sipFactoryImpl.createURI(recordRouteURIString)).getSipURI(), ModifiableRule.ProxyRecordRouteNotModifiable);
+				recordRouteURIString = null;
+			} catch (ServletParseException e) {
+				logger.error("A problem occured while setting the target URI while proxying a request " + recordRouteURIString, e);
+				return null;
+			}
 		}
+		return this.recordRouteURI;
 	}
 
 	/* (non-Javadoc)
@@ -514,14 +526,14 @@ public class ProxyImpl implements MobicentsProxy, Externalizable {
 			// record route should be based on the original received message
 			javax.sip.address.SipURI flowUri= originalRequest.getSipSession().getFlow();
 			if(flowUri != null) {				
-				this.recordRouteURI = flowUri.toString();
+				this.recordRouteURIString = flowUri.toString();
 				if(logger.isDebugEnabled())
-					logger.debug("Using Session Flow URI as record route URI " + recordRouteURI);
+					logger.debug("Using Session Flow URI as record route URI " + recordRouteURIString);
 			} else {
-				this.recordRouteURI = JainSipUtils.createRecordRouteURI( sipFactoryImpl.getSipNetworkInterfaceManager(), message).toString();
+				this.recordRouteURIString = JainSipUtils.createRecordRouteURI( sipFactoryImpl.getSipNetworkInterfaceManager(), message).toString();
 			}
 			if(logger.isDebugEnabled()) {
-				logger.debug("Record routing enabled for proxy, Record Route used will be : " + recordRouteURI.toString());
+				logger.debug("Record routing enabled for proxy, Record Route used will be : " + recordRouteURIString);
 			}
 		}		
 		this.recordRoutingEnabled = rr;

@@ -99,7 +99,10 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	private String targetURI;
 	private transient SipURI outboundInterface;
 	// https://telestax.atlassian.net/browse/MSS-153 moving to String to optimize memory usage
-	private transient String recordRouteURI;
+	private transient String recordRouteURIString;
+	// https://telestax.atlassian.net/browse/MSS-153 need to keep it as URI for the time of the transaction as
+	// com.bea.sipservlet.tck.agents.spec.ProxyBranchTest.testAddNoSysHeader adds parameters to it that need to be passed on the outgoing invite
+	private transient SipURI recordRouteURI;
 	private boolean recordRoutingEnabled;
 	private boolean recurse;
 	private transient SipURI pathURI;
@@ -147,7 +150,10 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 		isAddToPath = proxy.getAddToPath();
 		this.originalRequest = (SipServletRequestImpl) proxy.getOriginalRequest();
 		if(proxy.recordRouteURI != null) {
-			this.recordRouteURI = new String(proxy.recordRouteURI);
+			this.recordRouteURI = proxy.recordRouteURI;
+		}
+		if(proxy.recordRouteURIString != null) {
+			this.recordRouteURIString = proxy.recordRouteURIString;
 		}
 		this.pathURI = proxy.pathURI;
 		this.outboundInterface = proxy.getOutboundInterface();
@@ -290,14 +296,19 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	 */
 	public SipURI getRecordRouteURI() {
 		if(this.getRecordRoute()) {
-			if(this.recordRouteURI == null) 
-				this.recordRouteURI = DEFAULT_RECORD_ROUTE_URI;
-			try {
-				return ((SipURI)proxy.getSipFactoryImpl().createURI(recordRouteURI));
-			} catch (ServletParseException e) {
-				logger.error("A problem occured while setting the target URI while proxying a request " + recordRouteURI, e);
-				return null;
+			if(this.recordRouteURI == null && this.recordRouteURIString == null) 
+				this.recordRouteURIString = DEFAULT_RECORD_ROUTE_URI;
+			
+			if(recordRouteURIString != null) {
+				try {
+					recordRouteURI = ((SipURI)proxy.getSipFactoryImpl().createURI(recordRouteURIString));
+					recordRouteURIString = null;
+				} catch (ServletParseException e) {
+					logger.error("A problem occured while setting the target URI while proxying a request " + recordRouteURI, e);
+					return null;
+				}
 			}
+			return recordRouteURI;
 		}
 		
 		else throw new IllegalStateException("Record Route not enabled for this ProxyBranch. You must call proxyBranch.setRecordRoute(true) before getting an URI.");
@@ -419,14 +430,17 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 		// If the proxy is not adding record-route header, set it to null and it
 		// will be ignored in the Proxying
 		if(proxy.getRecordRoute() || this.getRecordRoute()) {
-			if(recordRouteURI == null) {
-				recordRouteURI = DEFAULT_RECORD_ROUTE_URI;
+			if(recordRouteURI == null && recordRouteURIString == null) {
+				recordRouteURIString = DEFAULT_RECORD_ROUTE_URI;
 			}
-			try {
-				recordRoute = ((SipURI)proxy.getSipFactoryImpl().createURI(recordRouteURI));
-			} catch (ServletParseException e) {
-				logger.error("A problem occured while setting the target URI while proxying a request " + recordRouteURI, e);
+			if(recordRouteURIString != null) {
+				try {
+					recordRouteURI = ((SipURI)proxy.getSipFactoryImpl().createURI(recordRouteURIString));
+				} catch (ServletParseException e) {
+					logger.error("A problem occured while setting the target URI while proxying a request " + recordRouteURIString, e);
+				}
 			}
+			recordRoute = recordRouteURI;
 		}
 		addTransaction(originalRequest);
 						
@@ -843,8 +857,10 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 		}
 		SipURI recordRoute = null;
 		if(recordRouteURI != null) {
+			recordRoute = recordRouteURI;
+		} else if (recordRouteURIString != null){
 			try {
-				recordRoute = ((SipURI)proxy.getSipFactoryImpl().createURI(recordRouteURI));
+				recordRoute = ((SipURI)proxy.getSipFactoryImpl().createURI(recordRouteURIString));
 			} catch (ServletParseException e) {
 				logger.error("A problem occured while setting the target URI while proxying a request " + recordRouteURI, e);
 			}
@@ -1251,6 +1267,10 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	 */
 	public void setOriginalRequest(SipServletRequestImpl originalRequest) {
 		this.originalRequest = originalRequest;
+		if(originalRequest == null && recordRouteURI != null) {
+			recordRouteURIString = recordRouteURI.toString();
+			recordRouteURI = null;
+		}
 	}
 
 	/**
