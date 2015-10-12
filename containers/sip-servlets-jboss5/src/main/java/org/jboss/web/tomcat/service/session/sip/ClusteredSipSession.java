@@ -980,6 +980,7 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 									proxyBranchImpl.setOriginalRequest((SipServletRequestImpl)proxy.getOriginalRequest());
 									proxyBranchImpl.setProxy(proxy);
 									proxy.addProxyBranch(proxyBranchImpl);
+									proxy.checkAndCleanProxy();
 								}
 							}
 						}

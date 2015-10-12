@@ -180,25 +180,28 @@ public class ProxyImpl implements MobicentsProxy, Externalizable {
                             logger.debug("Transaction "+txId+" removed from proxy.");
                     }
             }
-            // // https://telestax.atlassian.net/browse/MSS-153 optimize performance by cleaning up the original request to reduce the retained mem size
-            if(this.transactionMap.size() == 0 && originalRequest != null) {
-            	originalRequest.cleanUp();
-            	originalRequest.cleanUpLastResponses();
-            	originalRequest = null;
-            	if(recordRouteURI != null) {
-            		recordRouteURIString = recordRouteURI.toString();
-            		recordRouteURI = null;
-            	}
-            	if(finalBranchForSubsequentRequests != null) {
-	            	finalBranchForSubsequentRequests.cancelTimer();
-	            	finalBranchForSubsequentRequests.setResponse(null);
-	            	finalBranchForSubsequentRequests.setOriginalRequest(null);
-	            	finalBranchForSubsequentRequests.setOutgoingRequest(null);
-	            	
-            	}
-            }
+            checkAndCleanProxy();
     }
 	
+    public void checkAndCleanProxy() {
+    	// https://telestax.atlassian.net/browse/MSS-153 optimize performance by cleaning up the original request to reduce the retained mem size
+        if(this.transactionMap.size() == 0 && originalRequest != null) {
+        	originalRequest.cleanUp();
+        	originalRequest.cleanUpLastResponses();
+        	originalRequest = null;
+        	if(recordRouteURI != null) {
+        		recordRouteURIString = recordRouteURI.toString();
+        		recordRouteURI = null;
+        	}
+        	if(finalBranchForSubsequentRequests != null) {
+            	finalBranchForSubsequentRequests.cancelTimer();
+            	finalBranchForSubsequentRequests.setResponse(null);
+            	finalBranchForSubsequentRequests.setOriginalRequest(null);
+            	finalBranchForSubsequentRequests.setOutgoingRequest(null);
+            	
+        	}
+        }
+    }
 	/*
 	 * This method will find the address of the machine that is the previous dialog path node.
 	 * If there are proxies before the current one that are adding Record-Route we should visit them,
@@ -1158,13 +1161,23 @@ public class ProxyImpl implements MobicentsProxy, Externalizable {
 	public ProxyTimerService getProxyTimerService() {
 		return proxyTimerService;
 	}
+	
+	public void setProxyTimerService(ProxyTimerService proxyTimerService) {
+		this.proxyTimerService = proxyTimerService;
+	}
 
-//	public void addProxyBranch(ProxyBranchImpl proxyBranchImpl) {
-//		if(proxyBranches == null) {
-//			this.proxyBranches = new LinkedHashMap<URI, ProxyBranchImpl> ();
-//		}
-//		this.proxyBranches.put(proxyBranchImpl.getTargetURI(), proxyBranchImpl);
-//	}
+	public void addProxyBranch(ProxyBranchImpl proxyBranchImpl) {
+		if(proxyBranches == null) {
+			this.proxyBranches = new LinkedHashMap<URI, ProxyBranchImpl> ();
+		}
+		try {
+			URI targetURI = ((SipURI)getSipFactoryImpl().createURI(proxyBranchImpl.getTargetURI()));
+			this.proxyBranches.put(targetURI, proxyBranchImpl);
+		} catch (ServletParseException e) {
+			logger.error("A problem occured while adding proxybranch target URI " + proxyBranchImpl.getTargetURI(), e);
+		}
+		
+	}
 	
 	/*
 	 * (non-Javadoc)
