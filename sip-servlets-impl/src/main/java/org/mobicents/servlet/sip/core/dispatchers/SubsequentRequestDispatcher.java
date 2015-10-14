@@ -471,7 +471,10 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
                     // Only the first ACK makes it up to the application
 					// resetting the creating transaction request to the current one is needed to
 					// avoid a null final response on a reinvite while checking for the ACK below
-					if(!Request.PRACK.equalsIgnoreCase(requestMethod)) {
+					if(!Request.PRACK.equalsIgnoreCase(requestMethod) &&
+							// https://github.com/Mobicents/sip-servlets/issues/66 include UPDATE as well otherwise
+							// creating the 200 OK response to IVNITE for B2BUA after UPDATE is failing
+							!Request.UPDATE.equalsIgnoreCase(requestMethod)) {
 						sipSession.setSessionCreatingTransactionRequest(sipServletRequest);
 					}
 					sipSession.addOngoingTransaction(sipServletRequest.getTransaction());
@@ -683,15 +686,18 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 					if(transaction != null) {
 						final TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
 						final MobicentsB2BUAHelper b2buaHelperImpl = sipSession.getB2buaHelper();
+						final MobicentsProxy proxy = sipSession.getProxy();
 						if(b2buaHelperImpl != null && tad != null) {
 							// we unlink the originalRequest early to avoid keeping the messages in mem for too long
 							b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage(), false);
 						}	
-						sipSession.removeOngoingTransaction(sipServletRequest.getTransaction());
-						tad.cleanUp();
-//						if(b2buaHelperImpl == null) {
-							tad.cleanUpMessage();
-//						}
+						if(proxy == null) {
+							sipSession.removeOngoingTransaction(sipServletRequest.getTransaction());
+							tad.cleanUp();
+							if(b2buaHelperImpl == null) {
+								tad.cleanUpMessage();
+							}
+						}
 					}
 				}
 				

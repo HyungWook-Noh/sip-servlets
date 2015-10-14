@@ -196,11 +196,11 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 		try {			
 			cancelTimer();
 			if(this.isStarted() && !canceled && !timedOut &&
-					outgoingRequest.getMethod().equalsIgnoreCase(Request.INVITE) ||
+					(outgoingRequest.getMethod().equalsIgnoreCase(Request.INVITE) ||
 					// https://code.google.com/p/sipservlets/issues/detail?id=253
                     outgoingRequest.getMethod().equalsIgnoreCase(Request.PRACK) ||
                     // https://code.google.com/p/sipservlets/issues/detail?id=33
-                    outgoingRequest.getMethod().equalsIgnoreCase(Request.UPDATE)) {
+                    outgoingRequest.getMethod().equalsIgnoreCase(Request.UPDATE))) {
 				if(lastResponse != null) { /* According to SIP RFC we should send cancel only if we receive any response first*/
 					if(logger.isDebugEnabled()) {
 						logger.debug("Trying to cancel ProxyBranch for outgoing request " + outgoingRequest);
@@ -257,7 +257,9 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 				canceled = true;
 			}
 			if(!this.isStarted() &&
-					outgoingRequest.getMethod().equalsIgnoreCase(Request.INVITE)) {
+					(outgoingRequest.getMethod().equalsIgnoreCase(Request.INVITE) ||
+							// https://code.google.com/p/sipservlets/issues/detail?id=253
+							outgoingRequest.getMethod().equalsIgnoreCase(Request.PRACK))) {
 				canceled = true;	
 			}
 		}
@@ -555,6 +557,9 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 	{
 		// If we are canceled but still receiving provisional responses try to cancel them
 		if(canceled && status < 200) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("ProxyBranch " + this + " with outgoing request " + outgoingRequest + " cancelled and still receiving provisional response, trying to cancel them");
+			}
 			try {
 				final SipServletRequest cancelRequest = outgoingRequest.createCancel();
 				cancelRequest.send();
@@ -732,6 +737,17 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 		SipServletRequestImpl request = (SipServletRequestImpl) sipServletRequest;
 		addTransaction(request);
 		// A re-INVITE needs special handling without going through the dialog-stateful methods
+		MobicentsSipServletResponse lastFinalResponse = (MobicentsSipServletResponse) request.getLastFinalResponse();
+		if(lastFinalResponse != null && lastFinalResponse.isMessageSent()) {
+		    // https://code.google.com/p/sipservlets/issues/detail?id=21
+		    if(logger.isDebugEnabled()) {
+		        logger.debug("Not proxying request as final response has already been sent for " + request);
+		    }
+		    return;
+	    }
+		
+		addTransaction(request);
+		// A re-INVITE needs special handling without going through the dialog-stateful methods
 		if(request.getMethod().equalsIgnoreCase("INVITE")) {
 			if(logger.isDebugEnabled()) {
 				logger.debug("Proxying reinvite request " + request);
@@ -761,6 +777,7 @@ public class ProxyBranchImpl implements MobicentsProxyBranch, Externalizable {
 //				clonedRequest.removeFirst(RouteHeader.NAME);	
 //			}
 //		}
+		
 		// https://telestax.atlassian.net/browse/MSS-153 perf optimization : we update the timer only on non ACK
 		if(!clonedRequest.getMethod().equalsIgnoreCase(Request.ACK) ) { 
 			// https://telestax.atlassian.net/browse/MSS-119 update timer C for subsequent requests

@@ -2176,4 +2176,8 @@ public abstract class SipServletMessageImpl implements MobicentsSipServletMessag
 	public void setAppSessionId(String appSessionId) {
 		this.appSessionId = appSessionId;
 	}
+	
+	public boolean isMessageSent() {
+        return isMessageSent;
+    }
 }

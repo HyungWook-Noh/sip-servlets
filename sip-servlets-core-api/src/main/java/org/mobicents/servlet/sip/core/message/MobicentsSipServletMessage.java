@@ -46,5 +46,8 @@ public interface MobicentsSipServletMessage extends SipServletMessage {
 	
 	Message getMessage();
 	
+	// https://code.google.com/p/sipservlets/issues/detail?id=21
+	boolean isMessageSent();
+	
 	MobicentsSipApplicationSession getSipApplicationSession(boolean create);
 }

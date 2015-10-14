@@ -186,6 +186,9 @@ public class ProxyImpl implements MobicentsProxy, Externalizable {
     public void checkAndCleanProxy() {
     	// https://telestax.atlassian.net/browse/MSS-153 optimize performance by cleaning up the original request to reduce the retained mem size
         if(this.transactionMap.size() == 0 && originalRequest != null) {
+        	if(logger.isDebugEnabled()) {
+                logger.debug("Cleaning Proxy to optimize perf " + this);
+        	}
         	originalRequest.cleanUp();
         	originalRequest.cleanUpLastResponses();
         	originalRequest = null;
@@ -194,6 +197,9 @@ public class ProxyImpl implements MobicentsProxy, Externalizable {
         		recordRouteURI = null;
         	}
         	if(finalBranchForSubsequentRequests != null) {
+        		if(logger.isDebugEnabled()) {
+                    logger.debug("Cleaning proxy finalBranchForSubsequentRequests to optimize perf " + this);
+            	}
             	finalBranchForSubsequentRequests.cancelTimer();
             	finalBranchForSubsequentRequests.setResponse(null);
             	finalBranchForSubsequentRequests.setOriginalRequest(null);
