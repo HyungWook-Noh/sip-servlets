@@ -1050,8 +1050,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, S
 								txAppData.cleanUp();
 							}
 						} else {
-							SipServletMessageImpl sipServletMessageImpl = dialogAppData.getSipServletMessage();
-							MobicentsSipSessionKey sipSessionKey = sipServletMessageImpl.getSipSessionKey();
+							MobicentsSipSessionKey sipSessionKey = dialogAppData.getSipSessionKey();
 							tryToInvalidateSession(sipSessionKey, false);				
 						}
 						dialogAppData.cleanUp();
@@ -1212,7 +1211,8 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, S
 									tryToInvalidateSession(sipSessionKey, false);						
 								}					
 							}
-							tad.cleanUp();	
+							tad.cleanUp();
+							tad.cleanUpMessage();
 							dialog.setApplicationData(null);
 						} catch (Exception e) {
 							logger.error("Problem handling dialog timeout", e);
@@ -1495,6 +1495,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, S
 									if(removeTx) {
 										sipSession.removeOngoingTransaction(transaction);
 										tad.cleanUp();
+										sipSession.cleanDialogInformation();
 										// Issue 1468 : to handle forking, we shouldn't cleanup the app data since it is needed for the forked responses
 										boolean nullifyAppData = true;					
 										if(((SipStackImpl)((SipProvider)transactionTerminatedEvent.getSource()).getSipStack()).getMaxForkTime() > 0 && Request.INVITE.equals(sipServletMessageImpl.getMethod())) {

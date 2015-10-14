@@ -268,7 +268,7 @@ public class SipSessionImpl implements MobicentsSipSession {
 	//Subscriptions used for RFC 3265 compliance to be able to determine when the session can be invalidated
 	//  A subscription is destroyed when a notifier sends a NOTIFY request with a "Subscription-State" of "terminated".
 	// If a subscription's destruction leaves no other application state associated with the dialog, the dialog terminates
-	volatile protected transient Set<EventHeader> subscriptions = null;
+	volatile protected transient Set<String> subscriptions = null;
 	//original transaction that started this session is stored so that we know if the session should end when all subscriptions have terminated or when the BYE has come
 	protected transient String originalMethod = null;
 	protected transient boolean okToByeSentOrReceived = false;
@@ -1473,7 +1473,6 @@ public class SipSessionImpl implements MobicentsSipSession {
 	 * Remove an ongoing tx to the session.
 	 */
 	public void removeOngoingTransaction(Transaction transaction) {
-
 		boolean removed = false;
 		if(this.ongoingTransactions != null) {
 			removed = this.ongoingTransactions.remove(transaction);
@@ -1500,6 +1499,27 @@ public class SipSessionImpl implements MobicentsSipSession {
 			// or proxy case or dialog creating methods
 			if(sessionCreatingDialog != null || proxy != null || JainSipUtils.DIALOG_CREATING_METHODS.contains(sessionCreatingTransactionRequest.getMethod())) {
 				sessionCreatingTransactionRequest = null;
+			}
+		}
+	}
+	
+	public void cleanDialogInformation() {
+		if(logger.isDebugEnabled()) {
+			logger.debug("cleanDialogInformation "+ sessionCreatingDialog);
+		}
+		if(sessionCreatingDialog != null && sessionCreatingDialog.getApplicationData() != null && 
+				((TransactionApplicationData)sessionCreatingDialog.getApplicationData()).getSipServletMessage() != null) {
+			TransactionApplicationData dialogAppData = ((TransactionApplicationData)sessionCreatingDialog.getApplicationData());
+			SipServletMessageImpl sipServletMessage = dialogAppData.getSipServletMessage();
+			// https://telestax.atlassian.net/browse/MSS-153  
+			// if we are not an INVITE Based Dialog or we are INVITE but ACK have been received, we can clean up the app data of its servletmessage to clean memory
+			if(!Request.INVITE.equalsIgnoreCase(sipServletMessage.getMethod()) ||
+				(Request.INVITE.equalsIgnoreCase(sipServletMessage.getMethod()) && isAckReceived(((MessageExt)sipServletMessage.getMessage()).getCSeqHeader().getSeqNumber()))) {
+				dialogAppData.cleanUpMessage();
+				dialogAppData.cleanUp();
+				if(logger.isDebugEnabled()) {
+					logger.debug("cleaned DialogInformation "+ sessionCreatingDialog);
+				}
 			}
 		}
 	}
@@ -2104,9 +2124,9 @@ public class SipSessionImpl implements MobicentsSipSession {
 			logger.debug("adding subscription " + eventHeader + " to sip session " + getId());
 		}
 		if(subscriptions == null) {
-			this.subscriptions = new CopyOnWriteArraySet<EventHeader>();
+			this.subscriptions = new CopyOnWriteArraySet<String>();
 		}
-		subscriptions.add(eventHeader);	
+		subscriptions.add(eventHeader.toString());	
 				
 		if(logger.isDebugEnabled()) {
 			logger.debug("Request from Original Transaction is " + originalMethod);
@@ -2127,7 +2147,7 @@ public class SipSessionImpl implements MobicentsSipSession {
 		}
 		boolean hasOngoingSubscriptions = false;
 		if(subscriptions != null) {
-			subscriptions.remove(eventHeader);
+			subscriptions.remove(eventHeader.toString());
 			if(subscriptions.size() > 0) {
 				hasOngoingSubscriptions = true;
 			}

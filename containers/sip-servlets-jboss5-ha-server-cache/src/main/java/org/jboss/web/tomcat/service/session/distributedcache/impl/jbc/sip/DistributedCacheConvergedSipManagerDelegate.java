@@ -275,6 +275,16 @@ public class DistributedCacheConvergedSipManagerDelegate<T extends OutgoingDistr
 		
 		Map<Object, Object> versionData =
 			jBossCacheService.getCacheWrapper().getData(Fqn.fromString(fqn.toString() + "/" + AbstractJBossCacheService.VERSION_KEY), true);
+		if (log_.isDebugEnabled()) {
+			log_.debug("getSipApplicationSessionData(): fqn " + Fqn.fromString(fqn.toString() + "/" + AbstractJBossCacheService.VERSION_KEY) + " versionData=" + versionData);
+			if(versionData != null) {
+				for(Entry<Object, Object> entry : versionData.entrySet()) {
+					if (log_.isDebugEnabled()) {
+						log_.debug("getSipApplicationSessionData(): fqn " + Fqn.fromString(fqn.toString() + "/" + AbstractJBossCacheService.VERSION_KEY) + " versionDataKey=" + entry.getKey() + ", versionDataValue=" + entry.getValue());
+					}	
+				}
+			}
+		}
 		
 		if (initialLoad) {
 			jBossCacheService.setupSessionRegion(fqn);

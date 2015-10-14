@@ -538,4 +538,9 @@ public class MobicentsSipSessionFacade implements MobicentsSipSession, Serializa
 	public void setOrphan(boolean orphan) {
 		sipSession.setOrphan(orphan);
 	}
+
+	@Override
+	public void cleanDialogInformation() {
+		this.cleanDialogInformation();
+	}
 }

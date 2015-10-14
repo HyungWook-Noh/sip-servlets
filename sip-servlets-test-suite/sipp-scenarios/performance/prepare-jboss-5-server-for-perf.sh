@@ -1,10 +1,10 @@
 mvn clean install -f ../../../pom.xml -P jboss-5
 
 cp jboss-5-setup/mss-sip-stack-jboss-trying.properties $JBOSS_HOME/server/default/conf/mss-sip-stack.properties
-cp jboss-5-setup/context-jboss-5.xml $JBOSS_HOME/server/default/deploy/jbossweb.sar/context.xml
-cp jboss-5-setup/jboss-beans.xml $JBOSS_HOME/server/default/deploy/jbossweb.sar/META-INF/jboss-beans.xml
-cp jboss-5-setup/metadata-deployer-jboss-beans.xml $JBOSS_HOME/server/default/deployers/metadata-deployer-jboss-beans.xml
-cp jboss-5-setup/war-deployers-jboss-beans.xml $JBOSS_HOME/server/default/deployers/jbossweb.deployer/META-INF/war-deployers-jboss-beans.xml
+#cp jboss-5-setup/context-jboss-5.xml $JBOSS_HOME/server/default/deploy/jbossweb.sar/context.xml
+#cp jboss-5-setup/jboss-beans.xml $JBOSS_HOME/server/default/deploy/jbossweb.sar/META-INF/jboss-beans.xml
+#cp jboss-5-setup/metadata-deployer-jboss-beans.xml $JBOSS_HOME/server/default/deployers/metadata-deployer-jboss-beans.xml
+#cp jboss-5-setup/war-deployers-jboss-beans.xml $JBOSS_HOME/server/default/deployers/jbossweb.deployer/META-INF/war-deployers-jboss-beans.xml
 cp jboss-5-setup/log4j.xml $JBOSS_HOME/server/default/conf/jboss-log4j.xml
 cp jboss-5-setup/server-jboss-5.xml $JBOSS_HOME/server/default/deploy/jbossweb.sar/server.xml
 

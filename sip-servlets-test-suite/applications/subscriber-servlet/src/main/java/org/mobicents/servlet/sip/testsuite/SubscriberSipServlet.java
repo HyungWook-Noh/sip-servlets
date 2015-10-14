@@ -274,7 +274,9 @@ public class SubscriberSipServlet
 			}
 			SipServletRequest infoRequest = request.getSession().createRequest("INFO");
 			infoRequest.setContentLength(request.getContentLength());
-			infoRequest.setContent(multipart, multipart.getContentType());
+			if(multipart != null) {
+				infoRequest.setContent(multipart, multipart.getContentType());
+			}
 			infoRequest.setRequestURI(request.getAddressHeader("Contact").getURI());
 			infoRequest.send();
 		}

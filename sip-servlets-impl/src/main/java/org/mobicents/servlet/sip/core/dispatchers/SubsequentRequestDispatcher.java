@@ -63,6 +63,7 @@ import org.mobicents.servlet.sip.core.DispatcherException;
 import org.mobicents.servlet.sip.core.MobicentsSipFactory;
 import org.mobicents.servlet.sip.core.SipContext;
 import org.mobicents.servlet.sip.core.SipManager;
+import org.mobicents.servlet.sip.core.b2bua.MobicentsB2BUAHelper;
 import org.mobicents.servlet.sip.core.proxy.MobicentsProxy;
 import org.mobicents.servlet.sip.core.proxy.MobicentsProxyBranch;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
@@ -674,6 +675,21 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 					if (subscriptionStateHeader != null && 
 										SubscriptionStateHeader.TERMINATED.equalsIgnoreCase(subscriptionStateHeader.getState())) {
 						sipSession.removeSubscription(sipServletRequest);
+					}
+				}
+				
+				if(Request.ACK.equals(requestMethod)){
+					Transaction transaction = sipServletRequest.getTransaction();
+					if(transaction != null) {
+						final TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
+						final MobicentsB2BUAHelper b2buaHelperImpl = sipSession.getB2buaHelper();
+						if(b2buaHelperImpl != null && tad != null) {
+							// we unlink the originalRequest early to avoid keeping the messages in mem for too long
+							b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage(), false);
+						}	
+						sipSession.removeOngoingTransaction(sipServletRequest.getTransaction());
+						tad.cleanUp();
+						tad.cleanUpMessage();
 					}
 				}
 				

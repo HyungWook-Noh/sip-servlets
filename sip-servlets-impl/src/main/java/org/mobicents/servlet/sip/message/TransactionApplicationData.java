@@ -34,6 +34,7 @@ import javax.sip.address.Hop;
 
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.core.message.MobicentsTransactionApplicationData;
+import org.mobicents.servlet.sip.core.session.MobicentsSipSessionKey;
 import org.mobicents.servlet.sip.proxy.ProxyBranchImpl;
 
 /**
@@ -47,7 +48,8 @@ public class TransactionApplicationData implements Serializable, MobicentsTransa
 	private static final Logger logger = Logger.getLogger(TransactionApplicationData.class);
 	private ProxyBranchImpl proxyBranch;	
 	private SipServletMessageImpl sipServletMessage;
-//	private SipSessionKey sipSessionKey;
+	private String method;
+	private MobicentsSipSessionKey sipSessionKey;
 	private Set<SipServletResponseImpl> sipServletResponses;
 	private transient Transaction transaction;
 	private transient String initialRemoteHostAddress;
@@ -232,7 +234,7 @@ public class TransactionApplicationData implements Serializable, MobicentsTransa
 		}
 		initialPoppedRoute = null;
 		proxyBranch = null;
-		// cannot nullify because of noAckReceived needs it and TCK SipApplicationSessionListenerTest
+		// cannot nullify at the same time because of noAckReceived needs it and TCK SipApplicationSessionListenerTest
 //		if(cleanUpSipServletMessage && sipServletMessage != null) {
 //			sipServletMessage.cleanUp();
 //			if(sipServletMessage instanceof SipServletRequestImpl) {
@@ -253,6 +255,21 @@ public class TransactionApplicationData implements Serializable, MobicentsTransa
 		}
 	}
 
+	public void cleanUpMessage() {
+		if(sipServletMessage != null) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("cleaning up the application data from the sipservletmessage");
+			}
+			sipServletMessage.cleanUp();
+			if(sipServletMessage instanceof SipServletRequestImpl) {
+				((SipServletRequestImpl)sipServletMessage).cleanUpLastResponses();
+			}
+			sipSessionKey = sipServletMessage.getSipSessionKey();
+			method = sipServletMessage.getMethod();
+			sipServletMessage = null;
+		}
+	}
+	
 	/**
 	 * @param hops the hops to set
 	 */
@@ -303,13 +320,23 @@ public class TransactionApplicationData implements Serializable, MobicentsTransa
 //		}
 //	}
 
-//	/**
-//	 * @return the sipSessionKey
-//	 */
-//	public SipSessionKey getSipSessionKey() {
-//		if(sipServletMessage != null) {
-//			return sipServletMessage.getSipSessionKey();
-//		}
-//		return sipSessionKey;
-//	}	
+	/**
+	 * @return the sipSessionKey
+	 */
+	public MobicentsSipSessionKey getSipSessionKey() {
+		if(sipServletMessage != null) {
+			return sipServletMessage.getSipSessionKey();
+		}
+		return sipSessionKey;
+	}	
+	
+	/**
+	 * @return the sipSessionKey
+	 */
+	public String getMethod() {
+		if(sipServletMessage != null) {
+			return sipServletMessage.getMethod();
+		}
+		return method;
+	}	
 }
