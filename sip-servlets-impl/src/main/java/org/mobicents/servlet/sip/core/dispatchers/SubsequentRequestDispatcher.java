@@ -689,7 +689,9 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 						}	
 						sipSession.removeOngoingTransaction(sipServletRequest.getTransaction());
 						tad.cleanUp();
-						tad.cleanUpMessage();
+//						if(b2buaHelperImpl == null) {
+							tad.cleanUpMessage();
+//						}
 					}
 				}
 				

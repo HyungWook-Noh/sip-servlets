@@ -1687,6 +1687,9 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 				session.removeOngoingTransaction(transaction);					
 				if(tad != null) {
 					tad.cleanUp();
+//					if(b2buaHelperImpl == null) {
+						tad.cleanUpMessage();
+//					}
 				}
 			}
 			final SipProvider sipProvider = matchingListeningPoint.getSipProvider();	
