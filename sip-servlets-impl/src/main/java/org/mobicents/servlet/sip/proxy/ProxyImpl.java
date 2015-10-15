@@ -727,7 +727,10 @@ public class ProxyImpl implements MobicentsProxy, Externalizable {
 					if(logger.isDebugEnabled())
 						logger.debug("Trying new branch in proxy" );
 					startNextUntriedBranch();
-					branch.onBranchTerminated();
+					// commenting as this is causing NPE in the application if the application tries to get the original request
+					// on a retransmission, removing the transaction too fast will lead to an NPE. 
+					// The transaction should be removed anyway through processTransactionTerminated
+//					branch.onBranchTerminated();
 				}
 			}
 		}
