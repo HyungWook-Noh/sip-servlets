@@ -685,18 +685,19 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 					Transaction transaction = sipServletRequest.getTransaction();
 					if(transaction != null) {
 						final TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
-						final MobicentsB2BUAHelper b2buaHelperImpl = sipSession.getB2buaHelper();
 						final MobicentsProxy proxy = sipSession.getProxy();
-						if(b2buaHelperImpl != null && tad != null) {
-							// we unlink the originalRequest early to avoid keeping the messages in mem for too long
-							b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage(), false);
-						}	
-						if(proxy == null) {
-							sipSession.removeOngoingTransaction(sipServletRequest.getTransaction());
+						if(proxy == null && tad != null) {
 							tad.cleanUp();
-							if(b2buaHelperImpl == null) {
-								tad.cleanUpMessage();
-							}
+							transaction.setApplicationData(null);
+//							tad.cleanUpMessage();
+						}
+						final MobicentsB2BUAHelper b2buaHelperImpl = sipSession.getB2buaHelper();
+//						if(b2buaHelperImpl != null && tad != null) {
+//							// we unlink the originalRequest early to avoid keeping the messages in mem for too long
+//							b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage(), false);
+//						}	
+						if(proxy == null && b2buaHelperImpl == null) {
+							sipSession.removeOngoingTransaction(sipServletRequest.getTransaction());
 						}
 					}
 				}

@@ -120,7 +120,7 @@ public class CallForwardingB2BUAJunitTest extends SipServletTestCase {
 		sender.setTimeToWaitBeforeBye(TIMEOUT*2);
 		Thread.sleep(TIMEOUT);
 		assertTrue(receiver.isAckReceived());
-		Thread.sleep(TIMEOUT*3);
+		Thread.sleep(TIMEOUT*4);
 		assertTrue(sender.getOkToByeReceived());
 		assertTrue(receiver.getByeReceived());		
 		Iterator<String> allMessagesIterator = sender.getAllMessagesContent().iterator();

@@ -855,13 +855,45 @@ public class B2buaHelperImpl implements MobicentsB2BUAHelper, Serializable {
 							logger.debug("linked transaction state " + linkedTransaction.getState());
 						}
 					}
-					if(force || ((transaction == null || TransactionState.TERMINATED.equals(transaction.getState())) &&
-							(linkedTransaction == null || TransactionState.TERMINATED.equals(linkedTransaction.getState())))) {
+					if(!Request.ACK.equalsIgnoreCase(sipServletRequestImpl.getMethod()) && (force || ((transaction == null || TransactionState.TERMINATED.equals(transaction.getState())) &&
+							(linkedTransaction == null || TransactionState.TERMINATED.equals(linkedTransaction.getState()))))) {
 						this.originalRequestMap.remove(sipServletRequestImpl);	
 						this.originalRequestMap.remove(linkedRequest);
 						if(logger.isDebugEnabled()) {
 							logger.debug("following linked request " + linkedRequest + " unlinked from " + sipServletRequestImpl);
 						}
+						if(linkedTransaction != null) {
+							linkedRequest.getSipSession().removeOngoingTransaction(linkedTransaction);
+							if(linkedTransaction.getApplicationData() != null) {
+								((TransactionApplicationData)linkedTransaction.getApplicationData()).cleanUp();
+								((TransactionApplicationData)linkedTransaction.getApplicationData()).cleanUpMessage();
+							}
+						}
+						if(transaction != null) {
+							sipServletRequestImpl.getSipSession().removeOngoingTransaction(transaction);
+							if(transaction.getApplicationData() != null) {
+								((TransactionApplicationData)transaction.getApplicationData()).cleanUp();
+								((TransactionApplicationData)transaction.getApplicationData()).cleanUpMessage();
+							}
+						}
+//						if(transaction == null || transaction instanceof ClientTransaction) {
+							if(linkedRequest.getSipSession().getOngoingTransactions().isEmpty()) {
+								linkedRequest.getSipSession().cleanDialogInformation();
+							}
+							if(sipServletRequestImpl.getSipSession().getOngoingTransactions().isEmpty()) {
+								sipServletRequestImpl.getSipSession().cleanDialogInformation();
+							}
+							if(linkedRequest.getSipSession().isValidInternal() &&
+									// https://code.google.com/p/sipservlets/issues/detail?id=279
+									linkedRequest.getSipSession().isReadyToInvalidateInternal()) {														
+								linkedRequest.getSipSession().onTerminatedState();							
+							}
+							if(sipServletRequestImpl.getSipSession().isValidInternal() &&
+									// https://code.google.com/p/sipservlets/issues/detail?id=279
+									sipServletRequestImpl.getSipSession().isReadyToInvalidateInternal()) {														
+								sipServletRequestImpl.getSipSession().onTerminatedState();							
+							}
+//						}
 					}
 				}
 			}

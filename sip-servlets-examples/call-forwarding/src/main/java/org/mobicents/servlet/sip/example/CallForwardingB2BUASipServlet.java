@@ -161,6 +161,7 @@ public class CallForwardingB2BUASipServlet extends SipServlet {
 			logger.info("forkedRequest = " + cancelRequest);
 		}
 		cancelRequest.send();
+		linkedSession.removeAttribute("originalRequest");
 	}
 	
 	@Override
@@ -198,6 +199,7 @@ public class CallForwardingB2BUASipServlet extends SipServlet {
 			if(sipServletResponse.getContent() != null && sipServletResponse.getContentType() != null)
 				responseToOriginalRequest.setContent(sipServletResponse.getContent(), sipServletResponse.getContentType());
 			responseToOriginalRequest.send();
+			sipServletResponse.getSession().removeAttribute("originalRequest");
 		}		
 		if(sipServletResponse.getMethod().indexOf("UPDATE") != -1) {
 			B2buaHelper helper = sipServletResponse.getRequest().getB2buaHelper();
@@ -223,6 +225,7 @@ public class CallForwardingB2BUASipServlet extends SipServlet {
 				logger.info("Sending on the first call leg " + responseToOriginalRequest.toString());
 			}
 			responseToOriginalRequest.send();		
+			sipServletResponse.getSession().removeAttribute("originalRequest");
 		}
 	}
 	

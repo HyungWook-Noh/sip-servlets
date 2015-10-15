@@ -1515,9 +1515,7 @@ public class SipSessionImpl implements MobicentsSipSession {
 			// if we are not an INVITE Based Dialog or we are INVITE but ACK have been received, we can clean up the app data of its servletmessage to clean memory
 			if(!Request.INVITE.equalsIgnoreCase(sipServletMessage.getMethod()) ||
 				(Request.INVITE.equalsIgnoreCase(sipServletMessage.getMethod()) && isAckReceived(((MessageExt)sipServletMessage.getMessage()).getCSeqHeader().getSeqNumber()))) {
-				if(b2buaHelper == null) {
-					dialogAppData.cleanUpMessage();
-				}
+				dialogAppData.cleanUpMessage();
 				dialogAppData.cleanUp();
 				if(logger.isDebugEnabled()) {
 					logger.debug("cleaned DialogInformation "+ sessionCreatingDialog);
