@@ -1489,10 +1489,10 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, S
 								MobicentsSipApplicationSession sipApplicationSession = sipSession.getSipApplicationSession();
 								try {
 									sipContext.enterSipApp(sipApplicationSession, sipSession, false);
-									if(b2buaHelperImpl != null && tad.getSipServletMessage() instanceof SipServletRequestImpl) {
-										b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage(), false);
-									}
 									if(removeTx) {
+										if(b2buaHelperImpl != null && tad.getSipServletMessage() instanceof SipServletRequestImpl) {
+											b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage(), false);
+										}
 										sipSession.removeOngoingTransaction(transaction);
 										tad.cleanUp();
 										if(b2buaHelperImpl == null) {
