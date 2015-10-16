@@ -862,24 +862,25 @@ public class B2buaHelperImpl implements MobicentsB2BUAHelper, Serializable {
 						if(logger.isDebugEnabled()) {
 							logger.debug("following linked request " + linkedRequest + " unlinked from " + sipServletRequestImpl);
 						}
-						// TCK com.bea.sipservlet.tck.apps.apitestapp.B2buaHelper.testGetPendingMessages101 and testGetLinkedSession101
-						// don't remove the Linked Transaction if force is null as the response on the original cannot be sent as the transaction will be null 
-						if(!force && linkedTransaction != null) {
-							linkedRequest.getSipSession().removeOngoingTransaction(linkedTransaction);
-							if(linkedTransaction.getApplicationData() != null) {
-								((TransactionApplicationData)linkedTransaction.getApplicationData()).cleanUp();
-								((TransactionApplicationData)linkedTransaction.getApplicationData()).cleanUpMessage();
+						if(!force) {
+							// in case of forceful invalidate there is no need to clean up everything here as we will use standard transaction terminated events
+							// TCK com.bea.sipservlet.tck.apps.apitestapp.B2buaHelper.testGetPendingMessages101 and testGetLinkedSession101
+							// don't remove the Linked Transaction if force is null as the response on the original cannot be sent as the transaction will be null 
+							if(linkedTransaction != null) {
+								linkedRequest.getSipSession().removeOngoingTransaction(linkedTransaction);
+								if(linkedTransaction.getApplicationData() != null) {
+									((TransactionApplicationData)linkedTransaction.getApplicationData()).cleanUp();
+									((TransactionApplicationData)linkedTransaction.getApplicationData()).cleanUpMessage();
+								}
 							}
-						}
-						if(transaction != null) {
-							sipServletRequestImpl.getSipSession().removeOngoingTransaction(transaction);
-							if(transaction.getApplicationData() != null) {
-								((TransactionApplicationData)transaction.getApplicationData()).cleanUp();
-								((TransactionApplicationData)transaction.getApplicationData()).cleanUpMessage();
+							if(transaction != null) {
+								sipServletRequestImpl.getSipSession().removeOngoingTransaction(transaction);
+								if(transaction.getApplicationData() != null) {
+									((TransactionApplicationData)transaction.getApplicationData()).cleanUp();
+									((TransactionApplicationData)transaction.getApplicationData()).cleanUpMessage();
+								}
 							}
-						}
-//						if(transaction == null || transaction instanceof ClientTransaction) {
-							if(!force && linkedRequest.getSipSession().getOngoingTransactions().isEmpty()) {
+							if(linkedRequest.getSipSession().getOngoingTransactions().isEmpty()) {
 								linkedRequest.getSipSession().cleanDialogInformation();
 							}
 							if(sipServletRequestImpl.getSipSession().getOngoingTransactions().isEmpty()) {
@@ -895,16 +896,11 @@ public class B2buaHelperImpl implements MobicentsB2BUAHelper, Serializable {
 									sipServletRequestImpl.getSipSession().isReadyToInvalidateInternal()) {														
 								sipServletRequestImpl.getSipSession().onTerminatedState();							
 							}
-//						}
+						}
 					}
 				}
 			}
 		}
-		// Makes TCK B2buaHelperTest.testLinkUnlinkSipSessions001 && B2buaHelperTest.testB2buaHelper 
-		// fails because it cleans up the tx and the response cannot thus be created
-//		if(sipServletRequestImpl != null){
-//			sipServletRequestImpl.cleanUp();
-//		}
 	}
 	
 	/*
