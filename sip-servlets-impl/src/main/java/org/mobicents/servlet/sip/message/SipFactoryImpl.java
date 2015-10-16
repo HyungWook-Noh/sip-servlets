@@ -405,7 +405,8 @@ public class SipFactoryImpl implements MobicentsSipFactory,  Externalizable {
 					if(JainSipUtils.CONTACT_HEADER_METHODS.contains(newRequest.getMethod())) {
 						String fromName = null;
 						String displayName = ((MessageExt)newRequest).getFromHeader().getAddress().getDisplayName();
-						if(((ContactHeader)newRequest.getHeader(ContactHeader.NAME)).getAddress().getURI() instanceof javax.sip.address.SipURI) {
+						if(newRequest.getHeader(ContactHeader.NAME) != null && 
+								((ContactHeader)newRequest.getHeader(ContactHeader.NAME)).getAddress().getURI() instanceof javax.sip.address.SipURI) {
 							fromName = ((javax.sip.address.SipURI)((MessageExt)newRequest).getFromHeader().getAddress().getURI()).getUser();
 						}
 						// Create the contact name address.
