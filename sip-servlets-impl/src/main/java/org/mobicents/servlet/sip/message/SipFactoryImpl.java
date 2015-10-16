@@ -372,7 +372,7 @@ public class SipFactoryImpl implements MobicentsSipFactory,  Externalizable {
 		if (originalAppSession == null) {
 			throw new IllegalStateException("original request's app session does not exists");
 		}			
-		
+		final MobicentsSipSession originalSession = origRequestImpl.getSipSession();
 		final Request newRequest = (Request) origRequestImpl.message.clone();
 		((MessageExt)newRequest).setApplicationData(null);
 		//removing the via header from original request
@@ -394,19 +394,19 @@ public class SipFactoryImpl implements MobicentsSipFactory,  Externalizable {
 		
 		//For non-REGISTER requests, the Contact header field is not copied 
 		//but is populated by the container as usual
-		if(!Request.REGISTER.equalsIgnoreCase(origRequest.getMethod())) {
+		if(!Request.REGISTER.equalsIgnoreCase(newRequest.getMethod())) {
 			try {
 				//For non-REGISTER requests, the Contact header field is not copied
 				//but is populated by the container as usual
-				if(!Request.REGISTER.equalsIgnoreCase(origRequest.getMethod())) {
-					newRequest.removeHeader(ContactHeader.NAME);
+				if(!Request.REGISTER.equalsIgnoreCase(newRequest.getMethod())) {
+					
 			
 					//Adding default contact header for specific methods only
 					if(JainSipUtils.CONTACT_HEADER_METHODS.contains(newRequest.getMethod())) {
 						String fromName = null;
-						String displayName = origRequest.getFrom().getDisplayName();
-						if(origRequest.getAddressHeader(ContactHeader.NAME).getURI() instanceof SipURI) {
-							fromName = ((SipURI)origRequest.getFrom().getURI()).getUser();
+						String displayName = ((MessageExt)newRequest).getFromHeader().getAddress().getDisplayName();
+						if(((ContactHeader)newRequest.getHeader(ContactHeader.NAME)).getAddress().getURI() instanceof javax.sip.address.SipURI) {
+							fromName = ((javax.sip.address.SipURI)((MessageExt)newRequest).getFromHeader().getAddress().getURI()).getUser();
 						}
 						// Create the contact name address.
 						ContactHeader contactHeader = null;
@@ -426,9 +426,12 @@ public class SipFactoryImpl implements MobicentsSipFactory,  Externalizable {
 							contactHeader = JainSipUtils.createContactHeader(getSipNetworkInterfaceManager(), newRequest, displayName, fromName, null);
 						}
 			
+						newRequest.removeHeader(ContactHeader.NAME);
 						if(contactHeader != null) {
 							newRequest.addHeader(contactHeader);
 						}
+					} else {
+						newRequest.removeHeader(ContactHeader.NAME);
 					}
 				}
 			} catch (Exception ex) {
@@ -450,7 +453,7 @@ public class SipFactoryImpl implements MobicentsSipFactory,  Externalizable {
 				}
 			} else {
 				if(logger.isDebugEnabled()) {
-					logger.debug("reusing same call id = " + origRequestImpl.getCallId());
+					logger.debug("reusing same call id = " + ((MessageExt)newRequest).getCallIdHeader().getCallId());
 				}
 			}
 									
@@ -458,7 +461,6 @@ public class SipFactoryImpl implements MobicentsSipFactory,  Externalizable {
 			
 			final MobicentsSipSessionKey key = SessionManagerUtil.getSipSessionKey(originalAppSession.getKey().getId(), originalAppSession.getKey().getApplicationName(), newRequest, false);
 			final MobicentsSipSession session = originalAppSession.getSipContext().getSipManager().getSipSession(key, true, this, originalAppSession);			
-			final MobicentsSipSession originalSession = origRequestImpl.getSipSession();
 			if(originalSession != null) {
 				session.setHandler(originalSession.getHandler());
 			} else if(originalAppSession.getCurrentRequestHandler() != null) {

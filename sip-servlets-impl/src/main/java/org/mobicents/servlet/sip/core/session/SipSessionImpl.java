@@ -2120,20 +2120,22 @@ public class SipSessionImpl implements MobicentsSipSession {
 		} else {
 			eventHeader =  (EventHeader) sipServletMessageImpl.getMessage().getHeader(EventHeader.NAME);
 		}
-		if(logger.isDebugEnabled()) {
-			logger.debug("adding subscription " + eventHeader + " to sip session " + getId());
-		}
-		if(subscriptions == null) {
-			this.subscriptions = new CopyOnWriteArraySet<String>();
-		}
-		subscriptions.add(eventHeader.toString());	
-				
-		if(logger.isDebugEnabled()) {
-			logger.debug("Request from Original Transaction is " + originalMethod);
-			logger.debug("Dialog is " + sessionCreatingDialog);
-		}
-		if(subscriptions.size() < 2 && Request.INVITE.equals(originalMethod)) {
-			sessionCreatingDialog.terminateOnBye(false);
+		if(eventHeader != null) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("adding subscription " + eventHeader + " to sip session " + getId());
+			}
+			if(subscriptions == null) {
+				this.subscriptions = new CopyOnWriteArraySet<String>();
+			}
+			subscriptions.add(eventHeader.toString());	
+					
+			if(logger.isDebugEnabled()) {
+				logger.debug("Request from Original Transaction is " + originalMethod);
+				logger.debug("Dialog is " + sessionCreatingDialog);
+			}
+			if(subscriptions.size() < 2 && Request.INVITE.equals(originalMethod)) {
+				sessionCreatingDialog.terminateOnBye(false);
+			}
 		}
 	}
 	
@@ -2142,22 +2144,24 @@ public class SipSessionImpl implements MobicentsSipSession {
 	 */
 	public void removeSubscription(MobicentsSipServletMessage sipServletMessageImpl) {
 		EventHeader eventHeader =  (EventHeader) sipServletMessageImpl.getMessage().getHeader(EventHeader.NAME);
-		if(logger.isDebugEnabled()) {
-			logger.debug("removing subscription " + eventHeader + " to sip session " + getId());
-		}
-		boolean hasOngoingSubscriptions = false;
-		if(subscriptions != null) {
-			subscriptions.remove(eventHeader.toString());
-			if(subscriptions.size() > 0) {
-				hasOngoingSubscriptions = true;
+		if(eventHeader != null) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("removing subscription " + eventHeader + " to sip session " + getId());
 			}
-			if(!hasOngoingSubscriptions) {		
-				if(subscriptions.size() < 1) {
-					if((originalMethod != null && okToByeSentOrReceived) || !Request.INVITE.equals(originalMethod) ) {
-						setReadyToInvalidate(true);
-						setState(State.TERMINATED);
-					}
-				}			
+			boolean hasOngoingSubscriptions = false;
+			if(subscriptions != null) {
+				subscriptions.remove(eventHeader.toString());
+				if(subscriptions.size() > 0) {
+					hasOngoingSubscriptions = true;
+				}
+				if(!hasOngoingSubscriptions) {		
+					if(subscriptions.size() < 1) {
+						if((originalMethod != null && okToByeSentOrReceived) || !Request.INVITE.equals(originalMethod) ) {
+							setReadyToInvalidate(true);
+							setState(State.TERMINATED);
+						}
+					}			
+				}
 			}
 		}
 		if(isReadyToInvalidateInternal()) {

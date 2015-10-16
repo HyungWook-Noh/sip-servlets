@@ -862,7 +862,9 @@ public class B2buaHelperImpl implements MobicentsB2BUAHelper, Serializable {
 						if(logger.isDebugEnabled()) {
 							logger.debug("following linked request " + linkedRequest + " unlinked from " + sipServletRequestImpl);
 						}
-						if(linkedTransaction != null) {
+						// TCK com.bea.sipservlet.tck.apps.apitestapp.B2buaHelper.testGetPendingMessages101 and testGetLinkedSession101
+						// don't remove the Linked Transaction if force is null as the response on the original cannot be sent as the transaction will be null 
+						if(!force && linkedTransaction != null) {
 							linkedRequest.getSipSession().removeOngoingTransaction(linkedTransaction);
 							if(linkedTransaction.getApplicationData() != null) {
 								((TransactionApplicationData)linkedTransaction.getApplicationData()).cleanUp();
@@ -877,13 +879,13 @@ public class B2buaHelperImpl implements MobicentsB2BUAHelper, Serializable {
 							}
 						}
 //						if(transaction == null || transaction instanceof ClientTransaction) {
-							if(linkedRequest.getSipSession().getOngoingTransactions().isEmpty()) {
+							if(!force && linkedRequest.getSipSession().getOngoingTransactions().isEmpty()) {
 								linkedRequest.getSipSession().cleanDialogInformation();
 							}
 							if(sipServletRequestImpl.getSipSession().getOngoingTransactions().isEmpty()) {
 								sipServletRequestImpl.getSipSession().cleanDialogInformation();
 							}
-							if(linkedRequest.getSipSession().isValidInternal() &&
+							if(!force && linkedRequest.getSipSession().isValidInternal() &&
 									// https://code.google.com/p/sipservlets/issues/detail?id=279
 									linkedRequest.getSipSession().isReadyToInvalidateInternal()) {														
 								linkedRequest.getSipSession().onTerminatedState();							
