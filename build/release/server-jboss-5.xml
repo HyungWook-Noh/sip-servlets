@@ -53,6 +53,18 @@
 	     protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
 	     signalingTransport="tls" />
 
+    <!-- Define the default SIP Over WebSockets Connector -->
+    <Connector port="5082" 
+	     ipAddress = "${jboss.bind.address}"
+	     protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
+	     signalingTransport="ws" />
+
+    <!-- Define the default SIP Over Secure WebSockets Connector -->
+    <Connector port="5083" 
+	     ipAddress = "${jboss.bind.address}"
+	     protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
+	     signalingTransport="wss" />
+
       <Engine name="jboss.web" defaultHost="localhost"  className="org.mobicents.servlet.sip.startup.SipStandardEngine">
 
          <!-- The JAAS based authentication and authorization realm implementation
