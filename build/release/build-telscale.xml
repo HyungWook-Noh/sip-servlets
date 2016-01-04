@@ -133,6 +133,17 @@
 		<antcall target="copy-jain-sip-docs">
 			<param name="mss.home" value="${tomcat.home}"/>
 		</antcall>
+			
+		<antcall target="copy-jain-sip-javascript">
+			<param name="mss.home" value="${tomcat.home}"/>
+		</antcall>
+		<antcall target="copy-webrtcomm">
+			<param name="mss.home" value="${tomcat.home}"/>
+		</antcall>
+		<antcall target="copy-rtm">
+			<param name="dest.mss.deploy" value="${tomcat.home}/server/default/deploy/"/>
+		</antcall>
+		<copy file="${basedir}/target/dependencies/rtm/rtm-mss/mobicents-dar.properties" tofile="${tomcat.home}/conf/dars/mobicents-dar.properties" />
 		<antcall target="make-final-zip-tomcat" />
 	</target>
 	
@@ -175,6 +186,16 @@
 			<antcall target="copy-jain-sip-docs">
 				<param name="mss.home" value="${tomcat7.home}"/>
 			</antcall>
+			<antcall target="copy-jain-sip-javascript">
+				<param name="mss.home" value="${tomcat7.home}"/>
+			</antcall>
+			<antcall target="copy-webrtcomm">
+				<param name="mss.home" value="${tomcat7.home}"/>
+			</antcall>
+			<antcall target="copy-rtm">
+				<param name="dest.mss.deploy" value="${tomcat7.home}/server/default/deploy/"/>
+			</antcall>
+			<copy file="${basedir}/target/dependencies/rtm/rtm-mss/mobicents-dar.properties" tofile="${tomcat7.home}/conf/dars/mobicents-dar.properties" />
 			<antcall target="make-final-zip-tomcat7" />
 		</target>
 	
@@ -236,7 +257,7 @@
 		<antcall target="copy-rtm">
 			<param name="dest.mss.deploy" value="${jboss-5-jdk6.home}/server/default/deploy/"/>
 		</antcall>
-		<copy file="${basedir}/target/dependencies/rtm/rtm-mss/mobicents-dar.properties" tofile="${jboss-5-jdk6.home}/server/default/configuration/dars/mobicents-dar.properties" />
+		<copy file="${basedir}/target/dependencies/rtm/rtm-mss/mobicents-dar.properties" tofile="${jboss-5-jdk6.home}/server/default/conf/dars/mobicents-dar.properties" />
 		<!-- include Click to Call example -->
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-examples/click-to-call">
 			<arg line="clean install -P set-git-hash" />
@@ -310,7 +331,7 @@
 		<antcall target="copy-rtm">
 			<param name="dest.mss.deploy" value="${eap-5.home}/server/default/deploy/"/>
 		</antcall>
-		<copy file="${basedir}/target/dependencies/rtm/rtm-mss/mobicents-dar.properties" tofile="${eap-5.home}/server/default/configuration/dars/mobicents-dar.properties" />
+		<copy file="${basedir}/target/dependencies/rtm/rtm-mss/mobicents-dar.properties" tofile="${eap-5.home}/server/default/conf/dars/mobicents-dar.properties" />
 		<!-- include Click to Call example -->
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-examples/click-to-call">
 			<arg line="clean install -P set-git-hash" />
