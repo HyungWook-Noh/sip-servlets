@@ -19,6 +19,7 @@
 
 package org.mobicents.servlet.sip;
 
+import gov.nist.javax.sip.ListeningPointExt;
 
 import gov.nist.javax.sip.TransactionExt;
 import gov.nist.javax.sip.header.extensions.ReferredByHeader;
