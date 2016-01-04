@@ -107,6 +107,8 @@ public class SipNetworkInterfaceManagerImpl implements SipNetworkInterfaceManage
 		transportMappingCacheMap.put(ListeningPoint.UDP.toLowerCase(), new CopyOnWriteArraySet<MobicentsExtendedListeningPoint>());
 		transportMappingCacheMap.put(ListeningPoint.SCTP.toLowerCase(), new CopyOnWriteArraySet<MobicentsExtendedListeningPoint>());
 		transportMappingCacheMap.put(ListeningPoint.TLS.toLowerCase(), new CopyOnWriteArraySet<MobicentsExtendedListeningPoint>());
+		transportMappingCacheMap.put(ListeningPoint.WS.toLowerCase(), new CopyOnWriteArraySet<MobicentsExtendedListeningPoint>());
+		transportMappingCacheMap.put(ListeningPoint.WSS.toLowerCase(), new CopyOnWriteArraySet<MobicentsExtendedListeningPoint>());
 		// creating the ipaddress/port/transport cache map
 		extendedListeningPointsCacheMap = new ConcurrentHashMap<String, MobicentsExtendedListeningPoint>();
 		lock = new ReentrantLock();

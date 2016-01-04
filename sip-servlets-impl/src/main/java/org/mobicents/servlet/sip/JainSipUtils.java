@@ -686,6 +686,13 @@ public final class JainSipUtils {
 						if (transportParam != null
 								&& transportParam.equalsIgnoreCase(ListeningPoint.TLS)) {
 							transport = ListeningPoint.TLS;
+						} // https://github.com/Mobicents/sip-servlets/issues/62
+						else if (transportParam != null
+								&& transportParam.equalsIgnoreCase(ListeningPointExt.WS)) {
+							transport = ListeningPointExt.WS;
+						} else if (transportParam != null
+								&& transportParam.equalsIgnoreCase(ListeningPointExt.WSS)) {
+							transport = ListeningPointExt.WSS;
 						}
 						//Fix by Filip Olsson for Issue 112
 						else if ((transportParam != null
