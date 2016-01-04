@@ -91,7 +91,7 @@
 	<!-- Release target -->
 	
 	<!--target name="release" depends="clean,build-documentation,release-EAP-5.x,release-tomcat,release-jboss-5-jdk6,make-src-zip" /-->
-	<target name="release" depends="clean,build-documentation,build-jain-sip-docs,release-jboss-5-jdk6,release-EAP-5.x,release-tomcat7,release-tomcat,make-src-zip" />
+	<target name="release" depends="clean,build-documentation,build-jain-sip-docs,build-jain-sip-javascript,build-webrtcomm,build-rtm,release-jboss-5-jdk6,release-EAP-5.x,release-tomcat7,release-tomcat,make-src-zip" />
 	
 	<!-- Tomcat version -->
 	
@@ -227,6 +227,16 @@
 		<antcall target="copy-jain-sip-docs">
 			<param name="mss.home" value="${jboss-5-jdk6.home}"/>
 		</antcall>
+		<antcall target="copy-jain-sip-javascript">
+			<param name="mss.home" value="${jboss-5-jdk6.home}"/>
+		</antcall>
+		<antcall target="copy-webrtcomm">
+			<param name="mss.home" value="${jboss-5-jdk6.home}"/>
+		</antcall>
+		<antcall target="copy-rtm">
+			<param name="dest.mss.deploy" value="${jboss-5-jdk6.home}/server/default/deploy/"/>
+		</antcall>
+		<copy file="${basedir}/target/dependencies/rtm/rtm-mss/mobicents-dar.properties" tofile="${jboss-5-jdk6.home}/server/default/configuration/dars/mobicents-dar.properties" />
 		<!-- include Click to Call example -->
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-examples/click-to-call">
 			<arg line="clean install -P set-git-hash" />
@@ -291,6 +301,16 @@
 		<antcall target="copy-jain-sip-docs">
 			<param name="mss.home" value="${eap-5.home}/jboss-as"/>
 		</antcall>
+		<antcall target="copy-jain-sip-javascript">
+			<param name="mss.home" value="${eap-5.home}"/>
+		</antcall>
+		<antcall target="copy-webrtcomm">
+			<param name="mss.home" value="${eap-5.home}"/>
+		</antcall>
+		<antcall target="copy-rtm">
+			<param name="dest.mss.deploy" value="${eap-5.home}/server/default/deploy/"/>
+		</antcall>
+		<copy file="${basedir}/target/dependencies/rtm/rtm-mss/mobicents-dar.properties" tofile="${eap-5.home}/server/default/configuration/dars/mobicents-dar.properties" />
 		<!-- include Click to Call example -->
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-examples/click-to-call">
 			<arg line="clean install -P set-git-hash" />
@@ -592,6 +612,61 @@
 			tofile="${mss.home}/sip-balancer/license_pubkey.der" />
 	</target>
 	
+	<target name="build-rtm">
+		<echo>Building RTM</echo>
+
+		<exec executable="git">
+		    <arg value="clone" />		    
+		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-rtm.git" />
+		    <arg value="${basedir}/target/dependencies/rtm" />
+		</exec>
+
+		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/rtm">
+			<arg line="clean install -P set-git-hash -Dmaven.test.skip=true" />
+		</exec>	
+	</target>
+	
+	<target name="copy-rtm" depends="build-rtm">
+		<echo>Copying RTM</echo>
+
+		<copy file="${basedir}/target/dependencies/rtm/rtm-mss/target/rtm-mss.war" tofile="${dest.mss.deploy}/rtm-mss.war" />
+		<copy file="${basedir}/target/dependencies/rtm/rtm-ui/target/rtm-ui.war" tofile="${dest.mss.deploy}/webrtc.war" />
+	</target>
+
+	<target name="build-webrtcomm">
+		<echo>Building WebrtComm</echo>
+
+		<exec executable="git">
+		    <arg value="clone" />
+		    <arg value="-b" />
+		    <arg value="${branch.name}" />
+		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-webrtcomm.git" />
+		    <arg value="${basedir}/target/dependencies/webrtcomm" />
+		</exec>
+
+		<exec failonerror="true" executable="sh" dir="${base.path}/target/dependencies/webrtcomm">
+			<arg line="build.sh" />
+		</exec>
+	</target>
+
+	<target name="copy-jain-sip-javascript" depends="build-jain-sip-javascript">
+		<echo>Copying JAIN SIP Javascript</echo>
+
+		<mkdir dir="${mss.home}/tools/jain-sip.javascript"/>
+		<copy overwrite="true" todir="${mss.home}/tools/jain-sip.javascript">
+			<fileset dir="${basedir}/target/dependencies/jain-sip.javascript/build" />
+		</copy>
+	</target>
+
+	<target name="copy-webrtcomm" depends="build-webrtcomm">
+		<echo>Copying WebrtComm</echo>
+
+		<mkdir dir="${mss.home}/tools/webrtcomm"/>
+		<copy overwrite="true" todir="${mss.home}/tools/webrtcomm">
+			<fileset dir="${basedir}/target/dependencies/webrtcomm/build" />
+		</copy>
+	</target>
+
 	<target name="build-mobicents-sglc" depends="get-deps">
 		<echo>Building Simple Global Logging Configuration</echo>
 		<echo message="jboss.home= ${mss.home}"/>
