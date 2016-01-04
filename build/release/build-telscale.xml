@@ -626,6 +626,22 @@
 		</exec>	
 	</target>
 	
+	<target name="build-jain-sip-javascript">
+		<echo>Building Jain-SIP.Javascript</echo>
+
+		<exec executable="git">
+		    <arg value="clone" />
+		    <arg value="-b" />
+		    <arg value="${branch.name}" />
+		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jsip-js.git" />
+		    <arg value="${basedir}/target/dependencies/jain-sip.javascript" />
+		</exec>
+
+		<exec failonerror="true" executable="sh" dir="${base.path}/target/dependencies/jain-sip.javascript">
+			<arg line="build.sh" />
+		</exec>
+	</target>
+
 	<target name="copy-rtm" depends="build-rtm">
 		<echo>Copying RTM</echo>
 
