@@ -642,10 +642,10 @@
 		    <arg value="${basedir}/target/dependencies/rtm" />
 		</exec>
 
-		<delete verbose="true" dir="${basedir}/target/dependencies/rtm/rtm-ui/src/main/webapp/WEB-INF/web.xml"/>
+		<delete verbose="true" dir="${base.path}/target/dependencies/rtm/rtm-ui/src/main/webapp/WEB-INF/web.xml"/>
 		
 		<copy verbose="true" file="${base.path}/web-rtm-ui.xml"
-			tofile="${basedir}/target/dependencies/rtm/rtm-ui/src/main/webapp/WEB-INF/web.xml" />
+			tofile="${base.path}/target/dependencies/rtm/rtm-ui/src/main/webapp/WEB-INF/web.xml" />
 
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/rtm">
 			<arg line="clean install -P set-git-hash -Dmaven.test.skip=true" />
