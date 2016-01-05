@@ -112,6 +112,18 @@
 	     protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
 	     signalingTransport="tls"/>
 	
+    <!-- Define the default SIP Over WebSockets Connector -->
+    <Connector port="5082" 
+	     ipAddress = "${jboss.bind.address}"
+	     protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
+	     signalingTransport="ws" />
+
+    <!-- Define the default SIP Over Secure WebSockets Connector -->
+    <Connector port="5083" 
+	     ipAddress = "${jboss.bind.address}"
+	     protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
+	     signalingTransport="wss" />
+
     <!-- An Engine represents the entry point (within Catalina) that processes
          every request.  The Engine implementation for Tomcat stand alone
          analyzes the HTTP headers included with the request, and passes them
