@@ -641,8 +641,10 @@
 		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-rtm.git" />
 		    <arg value="${basedir}/target/dependencies/rtm" />
 		</exec>
+
+		<delete verbose="true" dir="${basedir}/target/dependencies/rtm/rtm-ui/src/main/webapp/WEB-INF/web.xml"/>
 		
-		<copy file="${base.path}/web-rtm-ui.xml"
+		<copy verbose="true" file="${base.path}/web-rtm-ui.xml"
 			tofile="${basedir}/target/dependencies/rtm/rtm-ui/src/main/webapp/WEB-INF/web.xml" />
 
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/rtm">
