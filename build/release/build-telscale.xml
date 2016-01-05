@@ -141,7 +141,7 @@
 			<param name="mss.home" value="${tomcat.home}"/>
 		</antcall>
 		<antcall target="copy-rtm">
-			<param name="dest.mss.deploy" value="${tomcat.home}/server/default/deploy/"/>
+			<param name="dest.mss.deploy" value="${tomcat.home}/webapps/"/>
 		</antcall>
 		<copy overwrite="true" force="true" verbose="true" file="${base.path}/target/dependencies/rtm/rtm-mss/mobicents-dar.properties" tofile="${tomcat.home}/conf/dars/mobicents-dar.properties" />
 		<antcall target="make-final-zip-tomcat" />
@@ -193,7 +193,7 @@
 				<param name="mss.home" value="${tomcat7.home}"/>
 			</antcall>
 			<antcall target="copy-rtm">
-				<param name="dest.mss.deploy" value="${tomcat7.home}/server/default/deploy/"/>
+				<param name="dest.mss.deploy" value="${tomcat7.home}/webapps/"/>
 			</antcall>
 			<copy overwrite="true" force="true" verbose="true" file="${base.path}/target/dependencies/rtm/rtm-mss/mobicents-dar.properties" tofile="${tomcat7.home}/conf/dars/mobicents-dar.properties" />
 			<antcall target="make-final-zip-tomcat7" />
