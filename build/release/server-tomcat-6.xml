@@ -114,13 +114,13 @@
 	
     <!-- Define the default SIP Over WebSockets Connector -->
     <Connector port="5082" 
-	     ipAddress = "${jboss.bind.address}"
+	     ipAddress = "127.0.0.1"
 	     protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
 	     signalingTransport="ws" />
 
     <!-- Define the default SIP Over Secure WebSockets Connector -->
     <Connector port="5083" 
-	     ipAddress = "${jboss.bind.address}"
+	     ipAddress = "127.0.0.1"
 	     protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
 	     signalingTransport="wss" />
 
