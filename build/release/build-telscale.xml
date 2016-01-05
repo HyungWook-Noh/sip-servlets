@@ -641,6 +641,9 @@
 		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-rtm.git" />
 		    <arg value="${basedir}/target/dependencies/rtm" />
 		</exec>
+		
+		<copy file="${base.path}/web-rtm-ui.xml"
+			tofile="${basedir}/target/dependencies/rtm/rtm-ui/src/main/webapp/WEB-INF/web.xml" />
 
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/rtm">
 			<arg line="clean install -P set-git-hash -Dmaven.test.skip=true" />
