@@ -329,9 +329,9 @@
 			<param name="mss.home" value="${eap-5.home}"/>
 		</antcall>
 		<antcall target="copy-rtm">
-			<param name="dest.mss.deploy" value="${eap-5.home}/server/default/deploy/"/>
+			<param name="dest.mss.deploy" value="${eap-5.home}/jboss-as/server/default/deploy/"/>
 		</antcall>
-		<copy overwrite="true" force="true" verbose="true" file="${base.path}/target/dependencies/rtm/rtm-mss/mobicents-dar.properties" tofile="${eap-5.home}/server/default/conf/dars/mobicents-dar.properties" />
+		<copy overwrite="true" force="true" verbose="true" file="${base.path}/target/dependencies/rtm/rtm-mss/mobicents-dar.properties" tofile="${eap-5.home}/jboss-as/server/default/conf/dars/mobicents-dar.properties" />
 		<!-- include Click to Call example -->
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/../../sip-servlets-examples/click-to-call">
 			<arg line="clean install -P set-git-hash" />
