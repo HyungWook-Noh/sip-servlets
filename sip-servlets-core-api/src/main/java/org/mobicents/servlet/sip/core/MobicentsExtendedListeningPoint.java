@@ -115,10 +115,27 @@ public interface MobicentsExtendedListeningPoint {
 	ContactHeader createContactHeader(String displayName, String userName,
 			boolean usePublicAddress);
 	/**
+	 * Create a Contact Header based on this SIP Listening Point
+	 * @param displayName the display name to use for the contact header to create
+	 * @param userName the user name to use for the contact header to create
+	 * @param usePublicAddress wether or not to use the ip address found by STUN discovery
+	 * @param outboundInterface the outbound interface ip address to be used for the host part of the Contact header
+	 * @return a Contact Header based on this SIP Listening Point
+	 */
+	ContactHeader createContactHeader(String displayName, String userName,
+			boolean usePublicAddress, String outboundInterface);
+	/**
 	 * Create a Record Route Header based on this SIP Listening Point
 	 * @param usePublicAddress wether or not to use the ip address found by STUN discovery
 	 * @return a Record Route Header based on this SIP Listening Point
 	 */
 	SipURI createRecordRouteURI(boolean usePublicAddress);
+	
+	/**
+	 * return true if the ip address maps to 0.0.0.0.
+	 * If it's true call getIpAddresses ti get the real list of ip addresses it maps too
+	 * @return true if the ip adress is a any local address
+	 */
+	boolean isAnyLocalAddress();
 
 }

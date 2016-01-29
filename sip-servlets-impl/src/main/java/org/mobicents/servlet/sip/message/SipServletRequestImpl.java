@@ -82,6 +82,7 @@ import javax.sip.header.ContactHeader;
 import javax.sip.header.FromHeader;
 import javax.sip.header.Header;
 import javax.sip.header.MaxForwardsHeader;
+import javax.sip.header.Parameters;
 import javax.sip.header.ProxyAuthenticateHeader;
 import javax.sip.header.ProxyAuthorizationHeader;
 import javax.sip.header.RecordRouteHeader;
@@ -999,7 +1000,7 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 						}
 					}
 				}
-				if(hops.size() > 0) {
+				if(hops != null && hops.size() > 0) {
 					// RFC 3263 support don't remove the current hop, it will be the one to reuse for CANCEL and ACK to non 2xx transactions
 					hop = hops.peek();
 					transactionApplicationData.setHops(hops);				
@@ -1091,7 +1092,7 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 			}
 			
 			// adding via header and update via branch if null
-			checkViaHeaderAddition();
+			checkViaHeaderAddition(hop);
 						
 			final String transport = JainSipUtils.findTransport(request);
 			if(sessionTransport == null) {
@@ -1106,8 +1107,8 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 		    // Bad choice of connectors when multiple of the same transport are available			
 			String outboundInterface = session.getOutboundInterface();
 			if(outboundInterface != null) {
-				if(logger.isTraceEnabled()) {
-					logger.trace("Trying to find listening point with outbound interface " + outboundInterface);
+				if(logger.isDebugEnabled()) {
+					logger.debug("Trying to find listening point with outbound interface " + outboundInterface);
 				}
 				javax.sip.address.SipURI outboundInterfaceURI = null;			
 				try {
@@ -1118,18 +1119,19 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 				matchingListeningPoint = sipNetworkInterfaceManager.findMatchingListeningPoint(outboundInterfaceURI, false);
 			}
 			if(matchingListeningPoint == null) {
-				if(logger.isTraceEnabled()) {
-					logger.trace("Trying to find listening point with transport " + transport);
+				if(logger.isDebugEnabled()) {
+					logger.debug("Trying to find listening point with transport " + transport);
 				}
 				matchingListeningPoint = sipNetworkInterfaceManager.findMatchingListeningPoint(
 						transport, false);
 			}
-			
+	
 			final SipProvider sipProvider = matchingListeningPoint.getSipProvider();
 			SipConnector sipConnector = matchingListeningPoint.getSipConnector();
 
+			
 			//we update the via header after the sip connector has been found for the correct transport
-			checkViaHeaderUpdateForStaticExternalAddressUsage(sipConnector);
+			checkViaHeaderUpdateOrForStaticExternalAddressUsage(matchingListeningPoint, hop);
 			
 			if(Request.ACK.equals(requestMethod)) {
 				// DNS Route need to be added for ACK
@@ -1166,7 +1168,8 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 				// Adding Route Header for LB if the request is initial or
 				// http://code.google.com/p/sipservlets/issues/detail?id=130
 				// if we are in a HA configuration and the request is an out of dialog request
-				if(isInitial() || dialog == null) {					
+				if(isInitial() || dialog == null) {		
+				    //Issue: https://telestax.atlassian.net/browse/MSS-121
 					if(sipFactoryImpl.isUseLoadBalancer()) {
 						sipFactoryImpl.addLoadBalancerRouteHeader(request);
 						addDNSRoute = false;
@@ -1174,7 +1177,9 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 							logger.debug("adding route to Load Balancer since we are in a HA configuration " +
 							" and no more apps are interested.");
 						}
-					} else if(StaticServiceHolder.sipStandardService.getOutboundProxy() != null) {
+					}
+					//Issue: https://telestax.atlassian.net/browse/MSS-121
+					else if(StaticServiceHolder.sipStandardService.getOutboundProxy() != null) {
 						sipFactoryImpl.addLoadBalancerRouteHeader(request);
 						addDNSRoute = false;
 						if(logger.isDebugEnabled()) {
@@ -1323,7 +1328,9 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 				Thread.currentThread().setContextClassLoader(cl);
 				// If dialog does not exist or has no state.
 				if (dialog == null || dialog.getState() == null
-						|| (dialog.getState() == DialogState.EARLY && !Request.PRACK.equals(requestMethod)) || Request.CANCEL.equals(requestMethod)) {
+						// https://github.com/Mobicents/sip-servlets/issues/66 include UPDATE as well so it is sent indialog
+						|| (dialog.getState() == DialogState.EARLY && !Request.PRACK.equals(requestMethod) && !Request.UPDATE.equals(requestMethod)) 
+						|| Request.CANCEL.equals(requestMethod)) {
 					if(logger.isDebugEnabled()) {
 						logger.debug("Sending the request " + request);
 					}
@@ -1357,6 +1364,11 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 				// cleaning up the request to make sure it can be resent with some modifications in case of exception
 				if(transactionApplicationData.getHops() != null && transactionApplicationData.getHops().size() > 0) {
 					request.removeFirst(RouteHeader.NAME);
+					// https://code.google.com/p/sipservlets/issues/detail?id=250 retry directly on TCP
+                    boolean nextHopVisited = visitNextHop();
+                    if(nextHopVisited) {
+                    	return;
+                    }
 				}
 				request.removeFirst(ViaHeader.NAME);
 				request.removeFirst(ContactHeader.NAME);
@@ -1401,7 +1413,7 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 	/**
 	 * 
 	 */
-	private void checkViaHeaderAddition() throws ParseException {
+	private void checkViaHeaderAddition(Hop hop) throws ParseException {
 		final SipNetworkInterfaceManager sipNetworkInterfaceManager = sipFactoryImpl.getSipNetworkInterfaceManager();		
 		final Request request = (Request) super.message;
 		final MobicentsSipSession session = getSipSession();
@@ -1435,6 +1447,29 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 			final String branch = JainSipUtils.createBranch(sipApplicationSession.getKey().getId(),  sipFactoryImpl.getSipApplicationDispatcher().getHashFromApplicationName(session.getKey().getApplicationName()));			
 			viaHeader.setBranch(branch);
 		}
+		// https://github.com/Mobicents/sip-servlets/issues/62 modify the Via transport to match either the hop, the route or the request URI transport
+		String transportFromRouteOrRequestUri = JainSipUtils.findRouteOrRequestUriTransport((Request) message);
+		String hopTransport = null;
+		if(hop != null) {
+			hopTransport = hop.getTransport();
+		}
+		String viaTransport = viaHeader.getTransport();
+		if(logger.isDebugEnabled()) {
+	    	logger.debug("viaHeader transport " + viaTransport + 
+	    			", hopTransport " + hopTransport + ", transportFromRouteOrRequestUri " + transportFromRouteOrRequestUri);
+	    }
+		if(hopTransport != null && !viaTransport.equalsIgnoreCase(hopTransport)) {
+			if(logger.isDebugEnabled()) {
+		    	logger.debug("updating via transport to hopTransport " + hopTransport);
+		    }
+			viaHeader.setTransport(hopTransport);
+		} else if (transportFromRouteOrRequestUri != null && !viaTransport.equalsIgnoreCase(transportFromRouteOrRequestUri)) {
+			if(logger.isDebugEnabled()) {
+		    	logger.debug("updating via transport to transportFromRouteOrRequestUri " + transportFromRouteOrRequestUri);
+		    }
+			viaHeader.setTransport(transportFromRouteOrRequestUri);
+		}
+		
 	}
 
 	/**
@@ -1443,29 +1478,73 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 	 * @throws ParseException
 	 * @throws InvalidArgumentException
 	 */
-	private void checkViaHeaderUpdateForStaticExternalAddressUsage(final SipConnector sipConnector)
+	private void checkViaHeaderUpdateOrForStaticExternalAddressUsage(final MobicentsExtendedListeningPoint mobicentsExtendedListeningPoint, final Hop hop)
 			throws ParseException, InvalidArgumentException {
 		
+		final SipConnector sipConnector = mobicentsExtendedListeningPoint.getSipConnector();
 		final Request request = (Request) super.message;	
 		ViaHeader viaHeader = (ViaHeader) request.getHeader(ViaHeader.NAME);
 				
-		if(sipConnector != null && sipConnector.isUseStaticAddress()) {
-			javax.sip.address.URI uri = request.getRequestURI();
-			RouteHeader route = (RouteHeader) request.getHeader(RouteHeader.NAME);
-			if(route != null) {
-				uri = route.getAddress().getURI();
-			}
-			if(uri.isSipURI()) {
-				javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) uri;
-				String host = sipUri.getHost();
-				int port = sipUri.getPort();
-				if(sipFactoryImpl.getSipApplicationDispatcher().isExternal(host, port, transport)) {
-					viaHeader.setHost(sipConnector.getStaticServerAddress());
-					viaHeader.setPort(sipConnector.getStaticServerPort());
+		if(sipConnector != null) {
+		    //Issue: https://telestax.atlassian.net/browse/MSS-121
+			if(sipConnector.isUseStaticAddress()) {
+				javax.sip.address.URI uri = request.getRequestURI();
+				RouteHeader route = (RouteHeader) request.getHeader(RouteHeader.NAME);
+				if(route != null) {
+					uri = route.getAddress().getURI();
+				}
+				if(uri.isSipURI()) {
+					javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) uri;
+					String host = sipUri.getHost();
+					int port = sipUri.getPort();
+					if(sipFactoryImpl.getSipApplicationDispatcher().isExternal(host, port, transport)) {
+						viaHeader.setHost(sipConnector.getStaticServerAddress());
+						viaHeader.setPort(sipConnector.getStaticServerPort());
+					}
+				}
+			} else {
+				// Cope with http://code.google.com/p/sipservlets/issues/detail?id=31 set rport
+				// since we set the via header before request creation now, we make sure to update it based on the outbound destination before sending it out
+				String ipAddressToCheckAgainst = sipConnector.getIpAddress();
+				if(mobicentsExtendedListeningPoint.isAnyLocalAddress()) {
+					for(String lpIpAddress : mobicentsExtendedListeningPoint.getIpAddresses()) {
+						if(logger.isTraceEnabled()) {
+							logger.trace("AnyLocalAddress so checking the list of ip addresses " + lpIpAddress + " to see if one matches the destination hop" + hop.getHost());
+						}
+						if(lpIpAddress.equalsIgnoreCase(hop.getHost())) {
+							ipAddressToCheckAgainst = lpIpAddress;
+							if(logger.isTraceEnabled()) {
+								logger.trace("AnyLocalAddress using ip address " + lpIpAddress + " matching the destination hop" + hop.getHost());
+							}
+						}
+					}
+				}
+				//Issue: https://code.google.com/p/sipservlets/issues/detail?id=210
+				String outboundInterface = this.getSipSession().getOutboundInterface();
+				if(outboundInterface != null){
+					javax.sip.address.SipURI outboundInterfaceURI = (javax.sip.address.SipURI) SipFactoryImpl.addressFactory.createURI(outboundInterface);
+					ipAddressToCheckAgainst = ((gov.nist.javax.sip.address.SipUri)outboundInterfaceURI).getHost();
+				}
+				
+				
+				if(!viaHeader.getHost().equalsIgnoreCase(ipAddressToCheckAgainst) || 
+						!viaHeader.getTransport().equalsIgnoreCase(sipConnector.getTransport()) ||
+						viaHeader.getPort() != sipConnector.getPort()) {
+					if(logger.isTraceEnabled()) {
+						logger.trace("Via " + viaHeader + " different than outbound SIP Connector picked by the container " + sipConnector + " , updating it");
+					}
+					viaHeader.setHost(ipAddressToCheckAgainst);
+					viaHeader.setPort(sipConnector.getPort());
+					viaHeader.setTransport(sipConnector.getTransport());
+					if(logger.isTraceEnabled()) {
+						logger.trace("Via updated to outbound SIP Connector picked by the container " + viaHeader);
+					}
 				}
 			}
-		}		
+		}
+		
 	}
+
 	
 	/**
 	 * Keeping the transactions mapping in application data for CANCEL handling
@@ -1540,6 +1619,13 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 		final MobicentsProxy proxy = session.getProxy();
 		
 		ContactHeader contactHeader = (ContactHeader)request.getHeader(ContactHeader.NAME);
+		if(contactHeader != null && (((Parameters)contactHeader.getAddress().getURI()).getParameter("gruu") != null || 
+				((Parameters)contactHeader.getAddress().getURI()).getParameter("gr") != null)) {
+			 if(logger.isDebugEnabled()) {
+				 logger.debug("not changing existing contact header " + contactHeader + " as it contains gruu");
+			 }
+			 return;
+		}
 		if(contactHeader == null && !Request.REGISTER.equalsIgnoreCase(requestMethod) && JainSipUtils.CONTACT_HEADER_METHODS.contains(requestMethod) && proxy == null) {
 			final FromHeader fromHeader = (FromHeader) request.getHeader(FromHeader.NAME);
 			final javax.sip.address.URI fromUri = fromHeader.getAddress().getURI();
@@ -1561,16 +1647,24 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 				if(sipConnector != null && sipConnector.isUseStaticAddress()) {
 					contactSipUri.setHost(sipConnector.getStaticServerAddress());
 					contactSipUri.setPort(sipConnector.getStaticServerPort());
-					contactSipUri.setUser(null);
+					//https://telestax.atlassian.net/browse/MSS-103
+					//contactSipUri.setUser(null);
 				} 
 				// http://code.google.com/p/sipservlets/issues/detail?id=156 
 				// MSS overwrites host part of Contact Header in REGISTER requests
 				else if(JainSipUtils.CONTACT_HEADER_METHODS.contains(requestMethod)) {
+					//Issue: https://code.google.com/p/sipservlets/issues/detail?id=210
+					String outboundInterface = this.getSipSession().getOutboundInterface();
+					if(outboundInterface != null){
+						javax.sip.address.SipURI outboundInterfaceURI = (javax.sip.address.SipURI) SipFactoryImpl.addressFactory.createURI(outboundInterface);
+						String outboundHost = ((gov.nist.javax.sip.address.SipUri)outboundInterfaceURI).getHost();
+						contactSipUri.setHost(outboundHost);
+					} else {	
 					boolean usePublicAddress = JainSipUtils.findUsePublicAddress(
 							sipNetworkInterfaceManager, request, matchingListeningPoint);
-					contactSipUri.setHost(matchingListeningPoint.getIpAddress(usePublicAddress));
+					contactSipUri.setHost(matchingListeningPoint.getIpAddress(usePublicAddress));	
+					}
 					contactSipUri.setPort(matchingListeningPoint.getPort());
-					
 				}
 				// http://code.google.com/p/mobicents/issues/detail?id=1150 only set transport if not udp
 				if(transportForRequest != null) {
@@ -1605,11 +1699,23 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 	 * @return
 	 */
 	public boolean visitNextHop() {
+	    if(logger.isDebugEnabled()) {
+            logger.debug("visitNextHop txAppData " + transactionApplicationData);
+        }
 		if(transactionApplicationData != null) {
 			Queue<Hop> nextHops = transactionApplicationData.getHops();
+			if(logger.isDebugEnabled()) {
+	            logger.debug("visitNextHop nextHops " + nextHops);
+	            if(nextHops != null) {
+	                logger.debug("visitNextHop nextHops size " + nextHops.size());
+	            }
+	        }
 			if(sipFactoryImpl.getSipApplicationDispatcher().getDNSServerLocator() != null && nextHops != null && nextHops.size() > 1) {
 				nextHops.remove();
 				Hop nextHop = nextHops.peek();
+				if(logger.isDebugEnabled()) {
+		            logger.debug("visitNextHop nextHop " + nextHop);
+		        }
 				if(nextHop != null) {
 					// If a failure occurs, the client SHOULD create a new request, 
 					// which is identical to the previous, but
@@ -2255,6 +2361,12 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
                 return null;
             }
             return ((SIPRequest)message).getRemoteAddress().getHostAddress();
+        } else if (message != null && 
+                message instanceof SIPRequest && 
+                ((SIPRequest)message).getRemoteAddress() != null ) {
+            //https://github.com/Mobicents/jain-sip/issues/42
+            //take advantage of new message methods to extract addr from msg            
+            return ((SIPRequest)message).getRemoteAddress().getHostAddress();
         } else if(getTransaction() != null) {
             if(logger.isTraceEnabled()) {
                 logger.trace("transaction not null, returning packet source ip address");
@@ -2296,6 +2408,11 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
                 return -1;
             }
             return ((SIPRequest)message).getRemotePort();
+        } else if (message != null && 
+                message instanceof SIPRequest ) {
+            //https://github.com/Mobicents/jain-sip/issues/42
+            //take advantage of new message methods to extract port from msg
+            return ((SIPRequest)message).getRemotePort();
         } else if(getTransaction() != null) {
             if(logger.isTraceEnabled()) {
                 logger.trace("transaction not null, returning packet source port");
@@ -2320,6 +2437,7 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 				return via.getPort()<=0 ? 5060 : via.getPort();
 			}
 		}
+
 	}
 
 	/**

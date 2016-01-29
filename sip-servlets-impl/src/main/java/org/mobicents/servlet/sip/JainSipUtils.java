@@ -1,6 +1,6 @@
 /*
  * TeleStax, Open Source Cloud Communications
- * Copyright 2011-2013, Telestax Inc and individual contributors
+ * Copyright 2011-2014, Telestax Inc and individual contributors
  * by the @authors tag.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@
 
 package org.mobicents.servlet.sip;
 
-import gov.nist.javax.sip.ListeningPointExt;
 
+import gov.nist.javax.sip.ListeningPointExt;
 import gov.nist.javax.sip.TransactionExt;
 import gov.nist.javax.sip.header.extensions.ReferredByHeader;
 import gov.nist.javax.sip.header.extensions.SessionExpiresHeader;
@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 
 import javax.sip.InvalidArgumentException;
 import javax.sip.ListeningPoint;
@@ -95,6 +96,7 @@ import javax.sip.header.RetryAfterHeader;
 import javax.sip.header.RouteHeader;
 import javax.sip.header.ServerHeader;
 import javax.sip.header.SubjectHeader;
+import javax.sip.header.SubscriptionStateHeader;
 import javax.sip.header.SupportedHeader;
 import javax.sip.header.TimeStampHeader;
 import javax.sip.header.ToHeader;
@@ -263,6 +265,10 @@ public final class JainSipUtils {
 		PARAMETERABLE_HEADER_NAMES.add(ProxyAuthenticateHeader.NAME);
 		PARAMETERABLE_HEADER_NAMES.add(AuthorizationHeader.NAME);
         PARAMETERABLE_HEADER_NAMES.add(ProxyAuthorizationHeader.NAME);
+        // https://code.google.com/p/sipservlets/issues/detail?id=260
+        PARAMETERABLE_HEADER_NAMES.add(EventHeader.NAME);
+        // https://github.com/Mobicents/sip-servlets/issues/45
+        PARAMETERABLE_HEADER_NAMES.add(SubscriptionStateHeader.NAME);
 	}
 
 	
@@ -539,7 +545,8 @@ public final class JainSipUtils {
 	 * @return
 	 */
 	public static String createBranch(String appSessionId, String appname) {
-		return createBranch(appSessionId, appname, Long.toString(System.nanoTime()));
+	    // https://code.google.com/p/sipservlets/issues/detail?id=269
+		return createBranch(appSessionId, appname, UUID.randomUUID().toString());
     }
 	
 	public static String createBranch(String appSessionId, String appname, String random) {
@@ -568,7 +575,12 @@ public final class JainSipUtils {
 		}
 		boolean usePublicAddress = findUsePublicAddress(
 				sipNetworkInterfaceManager, request, listeningPoint);
-		ContactHeader ch = listeningPoint.createContactHeader(displayName, userName, usePublicAddress);
+		ContactHeader ch = null;
+		if(outboundInterface!=null){
+			ch = listeningPoint.createContactHeader(displayName, userName, usePublicAddress, outboundInterface);
+		} else {
+			ch = listeningPoint.createContactHeader(displayName, userName, usePublicAddress);
+		}
 		if(StaticServiceHolder.sipStandardService.isMd5ContactUserPart()) {
 			CallIdHeader callId = (CallIdHeader)request.getHeader(CallIdHeader.NAME);
 			String username = getHash(callId.getCallId().getBytes());
@@ -670,69 +682,57 @@ public final class JainSipUtils {
 		}
 		
 		if(transport == null && message instanceof Request) {
+			// https://github.com/Mobicents/sip-servlets/issues/62
+			transport = findRouteOrRequestUriTransport((Request) message);
+		}
 			
-			Request request = (Request)message;
-
-			RouteHeader route = (RouteHeader) request.getHeader(RouteHeader.NAME);
-			if(route != null) {
-				transport = ListeningPoint.UDP;
-				URI uri = route.getAddress().getURI();
-				if(uri instanceof SipURI) {
-					SipURI sipURI = (SipURI) uri;
-					if(sipURI.isSecure()) {
-						transport = ListeningPoint.TLS;
-					} else {
-						String transportParam = sipURI.getTransportParam();
-
-						if (transportParam != null
-								&& transportParam.equalsIgnoreCase(ListeningPoint.TLS)) {
-							transport = ListeningPoint.TLS;
-						} // https://github.com/Mobicents/sip-servlets/issues/62
-						else if (transportParam != null
-								&& transportParam.equalsIgnoreCase(ListeningPointExt.WS)) {
-							transport = ListeningPointExt.WS;
-						} else if (transportParam != null
-								&& transportParam.equalsIgnoreCase(ListeningPointExt.WSS)) {
-							transport = ListeningPointExt.WSS;
-						}
-						//Fix by Filip Olsson for Issue 112
-						else if ((transportParam != null
-								&& transportParam.equalsIgnoreCase(ListeningPoint.TCP)) || 
-								request.getContentLength().getContentLength() > 4096) {
-							transport = ListeningPoint.TCP;
-						}
-					}
-				}
-			}
-		}
-
-		if(transport == null && message instanceof Request) {
-			transport = ListeningPoint.UDP;
-			Request request = (Request)message;
-			URI ruri = request.getRequestURI();
-			if(ruri instanceof SipURI) {
-				SipURI sruri = ((javax.sip.address.SipURI) ruri);
-				if(sruri.isSecure()) {
-					transport = ListeningPoint.TLS;
-				} else {
-					String transportParam = sruri.getTransportParam();
-
-					if (transportParam != null
-							&& transportParam.equalsIgnoreCase(ListeningPoint.TLS)) {
-						transport = ListeningPoint.TLS;
-					}
-					//Fix by Filip Olsson for Issue 112
-					else if ((transportParam != null
-							&& transportParam.equalsIgnoreCase(ListeningPoint.TCP)) || 
-							request.getContentLength().getContentLength() > 4096) {
-						transport = ListeningPoint.TCP;
-					}
-				}
-			}
-		}
 		// storing the transport is present in the message application data for maximizing perf 
 		// in speeding up the retrieval later on
 		((SIPMessage)message).setApplicationData(transport);
+		return transport;
+	}
+	
+	// https://github.com/Mobicents/sip-servlets/issues/62
+	public static String findRouteOrRequestUriTransport(Request request) {
+		RouteHeader route = (RouteHeader) request.getHeader(RouteHeader.NAME);
+		if(route != null) {
+			URI uri = route.getAddress().getURI();
+			return findURITransport(uri, request.getContentLength().getContentLength());
+		}
+		URI ruri = request.getRequestURI();
+		return findURITransport(ruri, request.getContentLength().getContentLength());
+	}
+	// https://github.com/Mobicents/sip-servlets/issues/62
+	public static String findURITransport(URI uri, int messageContentLength) {
+		String transport = ListeningPoint.UDP;
+		if(uri instanceof SipURI) {
+			SipURI sipURI = (SipURI) uri;
+			if(sipURI.isSecure()) {
+				transport = ListeningPoint.TLS;
+			} else {
+				String transportParam = sipURI.getTransportParam();
+
+				if (transportParam != null
+						&& transportParam.equalsIgnoreCase(ListeningPoint.TLS)) {
+					transport = ListeningPoint.TLS;
+				} // https://github.com/Mobicents/sip-servlets/issues/62
+				else if (transportParam != null
+						&& transportParam.equalsIgnoreCase(ListeningPointExt.WS)) {
+					transport = ListeningPointExt.WS;
+				} else if (transportParam != null
+						&& transportParam.equalsIgnoreCase(ListeningPointExt.WSS)) {
+					transport = ListeningPointExt.WSS;
+				}
+				// moved TCP at the bottom to avoid having TCP being chosen because of message Content Length being too big for WebRTC
+				//Fix by Filip Olsson for Issue 112
+				else if ((transportParam != null
+						&& transportParam.equalsIgnoreCase(ListeningPoint.TCP)) || 
+						messageContentLength > 4096) {
+					transport = ListeningPoint.TCP;
+				} 
+				
+			}
+		}
 		return transport;
 	}
 	
