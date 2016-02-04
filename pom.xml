@@ -92,7 +92,7 @@
 		<mobicents.tools.mavenplugin.eclipse.version>1.0.0.FINAL</mobicents.tools.mavenplugin.eclipse.version>
 		<mobicents.cluster.version>6.1.4.1</mobicents.cluster.version>
 		<mobicents.balancer.version>6.1.4.3</mobicents.balancer.version>
-		<mobicents.jain.sip.ha.version>6.1.4.5</mobicents.jain.sip.ha.version>
+		<mobicents.jain.sip.ha.version>6.1.4.6</mobicents.jain.sip.ha.version>
 		<mobicents.jain.sip.ext.version>6.1.4.5</mobicents.jain.sip.ext.version>		
 		<mobicents.commons.version>6.1.4.1</mobicents.commons.version>
 		<telscale.license.version>2.2.3.Final</telscale.license.version>
