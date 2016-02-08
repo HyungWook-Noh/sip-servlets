@@ -1171,11 +1171,20 @@ public abstract class SipServletRequestImpl extends SipServletMessageImpl implem
 				if(isInitial() || dialog == null) {		
 				    //Issue: https://telestax.atlassian.net/browse/MSS-121
 					if(sipFactoryImpl.isUseLoadBalancer()) {
-						sipFactoryImpl.addLoadBalancerRouteHeader(request);
-						addDNSRoute = false;
-						if(logger.isDebugEnabled()) {
-							logger.debug("adding route to Load Balancer since we are in a HA configuration " +
-							" and no more apps are interested.");
+						if(matchingListeningPoint != null && matchingListeningPoint.isUseLoadBalancer()) {
+							if(logger.isDebugEnabled()) {
+								logger.debug("Using listeningPoint " + matchingListeningPoint + " for load balancer " + sipFactoryImpl.getLoadBalancerToUse());
+							}
+							sipFactoryImpl.addLoadBalancerRouteHeader(request);
+							addDNSRoute = false;
+							if(logger.isDebugEnabled()) {
+								logger.debug("adding route to Load Balancer since we are in a HA configuration " +
+								" and no more apps are interested.");
+							}
+						} else {
+							if(logger.isDebugEnabled()) {
+								logger.debug("Not Using load balancer as it is not enabled for listeningPoint " + matchingListeningPoint);
+							}
 						}
 					}
 					//Issue: https://telestax.atlassian.net/browse/MSS-121
