@@ -26,6 +26,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -928,7 +929,7 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
                }
   
                // All sessions are now "local" so just return the local sessions
-               sessions = findLocalSessions();
+               sessions = findLocalSessionsAsArray();
             }
             finally
             {
@@ -1330,7 +1331,7 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          SessionInvalidationTracker.suspend();
          
          // First, handle the sessions we are actively managing
-         ClusteredSession<? extends OutgoingDistributableSessionData> sessions[] = findLocalSessions();
+         ClusteredSession<? extends OutgoingDistributableSessionData> sessions[] = findLocalSessionsAsArray();
          for (int i = 0; i < sessions.length; ++i)
          {
             if (!backgroundProcessAllowed.get())
@@ -1907,7 +1908,7 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
    {
       boolean passivation = isPassivationEnabled();
       // First, the sessions we have actively loaded
-      ClusteredSession<? extends OutgoingDistributableSessionData>[] sessions = findLocalSessions();
+      ClusteredSession<? extends OutgoingDistributableSessionData>[] sessions = findLocalSessionsAsArray();
       for(int i=0; i < sessions.length; i++)
       {
          ClusteredSession<? extends OutgoingDistributableSessionData> ses = sessions[i];
@@ -4941,4 +4942,19 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 			}
 		}		
 	}
+	
+	/**
+    * Returns all the sessions that are being actively managed by this manager.
+    * This includes those that were created on this server, those that were
+    * brought into local management by a call to
+    * {@link #findLocalSession(String)} as well as all sessions brought into
+    * local management by a call to {@link #findSessions()}.
+    */
+   protected ClusteredSession<? extends OutgoingDistributableSessionData>[] findLocalSessionsAsArray()
+   {
+      Collection<ClusteredSession<? extends OutgoingDistributableSessionData>> coll = sessions_.values();
+      @SuppressWarnings("unchecked")
+      ClusteredSession<? extends OutgoingDistributableSessionData>[] sess = new ClusteredSession[coll.size()];
+      return coll.toArray(sess);
+   }
 }
