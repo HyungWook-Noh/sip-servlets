@@ -1836,8 +1836,10 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 			TransactionApplicationData  applicationData = ((TransactionApplicationData)sessionCreatingDialog.getApplicationData());
 			if(applicationData != null) {
 				applicationData.cleanUp();
-				applicationData.getSipServletMessage().cleanUp();
-				applicationData.getSipServletMessage().setSipSession(null);
+				if(applicationData.getSipServletMessage() != null) {
+					applicationData.getSipServletMessage().cleanUp();
+					applicationData.getSipServletMessage().setSipSession(null);
+				}
 				sessionCreatingDialog.setApplicationData(null);
 			}
 		}
