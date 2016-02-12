@@ -49,6 +49,9 @@ chmod +x auto-startlb-worst.sh
 export SIPLB=$!
 echo "SIP LB $SIPLB"
 
+echo "compiling parent so that the maven deps can be found when compiling examples"
+mvn clean install -f $EXAMPLES_HOME/../pom.xml
+
 ##################################
 # Test Custom B2BUA
 ##################################
