@@ -1295,48 +1295,66 @@ public class SipStandardContext extends StandardContext implements CatalinaSipCo
 	 */
 	public void exitSipApp(MobicentsSipApplicationSession sipApplicationSession, MobicentsSipSession sipSession) {
 		switch (concurrencyControlMode) {
-		case SipSession:
-			if(sipSession != null) {
-				sipSession.release();
-			} else {
-				if(logger.isDebugEnabled()) {
-					logger.debug("NOT RELEASING SipSession on exit sipApplicationSession=" + sipApplicationSession +
-							" sipSession=" + sipSession + " semaphore=null");
-				}
-			}
-			break;
-		case SipApplicationSession:
-			boolean wasSessionReleased = false;
-			SipApplicationSessionCreationThreadLocal sipApplicationSessionCreationThreadLocal = sipApplicationSessionsAccessedThreadLocal.get();
-			if(sipApplicationSessionCreationThreadLocal != null) {					
-				for(MobicentsSipApplicationSession sipApplicationSessionAccessed : sipApplicationSessionsAccessedThreadLocal.get().getSipApplicationSessions()) {
-					sipApplicationSessionAccessed.release();
-					if(sipApplicationSessionAccessed.equals(sipApplicationSession)) {
-						wasSessionReleased = true;
-					}
-				}		
-				sipApplicationSessionsAccessedThreadLocal.get().getSipApplicationSessions().clear();
-				sipApplicationSessionsAccessedThreadLocal.set(null);
-				sipApplicationSessionsAccessedThreadLocal.remove();
-			}
-			isManagedThread.set(null);
-			isManagedThread.remove();
-			if(!wasSessionReleased) {
-				if(sipApplicationSession != null) {
-					sipApplicationSession.release();
+			case SipSession:
+				if(sipSession != null) {
+					sipSession.release();
 				} else {
 					if(logger.isDebugEnabled()) {
-						logger.debug("NOT RELEASING SipApplicationSession on exit sipApplicationSession=" + sipApplicationSession +
+						logger.debug("NOT RELEASING SipSession on exit sipApplicationSession=" + sipApplicationSession +
 								" sipSession=" + sipSession + " semaphore=null");
 					}
 				}
-			}
-			break;
-		case None:
-			break;
+				break;
+			case SipApplicationSession:
+				boolean wasSessionReleased = false;
+				SipApplicationSessionCreationThreadLocal sipApplicationSessionCreationThreadLocal = sipApplicationSessionsAccessedThreadLocal.get();
+				if(sipApplicationSessionCreationThreadLocal != null) {		
+					if(logger.isDebugEnabled()) {
+						logger.debug("Checking local thread of accessed sip application sessions since it is not null");
+					}
+					for(MobicentsSipApplicationSession sipApplicationSessionAccessed : sipApplicationSessionsAccessedThreadLocal.get().getSipApplicationSessions()) {
+						if(logger.isDebugEnabled()) {
+							logger.debug("Found sip app session " + sipApplicationSessionAccessed.getId() + " in our local thread of accessed sip application sessions, releasing it");
+						}
+						sipApplicationSessionAccessed.release();
+						if(sipApplicationSessionAccessed.equals(sipApplicationSession)) {
+							if(logger.isDebugEnabled()) {
+								logger.debug("sip app session " + sipApplicationSessionAccessed.getId() + " equals " + sipApplicationSession.getId() + " session released");
+							}
+							wasSessionReleased = true;
+						}
+					}		
+					if(logger.isDebugEnabled()) {
+						logger.debug("Cleaing local thread of accessed sip application sessions");
+					}
+					sipApplicationSessionsAccessedThreadLocal.get().getSipApplicationSessions().clear();
+					sipApplicationSessionsAccessedThreadLocal.set(null);
+					sipApplicationSessionsAccessedThreadLocal.remove();
+				}
+				if(logger.isDebugEnabled()) {
+					logger.debug("Cleaing managed thread of accessed sip application sessions");
+				}
+				isManagedThread.set(null);
+				isManagedThread.remove();
+				if(!wasSessionReleased) {
+					if(sipApplicationSession != null) {
+						if(logger.isDebugEnabled()) {
+							logger.debug("session " + sipApplicationSession.getId() + " was not released, trying to release it");
+						}
+						sipApplicationSession.release();
+					} else {
+						if(logger.isDebugEnabled()) {
+							logger.debug("NOT RELEASING SipApplicationSession on exit sipApplicationSession=" + sipApplicationSession +
+									" sipSession=" + sipSession + " semaphore=null");
+						}
+					}
+				}
+				break;
+			case None:
+				break;
 		}		
 	}
-
+	
 	public ConcurrencyControlMode getConcurrencyControlMode() {		
 		return concurrencyControlMode;
 	}
