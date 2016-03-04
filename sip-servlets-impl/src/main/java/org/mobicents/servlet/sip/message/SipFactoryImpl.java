@@ -874,7 +874,7 @@ public class SipFactoryImpl implements MobicentsSipFactory,  Externalizable {
 	 * @param request
 	 * @throws ParseException
 	 */
-	public void addLoadBalancerRouteHeader(Request request) {
+	public void addLoadBalancerRouteHeader(Request request, MobicentsExtendedListeningPoint mobicentsExtendedListeningPoint) {
 		try {
 			String host = null;
 			int port = -1; 
@@ -891,10 +891,20 @@ public class SipFactoryImpl implements MobicentsSipFactory,  Externalizable {
 			sipUri.setLrParam();
 			String transport = JainSipUtils.findTransport(request);
 			sipUri.setTransportParam(transport);
-			MobicentsExtendedListeningPoint listeningPoint = 
-				getSipNetworkInterfaceManager().findMatchingListeningPoint(transport, false);
+			MobicentsExtendedListeningPoint listeningPoint = mobicentsExtendedListeningPoint;
+			if(mobicentsExtendedListeningPoint == null) {
+				listeningPoint = getSipNetworkInterfaceManager().findMatchingListeningPoint(transport, false);
+				if (logger.isDebugEnabled()) {
+					logger.debug("mobicentsExtendedListeningPoint was null, found a listening point to use " + listeningPoint);
+				}
+			}
+			boolean usePublicAddress = JainSipUtils.findUsePublicAddress(getSipNetworkInterfaceManager(), request, listeningPoint);
+			String nodeHost= listeningPoint.getHost(usePublicAddress);
+			if (logger.isDebugEnabled()) {
+				logger.debug("usePublicAddress" + usePublicAddress + ", nodeHost=" + nodeHost + " nodePort" + listeningPoint.getPort());
+			}
 			sipUri.setParameter(MessageDispatcher.ROUTE_PARAM_NODE_HOST, 
-					listeningPoint.getHost(JainSipUtils.findUsePublicAddress(getSipNetworkInterfaceManager(), request, listeningPoint)));
+					nodeHost);
 			sipUri.setParameter(MessageDispatcher.ROUTE_PARAM_NODE_PORT, 
 					"" + listeningPoint.getPort());
 			javax.sip.address.Address routeAddress = 

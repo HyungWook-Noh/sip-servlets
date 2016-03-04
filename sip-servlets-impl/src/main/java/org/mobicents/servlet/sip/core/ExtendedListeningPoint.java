@@ -303,7 +303,9 @@ public class ExtendedListeningPoint implements MobicentsExtendedListeningPoint {
 		.append(", gloablPort=")
 		.append(globalPort)
 		.append(", useLoadBalancer=")
-		.append(useLoadBalancer);
+		.append(useLoadBalancer)
+		.append(", mostOutboundAddress=")
+		.append(mostOutboundAddress);
 		return stringBuilder.toString();
 	}
 
