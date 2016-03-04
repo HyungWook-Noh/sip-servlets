@@ -600,7 +600,7 @@
 		<exec executable="git">
 		    <arg value="clone" />
 		    <arg value="-b" />
-		    <arg value="ts1" />
+		    <arg value="ts2" />
 		    <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-load-balancer.git" />
 		    <arg value="${basedir}/target/dependencies/sip-balancer" />
 		</exec>
