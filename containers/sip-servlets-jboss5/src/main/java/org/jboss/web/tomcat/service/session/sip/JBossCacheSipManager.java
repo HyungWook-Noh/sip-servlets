@@ -2670,7 +2670,19 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 			try {
 				// https://telestax.atlassian.net/browse/MSS-126 added isPresent instead of fetching the full data and attributes
 				// to avoid a deadly loop leading to StackOverFlowException
-				boolean isSipAppSessionPresent = getDistributedCacheConvergedSipManager().isSipApplicationSessionPresent(key.getId());
+				boolean isSipAppSessionPresent = false;
+				if(create) {
+					// fix for https://telestax.atlassian.net/projects/MSS/issues/MSS-153 and related https://telestax.zendesk.com/agent/tickets/32922
+					if(logger.isDebugEnabled()) {
+	        			logger.debug("creating sip app session " + key + " so no checking if the sip app session data is present in the cache ");
+	        		}
+					isSipAppSessionPresent = false;
+				} else {
+					if(logger.isDebugEnabled()) {
+	        			logger.debug("not creating sip app session " + key + " so checking if the sip app session data is present in the cache ");
+	        		}
+					isSipAppSessionPresent = getDistributedCacheConvergedSipManager().isSipApplicationSessionPresent(key.getId());
+				}
 				if (isSipAppSessionPresent) {
 					if (session == null) {
 						// This is either the first time we've seen this session on
