@@ -91,7 +91,7 @@
 	<properties>
 		<mobicents.tools.mavenplugin.eclipse.version>1.0.0.FINAL</mobicents.tools.mavenplugin.eclipse.version>
 		<mobicents.cluster.version>7.0.3.9</mobicents.cluster.version>
-		<mobicents.balancer.version>7.0.3.233</mobicents.balancer.version>
+		<mobicents.balancer.version>7.0.4.262</mobicents.balancer.version>
 		<mobicents.jain.sip.ha.version>7.0.3.116</mobicents.jain.sip.ha.version>
 		<jain-sip-ri.version>7.0.4.242</jain-sip-ri.version>
 		<mobicents.jain.sip.ext.version>7.0.4.19</mobicents.jain.sip.ext.version>		
