@@ -502,7 +502,7 @@
 		    <arg value="clone" />
 		    <arg value="-b" />
 		    <arg value="ts1-doc" />		    
-		    <arg value="https://code.google.com/p/jain-sip.docs" />
+		    <arg value="https://github.com/RestComm/jain-sip.docs.git" />
 		    <arg value="${basedir}/target/dependencies/jain-sip.docs" />
 		</exec>
 
