@@ -79,6 +79,9 @@ public class SipConnector implements Serializable {
 	private boolean useStaticAddress;
 	private boolean replaceStaticServerAddressForInternalRoutingRequest = true;
 	private boolean useLoadBalancer;
+	private String loadBalancerAddress;
+	private int loadBalancerRmiPort;
+	private int loadBalancerSipPort;
 	
 	/**
 	 * @return the Transport
@@ -367,5 +370,61 @@ public class SipConnector implements Serializable {
 	public String toString() {
 		return "SipConnector [ipAddress=" + ipAddress + ", port=" + port				
 				+ ", transport=" + transport + "]";
+	}
+
+	/**
+	 * @return the hostNames
+	 */
+	public String getHostNames() {
+		return hostNames;
+	}
+
+	/**
+	 * @param hostNames the hostNames to set
+	 */
+	public void setHostNames(String hostNames) {
+		this.hostNames = hostNames;
+	}
+
+	/**
+	 * @return the loadBalancerAddress
+	 */
+	public String getLoadBalancerAddress() {
+		return loadBalancerAddress;
+	}
+
+	/**
+	 * @param loadBalancerAddress the loadBalancerAddress to set
+	 */
+	public void setLoadBalancerAddress(String loadBalancerAddress) {
+		this.loadBalancerAddress = loadBalancerAddress;
+	}
+
+	/**
+	 * @return the loadBalancerRmiPort
+	 */
+	public int getLoadBalancerRmiPort() {
+		return loadBalancerRmiPort;
+	}
+
+	/**
+	 * @param loadBalancerRmiPort the loadBalancerRmiPort to set
+	 */
+	public void setLoadBalancerRmiPort(int loadBalancerRmiPort) {
+		this.loadBalancerRmiPort = loadBalancerRmiPort;
+	}
+
+	/**
+	 * @return the loadBalancerSipPort
+	 */
+	public int getLoadBalancerSipPort() {
+		return loadBalancerSipPort;
+	}
+
+	/**
+	 * @param loadBalancerSipPort the loadBalancerSipPort to set
+	 */
+	public void setLoadBalancerSipPort(int loadBalancerSipPort) {
+		this.loadBalancerSipPort = loadBalancerSipPort;
 	}
 }
