@@ -77,7 +77,10 @@
 	<!--property name="mss.jopr-plugin-5.version" value="1.6.0.FINAL"/>
 	<property name="mss.jopr-plugin-5.url" value="http://deployer:t31sc@1;3@telestax.artifactoryonline.com/telestax/snapshots/org/mobicents/servlet/sip/jopr-mobicents-sip-servlets-as-5-plugin/${mss.jopr-plugin-5.version}/jopr-mobicents-sip-servlets-as-5-plugin-${mss.management.version}.jar"/-->
 	<property name="jopr-jmx-plugin-5.url" value="http://repository.jboss.org/nexus/content/groups/public/org/rhq/rhq-jmx-plugin/1.2.0.GA/rhq-jmx-plugin-1.2.0.GA.jar"/>
-	
+
+        <property name="sglc.url" value="https://app.box.com/shared/static/38j1r35zk11dido0uxvkvl8r7qt06bq4.zip"/>
+	<property name="sglc.path" value="${base.path}/target/dependencies/sglc.zip" />
+
 	<condition property="mvn.executable" value="${sys.M2_HOME}\bin\mvn.bat" else="mvn">
 		<os family="windows"/>
 	</condition>
@@ -378,7 +381,7 @@
 			<arg line="clean buildnumber:create install -P set-git-hash,jboss-5-distro -DJBOSS_HOME=${mss.home} -Dnode=${jboss.config}" />
 		</exec>		
 		
-		<antcall target="build-mobicents-sglc">
+		<antcall target="extract-sglc">
 			<param name="mss.home" value="${mss.home}"/>
 			<param name="node" value="${jboss.config}"/>
 		</antcall>
@@ -477,7 +480,7 @@
 			<available file="${base.path}/target/dependencies/sip-balancer/.svn/entries" />
 		</and>
 	</condition>
-	<target name="get-deps" depends="checkout-deps" />
+	<!--target name="get-deps" depends="checkout-deps" />
 	
 	<target name="checkout-deps" unless="dependencies.checkedout">
 		<echo>Checking out dependencies</echo>
@@ -491,7 +494,7 @@
 		<exec executable="${mvn.executable}" dir="${base.path}">
 			<arg line="-f external-components-telscale.xml validate -P update" />
 		</exec>
-	</target>
+	</target-->
 	
 	<!-- Build dependencies-->
 	
@@ -594,7 +597,7 @@
 		</copy>
 	</target>
 
-	<target name="build-mobicents-sip-load-balancer" depends="get-deps">
+	<target name="build-mobicents-sip-load-balancer">
 		<echo>Building SIP Load Balancer</echo>
 
 		<exec executable="git">
@@ -710,7 +713,24 @@
 		</copy>
 	</target>
 
-	<target name="build-mobicents-sglc" depends="get-deps">
+
+	<available file="${sglc.url}" property="got.sglc" />
+	<target name="get-sglc" unless="got.sglc">
+		<echo>Downloading SGLC ${sglc.url}</echo>
+		<get dest="${sglc.path}" src="${sglc.url}"/>
+		<unzip src="${sglc.path}" dest="${base.path}/target/dependencies/"/>
+	</target>
+
+	<target name="extract-sglc" depends="get-sglc">
+		<echo>Extracting Simple Global Logging Configuration</echo>
+		<echo message="jboss.home= ${mss.home}"/>
+		<echo message="node= ${node}"/>
+		<echo message="distro= ${distro}"/>
+		<copy overwrite="true" verbose="true" dir="${base.path}/target/dependencies/mobicents-sglc.sar" todir="${mss.home}/server/${node}/deploy/">
+		</copy>
+	</target>
+
+	<!--target name="build-mobicents-sglc" depends="extract-sglc">
 		<echo>Building Simple Global Logging Configuration</echo>
 		<echo message="jboss.home= ${mss.home}"/>
 		<echo message="node= ${node}"/>
@@ -723,10 +743,10 @@
 		<exec failonerror="true" executable="${mvn.executable}" dir="${base.path}/target/dependencies/sglc">
 			<arg line="clean install -P set-git-hash -Dmaven.test.skip=true -Djboss.home=${mss.home} -Dnode=${node}" />
 		</exec>			
-	</target>
+	</target-->
 	
 	<!-- only for telscale -->
-	<target name="build-mobicents-snmp" depends="get-deps">
+	<target name="build-mobicents-snmp">
 		<echo>Building SNMP Adaptor</echo>
 		
 		<exec executable="git">
