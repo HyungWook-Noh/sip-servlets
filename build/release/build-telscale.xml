@@ -726,7 +726,8 @@
 		<echo message="jboss.home= ${mss.home}"/>
 		<echo message="node= ${node}"/>
 		<echo message="distro= ${distro}"/>
-		<copy overwrite="true" verbose="true" dir="${base.path}/target/dependencies/mobicents-sglc.sar" todir="${mss.home}/server/${node}/deploy/">
+		<copy overwrite="true" verbose="true" todir="${mss.home}/server/${node}/deploy/">
+			<fileset dir="${base.path}/target/dependencies/mobicents-sglc.sar"/>
 		</copy>
 	</target>
 
