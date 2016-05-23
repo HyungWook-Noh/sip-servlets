@@ -69,6 +69,11 @@ public class SipConnector implements Serializable {
 	 */
 	private int stunServerPort;
 
+ 	/*
+	 * Hostnames matching for that given connector (replace the /etc/hosts lookup as dnsjava doesn't use it)
+	 */
+	private String hostNames;
+
 	/*
 	 * These settings staticServerAddress, staticServerPort will override all
 	 * stun settings and will put the server address in the Via/RR/Contact
