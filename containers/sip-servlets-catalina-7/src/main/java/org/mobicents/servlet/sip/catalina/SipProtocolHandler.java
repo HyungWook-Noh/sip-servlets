@@ -535,45 +535,6 @@ public class SipProtocolHandler implements ProtocolHandler, MBeanRegistration {
 		sipConnector.setUseLoadBalancer(useLoadBalancer);
 	}
 	
-	public String getLoadBalancerAddress() {
-		return sipConnector.getLoadBalancerAddress();
-	}
-
-	/**
-	 * @param loadBalancerAddress the loadBalancerAddress to set
-	 */
-	public void setLoadBalancerAddress(String loadBalancerAddress) {		
-		sipConnector.setLoadBalancerAddress(loadBalancerAddress);
-	}
-
-	/**
-	 * @return the loadBalancerRmiPort
-	 */
-	public int getLoadBalancerRmiPort() {
-		return sipConnector.getLoadBalancerRmiPort();
-	}
-
-	/**
-	 * @param loadBalancerRmiPort the loadBalancerRmiPort to set
-	 */
-	public void setLoadBalancerRmiPort(int loadBalancerRmiPort) {
-		sipConnector.setLoadBalancerRmiPort(loadBalancerRmiPort);
-	}
-
-	/**
-	 * @return the loadBalancerSipPort
-	 */
-	public int getLoadBalancerSipPort() {
-		return sipConnector.getLoadBalancerSipPort();
-	}
-
-	/**
-	 * @param loadBalancerSipPort the loadBalancerSipPort to set
-	 */
-	public void setLoadBalancerSipPort(int loadBalancerSipPort) {
-		sipConnector.setLoadBalancerSipPort(loadBalancerSipPort);
-	}
-	
 	/**
 	 * @return the useStun
 	 */
